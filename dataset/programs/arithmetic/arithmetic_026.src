@@ -1,0 +1,6 @@
+// category: arithmetic  (program 026)
+int m = 4 * 6;
+int p = m + 11;
+int z = p - 12 - 5;
+print(z);
+print(m * 19);

@@ -1,0 +1,9 @@
+// category: repeated_expr  (program 035)
+int acc = 1;
+int m = 10;
+int g = acc * m;
+int a = m * acc;
+acc = acc + 5;
+int c = (acc * m) + g;
+int x = g * a + g * a;
+print(c + x);

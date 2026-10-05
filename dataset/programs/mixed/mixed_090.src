@@ -1,0 +1,8 @@
+// category: mixed  (program 090)
+// inputs: in_a
+int k = in_a + 0;
+int res = k * 8;
+int b = res + (3 * 17);
+int c = res * res;
+int d = res * res + c;
+print(b + d);

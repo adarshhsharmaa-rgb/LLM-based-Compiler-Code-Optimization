@@ -1,0 +1,8 @@
+// category: repeated_expr  (program 046)
+int f = 4;
+int r = 13;
+int z = f * r;
+int val = r * f;
+int p = (f - r) * (f - r);
+int e = z * val + z * val;
+print(p + e);

@@ -1,0 +1,112 @@
+=== Program: mixed_058.src ===
+--- Iteration 1 ---
+  [ANALYZE] Found 9 opportunities: DEAD_CODE (priority=80), COPY_PROPAGATIONx8 (priority=50)
+  [PROPOSE] Applying DEAD_CODE at instruction 8: tmp = t5 → (removed)
+  [VERIFY]  PASS (differential: 32/32 inputs matched, symbolic: equivalent)
+  [COST]    Before: 31.5, After: 29.0 (reduction: 7.9%)
+  [ACCEPT]  ✓ Change accepted
+--- Iteration 2 ---
+  [ANALYZE] Found 8 opportunities: DEAD_CODE (priority=80), COPY_PROPAGATIONx7 (priority=50)
+  [PROPOSE] Applying DEAD_CODE at instruction 7: t5 = in_a * t4 → (removed)
+  [VERIFY]  PASS (differential: 32/32 inputs matched, symbolic: equivalent)
+  [COST]    Before: 29.0, After: 25.5 (reduction: 12.1%)
+  [ACCEPT]  ✓ Change accepted
+--- Iteration 3 ---
+  [ANALYZE] Found 7 opportunities: DEAD_CODE (priority=80), COPY_PROPAGATIONx6 (priority=50)
+  [PROPOSE] Applying DEAD_CODE at instruction 6: t4 = 15 → (removed)
+  [VERIFY]  PASS (differential: 32/32 inputs matched, symbolic: equivalent)
+  [COST]    Before: 25.5, After: 22.5 (reduction: 11.8%)
+  [ACCEPT]  ✓ Change accepted
+--- Iteration 4 ---
+  [ANALYZE] Found 6 opportunities: COPY_PROPAGATIONx6 (priority=50)
+  [PROPOSE] Applying COPY_PROPAGATION at instruction 0: t0 = 2 → uses of t0 -> 2 at instr 1
+  [VERIFY]  PASS (differential: 29/29 inputs matched, symbolic: equivalent)
+  [COST]    Before: 22.5, After: 19.5 (reduction: 13.3%)
+  [ACCEPT]  ✓ Change accepted
+--- Iteration 5 ---
+  [ANALYZE] Found 6 opportunities: STRENGTH_REDUCTION (priority=60), COPY_PROPAGATIONx5 (priority=50)
+  [PROPOSE] Applying STRENGTH_REDUCTION at instruction 0: t1 = in_a * 2 → t1 = in_a + in_a
+  [VERIFY]  PASS (differential: 29/29 inputs matched, symbolic: equivalent)
+  [COST]    Before: 19.5, After: 19.5 (reduction: 0.0%)
+  [REJECT]  ✗ Change rejected: No cost improvement
+--- Iteration 6 ---
+  [ANALYZE] Found 5 opportunities: COPY_PROPAGATIONx5 (priority=50)
+  [PROPOSE] Applying COPY_PROPAGATION at instruction 1: t1 = in_a * 2; y = t1 → y = in_a * 2
+  [VERIFY]  PASS (differential: 29/29 inputs matched, symbolic: equivalent)
+  [COST]    Before: 19.5, After: 16.5 (reduction: 15.4%)
+  [ACCEPT]  ✓ Change accepted
+--- Iteration 7 ---
+  [ANALYZE] Found 4 opportunities: STRENGTH_REDUCTION (priority=60), COPY_PROPAGATIONx3 (priority=50)
+  [PROPOSE] Applying STRENGTH_REDUCTION at instruction 0: y = in_a * 2 → y = in_a + in_a
+  [VERIFY]  PASS (differential: 29/29 inputs matched, symbolic: equivalent)
+  [COST]    Before: 16.5, After: 16.5 (reduction: 0.0%)
+  [REJECT]  ✗ Change rejected: No cost improvement
+--- Iteration 8 ---
+  [ANALYZE] Found 3 opportunities: COPY_PROPAGATIONx3 (priority=50)
+  [PROPOSE] Applying COPY_PROPAGATION at instruction 1: t2 = 1 → uses of t2 -> 1 at instr 2
+  [VERIFY]  PASS (differential: 29/29 inputs matched, symbolic: equivalent)
+  [COST]    Before: 16.5, After: 13.5 (reduction: 18.2%)
+  [ACCEPT]  ✓ Change accepted
+--- Iteration 9 ---
+  [ANALYZE] Found 4 opportunities: ALGEBRAIC_SIMPLIFY (priority=90), STRENGTH_REDUCTION (priority=60), COPY_PROPAGATIONx2 (priority=50)
+  [PROPOSE] Applying ALGEBRAIC_SIMPLIFY at instruction 1: t3 = in_a * 1 → t3 = in_a
+  [VERIFY]  PASS (differential: 29/29 inputs matched, symbolic: equivalent)
+  [COST]    Before: 13.5, After: 13.0 (reduction: 3.7%)
+  [ACCEPT]  ✓ Change accepted
+--- Iteration 10 ---
+  [ANALYZE] Found 3 opportunities: STRENGTH_REDUCTION (priority=60), COPY_PROPAGATIONx2 (priority=50)
+  [PROPOSE] Applying STRENGTH_REDUCTION at instruction 0: y = in_a * 2 → y = in_a + in_a
+  [VERIFY]  PASS (differential: 28/28 inputs matched, symbolic: equivalent)
+  [COST]    Before: 13.0, After: 13.0 (reduction: 0.0%)
+  [REJECT]  ✗ Change rejected: No cost improvement
+--- Iteration 11 ---
+  [ANALYZE] Found 2 opportunities: COPY_PROPAGATIONx2 (priority=50)
+  [PROPOSE] Applying COPY_PROPAGATION at instruction 1: t3 = in_a → uses of t3 -> in_a at instr 2
+  [VERIFY]  PASS (differential: 28/28 inputs matched, symbolic: equivalent)
+  [COST]    Before: 13.0, After: 10.0 (reduction: 23.1%)
+  [ACCEPT]  ✓ Change accepted
+--- Iteration 12 ---
+  [ANALYZE] Found 2 opportunities: STRENGTH_REDUCTION (priority=60), COPY_PROPAGATION (priority=50)
+  [PROPOSE] Applying STRENGTH_REDUCTION at instruction 0: y = in_a * 2 → y = in_a + in_a
+  [VERIFY]  PASS (differential: 28/28 inputs matched, symbolic: equivalent)
+  [COST]    Before: 10.0, After: 10.0 (reduction: 0.0%)
+  [REJECT]  ✗ Change rejected: No cost improvement
+--- Iteration 13 ---
+  [ANALYZE] Found 1 opportunity: COPY_PROPAGATION (priority=50)
+  [PROPOSE] Applying COPY_PROPAGATION at instruction 1: f = in_a → uses of f -> in_a at instr 2
+  [VERIFY]  PASS (differential: 28/28 inputs matched, symbolic: equivalent)
+  [COST]    Before: 10.0, After: 7.5 (reduction: 25.0%)
+  [ACCEPT]  ✓ Change accepted
+--- Iteration 14 ---
+  [ANALYZE] Found 1 opportunity: STRENGTH_REDUCTION (priority=60)
+  [PROPOSE] Applying STRENGTH_REDUCTION at instruction 0: y = in_a * 2 → y = in_a + in_a
+  [VERIFY]  PASS (differential: 28/28 inputs matched, symbolic: equivalent)
+  [COST]    Before: 7.5, After: 7.5 (reduction: 0.0%)
+  [REJECT]  ✗ Change rejected: No cost improvement
+--- Iteration 15 ---
+  [ANALYZE] No more opportunities found.
+=== RESULT ===
+  Original cost: 31.5
+  Final cost:    7.5
+  Reduction:     76.2%
+  Iterations:    15
+  Accepted:      9
+  Rejected:      5
+  Invalid:       0
+  Output match:  PASS ✓
+=== Original TAC ===
+   0 |     t0 = 2
+   1 |     t1 = in_a * t0
+   2 |     y = t1
+   3 |     t2 = 1
+   4 |     t3 = in_a * t2
+   5 |     f = t3
+   6 |     t4 = 15
+   7 |     t5 = in_a * t4
+   8 |     tmp = t5
+   9 |     t6 = y + f
+  10 |     print t6
+=== Optimized TAC ===
+  0 |     y = in_a * 2
+  1 |     t6 = y + in_a
+  2 |     print t6

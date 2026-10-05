@@ -1,0 +1,6 @@
+// category: arithmetic  (program 020)
+int n = 3 + 4;
+int res = n + 17;
+int e = 15 - 19;
+int k = res + 20 + 7;
+print(k);

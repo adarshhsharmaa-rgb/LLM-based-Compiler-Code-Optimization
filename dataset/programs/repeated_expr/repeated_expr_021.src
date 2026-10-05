@@ -1,0 +1,9 @@
+// category: repeated_expr  (program 021)
+int v = 11;
+int z = 13;
+int b = v * z;
+int h = z * v;
+v = v + 5;
+int k = (v * z) + b;
+int e = b * h + b * h;
+print(k + e);

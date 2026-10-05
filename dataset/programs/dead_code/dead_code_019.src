@@ -1,0 +1,7 @@
+// category: dead_code  (program 019)
+int p = 13;
+int a = 57;
+int res = 15;
+int e = res + 9;
+int k = e + 12;
+print(k);

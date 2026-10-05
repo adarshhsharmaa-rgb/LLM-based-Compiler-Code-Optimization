@@ -1,0 +1,6 @@
+// category: nested  (program 017)
+int m = ((19 - 17) / 7) * ((11 + 20) * 9);
+int u = (m / 3) * 18;
+int e = (6 * 19) + (19 % 2);
+int b = e + (e * (12 + 19));
+print(b);

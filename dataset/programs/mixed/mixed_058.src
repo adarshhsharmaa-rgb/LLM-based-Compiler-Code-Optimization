@@ -1,0 +1,6 @@
+// category: mixed  (program 058)
+// inputs: in_a
+int y = in_a * 2;
+int f = in_a * 1;
+int tmp = in_a * 15;
+print(y + f);

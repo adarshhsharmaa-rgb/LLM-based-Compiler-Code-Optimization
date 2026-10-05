@@ -1,0 +1,11 @@
+// category: mixed  (program 089)
+int p = 8 + 3;
+int s = p * 2;
+int m = s + 0;
+int b = p;
+if (p > 6) {
+    b = b * 1 + 5;
+} else {
+    b = b - 0;
+}
+print(m + b);

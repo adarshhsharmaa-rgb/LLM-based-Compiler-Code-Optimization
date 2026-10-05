@@ -1,0 +1,14 @@
+// category: conditionals  (program 039)
+int h = 5;
+int s = 0;
+if (h < 2) {
+    s = h * 1;
+    s = s + (4 * 1);
+} else {
+    s = h + 4;
+}
+int z = 9;
+if (z > 4) {
+    s = s + z * 1;
+}
+print(s);

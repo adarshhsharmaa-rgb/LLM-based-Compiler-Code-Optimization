@@ -1,0 +1,7 @@
+// category: repeated_expr  (program 044)
+int h = 6;
+int x = 3;
+int s = h * x;
+int n = h * x;
+int tmp = (h * x) * (h * x);
+print(tmp);

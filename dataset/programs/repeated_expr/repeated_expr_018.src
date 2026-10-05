@@ -1,0 +1,8 @@
+// category: repeated_expr  (program 018)
+int a = 16;
+int v = 4;
+int e = a - v;
+int k = a - v;
+int res = (a - v) * (a - v);
+int num = e * k + e * k;
+print(res + num);

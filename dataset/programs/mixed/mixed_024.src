@@ -1,0 +1,14 @@
+// category: mixed  (program 024)
+int z = 5 + 2;
+int x = 0;
+for (int i = 0; i < 6; i = i + 1) {
+    x = x + (4 + 4);
+}
+int val = z;
+if (z > -4) {
+    val = val * 1 + 5;
+} else {
+    val = val - 0;
+}
+int y = z + (18 * 8);
+print(val + y);

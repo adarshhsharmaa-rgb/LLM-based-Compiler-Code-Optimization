@@ -1,0 +1,16 @@
+// category: mixed  (program 007)
+int b = 9 + 6;
+int f = b;
+if (b > 4) {
+    f = f * 1 + 1;
+} else {
+    f = f - 0;
+}
+int n = 0;
+for (int i = 0; i < 4; i = i + 1) {
+    n = n + (2 + 4);
+}
+int p = f + (12 * 17);
+int d = 0 + n;
+int num = p * 8;
+print(p + d);

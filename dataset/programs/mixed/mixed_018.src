@@ -1,0 +1,7 @@
+// category: mixed  (program 018)
+int g = 9 + 1;
+int u = g * 8;
+int e = g * 4;
+int tmp = 0 + g;
+int k = u + (6 * 14);
+print(tmp + k);

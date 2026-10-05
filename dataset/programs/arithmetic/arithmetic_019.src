@@ -1,0 +1,5 @@
+// category: arithmetic  (program 019)
+int v = 10 + 12;
+int x = 1 + 9;
+print(x);
+print(v + 18);

@@ -1,0 +1,11 @@
+// category: mixed  (program 044)
+// inputs: in_n
+int num = in_n * in_n;
+int res = in_n * in_n + num;
+int y = 0;
+for (int i = 0; i < 4; i = i + 1) {
+    y = y + (4 + 1);
+}
+int x = 43;
+int k = y + 0;
+print(y + k);

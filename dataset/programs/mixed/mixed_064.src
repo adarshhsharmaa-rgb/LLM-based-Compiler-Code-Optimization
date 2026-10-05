@@ -1,0 +1,17 @@
+// category: mixed  (program 064)
+// inputs: in_y
+int u = 0;
+for (int i = 0; i < 6; i = i + 1) {
+    u = u + (3 + 4);
+}
+int d = in_y * in_y;
+int h = in_y * in_y + d;
+int b = in_y * 2;
+int num = h + (7 * 7);
+int tmp = num;
+if (num > 7) {
+    tmp = tmp * 1 + 2;
+} else {
+    tmp = tmp - 0;
+}
+print(num + tmp);

@@ -1,0 +1,11 @@
+// category: mixed  (program 023)
+// inputs: in_a
+int g = 37;
+int num = 0;
+for (int i = 0; i < 2; i = i + 1) {
+    num = num + (4 + 2);
+}
+int acc = in_a * 8;
+int e = acc - 0;
+int n = acc + (15 * 6);
+print(e + n);

@@ -1,0 +1,7 @@
+// category: repeated_expr  (program 010)
+int e = 17;
+int c = 9;
+int num = e * c;
+int k = e * c;
+int s = (e + c) * (e + c);
+print(s);

@@ -1,0 +1,5 @@
+// category: nested  (program 027)
+int val = (19 * 15) * 13;
+int k = ((val % 9) + (val + 9)) / 7;
+int f = val + (val * (17 + 11));
+print(f);

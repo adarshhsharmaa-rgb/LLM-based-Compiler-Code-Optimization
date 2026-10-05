@@ -1,0 +1,5 @@
+// category: arithmetic  (program 044)
+int k = 18 * 9;
+int d = 7 - 12;
+int y = k - 9 + 12;
+print(y);

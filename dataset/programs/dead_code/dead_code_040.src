@@ -1,0 +1,8 @@
+// category: dead_code  (program 040)
+int c = 11;
+int n = 97;
+int num = 11;
+int r = 95;
+int d = c / 7;
+int m = c + 15;
+print(m);

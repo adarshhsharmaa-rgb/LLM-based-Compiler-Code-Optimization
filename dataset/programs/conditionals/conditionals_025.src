@@ -1,0 +1,10 @@
+// category: conditionals  (program 025)
+int acc = -14;
+int n = 0;
+if (acc < 5) {
+    n = 1 * acc;
+    n = n + (4 * 5);
+} else {
+    n = acc * 5;
+}
+print(n);

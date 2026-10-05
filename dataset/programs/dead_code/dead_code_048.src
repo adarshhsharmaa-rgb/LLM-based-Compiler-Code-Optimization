@@ -1,0 +1,6 @@
+// category: dead_code  (program 048)
+int f = 20;
+int s = f - 20;
+int val = s - 13;
+int a = f + 13;
+print(a);

@@ -1,0 +1,13 @@
+// category: mixed  (program 031)
+int res = 20 + 17;
+int z = res;
+if (res > 11) {
+    z = z * 1 + 4;
+} else {
+    z = z - 0;
+}
+int u = res * res;
+int w = res * res + u;
+int tmp = res * 4;
+int d = res + 0;
+print(tmp + d);

@@ -1,0 +1,8 @@
+// category: conditionals  (program 050)
+// inputs: in_a
+int val = 0;
+if (in_a <= 1) {
+    int acc = 13 + 14;
+    val = 1 * in_a;
+}
+print(val);

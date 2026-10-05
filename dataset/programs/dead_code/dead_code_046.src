@@ -1,0 +1,9 @@
+// category: dead_code  (program 046)
+int s = 9;
+int val = 15;
+int f = s + 3;
+int b = f - 8;
+int d = b - 4;
+int q = 71;
+int v = d + 10;
+print(v);

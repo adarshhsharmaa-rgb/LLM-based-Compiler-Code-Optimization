@@ -1,0 +1,8 @@
+// category: repeated_expr  (program 055)
+int z = 10;
+int b = 7;
+int tmp = z + b;
+int val = z + b;
+int acc = (z * b) * (z * b);
+int h = tmp * val + tmp * val;
+print(acc + h);

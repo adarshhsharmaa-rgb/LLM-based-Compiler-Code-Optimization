@@ -1,0 +1,60 @@
+=== Program: conditionals_065.src ===
+--- Iteration 1 ---
+  [ANALYZE] Found 4 opportunities: COPY_PROPAGATIONx4 (priority=50)
+  [PROPOSE] Applying COPY_PROPAGATION at instruction 0: t0 = 0 → uses of t0 -> 0 at instr 1
+  [VERIFY]  PASS (differential: 32/32 inputs matched, symbolic: skipped (control flow))
+  [COST]    Before: 23.0, After: 20.0 (reduction: 13.0%)
+  [ACCEPT]  ✓ Change accepted
+--- Iteration 2 ---
+  [ANALYZE] Found 3 opportunities: COPY_PROPAGATIONx3 (priority=50)
+  [PROPOSE] Applying COPY_PROPAGATION at instruction 1: t1 = 5 → uses of t1 -> 5 at instr 2
+  [VERIFY]  PASS (differential: 32/32 inputs matched, symbolic: skipped (control flow))
+  [COST]    Before: 20.0, After: 17.0 (reduction: 15.0%)
+  [ACCEPT]  ✓ Change accepted
+--- Iteration 3 ---
+  [ANALYZE] Found 2 opportunities: COPY_PROPAGATIONx2 (priority=50)
+  [PROPOSE] Applying COPY_PROPAGATION at instruction 3: t3 = 1 → uses of t3 -> 1 at instr 4
+  [VERIFY]  PASS (differential: 32/32 inputs matched, symbolic: skipped (control flow))
+  [COST]    Before: 17.0, After: 14.0 (reduction: 17.6%)
+  [ACCEPT]  ✓ Change accepted
+--- Iteration 4 ---
+  [ANALYZE] Found 2 opportunities: ALGEBRAIC_SIMPLIFY (priority=90), COPY_PROPAGATION (priority=50)
+  [PROPOSE] Applying ALGEBRAIC_SIMPLIFY at instruction 3: t4 = 1 * in_n → t4 = in_n
+  [VERIFY]  PASS (differential: 32/32 inputs matched, symbolic: skipped (control flow))
+  [COST]    Before: 14.0, After: 13.5 (reduction: 3.6%)
+  [ACCEPT]  ✓ Change accepted
+--- Iteration 5 ---
+  [ANALYZE] Found 1 opportunity: COPY_PROPAGATION (priority=50)
+  [PROPOSE] Applying COPY_PROPAGATION at instruction 3: t4 = in_n → uses of t4 -> in_n at instr 4
+  [VERIFY]  PASS (differential: 31/31 inputs matched, symbolic: skipped (control flow))
+  [COST]    Before: 13.5, After: 10.5 (reduction: 22.2%)
+  [ACCEPT]  ✓ Change accepted
+--- Iteration 6 ---
+  [ANALYZE] No more opportunities found.
+=== RESULT ===
+  Original cost: 23.0
+  Final cost:    10.5
+  Reduction:     54.3%
+  Iterations:    6
+  Accepted:      5
+  Rejected:      0
+  Invalid:       0
+  Output match:  PASS ✓
+=== Original TAC ===
+  0 |     t0 = 0
+  1 |     q = t0
+  2 |     t1 = 5
+  3 |     t2 = in_n <= t1
+  4 |     ifFalse t2 goto L0
+  5 |     t3 = 1
+  6 |     t4 = t3 * in_n
+  7 |     q = t4
+  8 | L0:
+  9 |     print q
+=== Optimized TAC ===
+  0 |     q = 0
+  1 |     t2 = in_n <= 5
+  2 |     ifFalse t2 goto L0
+  3 |     q = in_n
+  4 | L0:
+  5 |     print q

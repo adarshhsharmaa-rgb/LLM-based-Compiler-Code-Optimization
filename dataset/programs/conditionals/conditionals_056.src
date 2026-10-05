@@ -1,0 +1,10 @@
+// category: conditionals  (program 056)
+// inputs: in_x
+int n = 0;
+if (in_x == 2 && in_x != -4) {
+    int p = 7 + 15;
+    n = in_x / 1;
+} else {
+    n = in_x - 3;
+}
+print(n);

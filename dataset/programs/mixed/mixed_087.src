@@ -1,0 +1,8 @@
+// category: mixed  (program 087)
+int c = 4 + 15;
+int e = c * 8;
+int s = e * c;
+int res = e * c + s;
+int q = c + 0;
+int u = e * 3;
+print(res + q);

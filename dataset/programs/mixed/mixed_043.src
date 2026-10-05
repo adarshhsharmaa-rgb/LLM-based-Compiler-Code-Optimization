@@ -1,0 +1,12 @@
+// category: mixed  (program 043)
+int e = 16 + 20;
+int u = e * 6;
+int tmp = e * 2;
+int v = tmp;
+if (tmp > 2) {
+    v = v * 1 + 5;
+} else {
+    v = v - 0;
+}
+int val = tmp + (1 * 16);
+print(v + val);

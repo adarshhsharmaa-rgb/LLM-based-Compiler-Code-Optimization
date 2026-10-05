@@ -1,0 +1,9 @@
+// category: dead_code  (program 013)
+int q = 12;
+int m = q + 3;
+int k = m / 9;
+int w = q - 17;
+int num = w - 19;
+int d = w * 16;
+int b = d + 6;
+print(b);

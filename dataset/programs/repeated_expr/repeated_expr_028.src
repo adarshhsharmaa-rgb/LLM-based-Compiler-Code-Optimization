@@ -1,0 +1,7 @@
+// category: repeated_expr  (program 028)
+int v = 15;
+int res = 15;
+int d = v + res;
+int u = v + res;
+int num = (v - res) * (v - res);
+print(num);

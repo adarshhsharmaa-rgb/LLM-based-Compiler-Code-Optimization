@@ -1,0 +1,8 @@
+// category: repeated_expr  (program 042)
+// inputs: in_n, in_a
+int q = in_n + in_a;
+int a = in_n + in_a;
+in_n = in_n + 4;
+int c = (in_n + in_a) + q;
+int e = q * a + q * a;
+print(c + e);

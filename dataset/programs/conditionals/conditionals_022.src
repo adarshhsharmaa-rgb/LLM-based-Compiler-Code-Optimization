@@ -1,0 +1,11 @@
+// category: conditionals  (program 022)
+int n = 14;
+int u = 0;
+if (n != -3) {
+    u = 0 + n;
+}
+int s = 3;
+if (s > 8) {
+    u = u + s * 1;
+}
+print(u);

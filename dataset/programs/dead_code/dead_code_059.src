@@ -1,0 +1,10 @@
+// category: dead_code  (program 059)
+int b = 12;
+int x = 12;
+int h = b * 9;
+int n = 80;
+int num = 44;
+h = 59;
+h = h + 15;
+int k = b + 14;
+print(k);

@@ -1,0 +1,10 @@
+// category: conditionals  (program 073)
+int x = -11;
+int p = 0;
+if (x == -2 && x != -23) {
+    p = 1 * x;
+    p = p + (2 * 3);
+} else {
+    p = x * 7;
+}
+print(p);

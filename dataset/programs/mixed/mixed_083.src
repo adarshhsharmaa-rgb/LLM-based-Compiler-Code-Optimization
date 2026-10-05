@@ -1,0 +1,11 @@
+// category: mixed  (program 083)
+// inputs: in_b
+int h = 1 * in_b;
+int y = h;
+if (h > 7) {
+    y = y * 1 + 1;
+} else {
+    y = y - 0;
+}
+int d = in_b + (1 * 17);
+print(y + d);

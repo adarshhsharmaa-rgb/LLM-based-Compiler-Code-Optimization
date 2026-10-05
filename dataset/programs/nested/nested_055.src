@@ -1,0 +1,6 @@
+// category: nested  (program 055)
+int m = (5 + (7 % 4)) / 6;
+int b = (19 + m) * 4;
+int k = (b + b) - (9 - 7);
+int num = m + (m * (5 + 1));
+print(num);

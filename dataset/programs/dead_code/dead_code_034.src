@@ -1,0 +1,9 @@
+// category: dead_code  (program 034)
+int q = 20;
+int p = q + 11;
+int f = p / 9;
+int a = q - 15;
+q = 82;
+q = q + 19;
+int r = q + 8;
+print(r);

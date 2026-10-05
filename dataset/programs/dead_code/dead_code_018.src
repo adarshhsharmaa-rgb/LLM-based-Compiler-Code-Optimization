@@ -1,0 +1,11 @@
+// category: dead_code  (program 018)
+int q = 10;
+int x = q / 6;
+int f = 74;
+int h = 11;
+int acc = 11;
+int s = 15;
+acc = 71;
+acc = acc + 7;
+int val = s + 20;
+print(val);

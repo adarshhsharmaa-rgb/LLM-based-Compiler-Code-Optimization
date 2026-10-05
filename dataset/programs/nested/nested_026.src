@@ -1,0 +1,6 @@
+// category: nested  (program 026)
+int res = (7 / 6) + (12 + 14);
+int d = ((16 + 1) + 4) + ((res + res) / 6);
+int s = (2 - 6) * (11 - 4);
+int u = res + (res * (2 + 5));
+print(u);

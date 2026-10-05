@@ -1,0 +1,110 @@
+{
+  "total_programs": 500,
+  "total_proposals": 10628,
+  "passed_verification": 10628,
+  "accepted": 10517,
+  "rejected_no_cost_gain": 111,
+  "invalid_failed_verification": 0,
+  "verification_pass_rate_pct": 100.0,
+  "acceptance_rate_pct": 98.96,
+  "avg_cost_reduction_pct": 82.49,
+  "median_cost_reduction_pct": 81.22,
+  "min_cost_reduction_pct": 50.0,
+  "max_cost_reduction_pct": 99.17,
+  "programs_with_reduction_over_30pct": 500,
+  "steps_to_convergence_mean": 22.24,
+  "steps_to_convergence_median": 20.0,
+  "steps_to_convergence_min": 6,
+  "steps_to_convergence_max": 50,
+  "steps_to_convergence_stdev": 9.89,
+  "steps_distribution": {
+    "1-10": 40,
+    "11-20": 216,
+    "21-30": 140,
+    "31-40": 73,
+    "41-50": 31
+  },
+  "programs_hitting_iteration_cap": 8,
+  "llm_used": false,
+  "llm_proposals": 0,
+  "llm_valid": 0,
+  "llm_validity_rate_pct": null,
+  "false_positive_count": 0,
+  "false_positive_rate_pct": 0.0,
+  "per_category": {
+    "arithmetic": {
+      "programs": 60,
+      "avg_reduction_pct": 96.03,
+      "avg_iterations": 15.93,
+      "accepted": 896
+    },
+    "nested": {
+      "programs": 60,
+      "avg_reduction_pct": 98.1,
+      "avg_iterations": 37.3,
+      "accepted": 2164
+    },
+    "repeated_expr": {
+      "programs": 60,
+      "avg_reduction_pct": 80.71,
+      "avg_iterations": 16.78,
+      "accepted": 943
+    },
+    "dead_code": {
+      "programs": 60,
+      "avg_reduction_pct": 97.44,
+      "avg_iterations": 17.22,
+      "accepted": 973
+    },
+    "loops": {
+      "programs": 80,
+      "avg_reduction_pct": 65.05,
+      "avg_iterations": 17.88,
+      "accepted": 1312
+    },
+    "conditionals": {
+      "programs": 80,
+      "avg_reduction_pct": 73.91,
+      "avg_iterations": 18.89,
+      "accepted": 1406
+    },
+    "mixed": {
+      "programs": 100,
+      "avg_reduction_pct": 77.91,
+      "avg_iterations": 29.45,
+      "accepted": 2823
+    }
+  },
+  "by_optimization_type": {
+    "CONSTANT_FOLD": {
+      "accepted": 1855,
+      "rejected": 0,
+      "invalid": 0
+    },
+    "ALGEBRAIC_SIMPLIFY": {
+      "accepted": 179,
+      "rejected": 0,
+      "invalid": 0
+    },
+    "DEAD_CODE": {
+      "accepted": 1795,
+      "rejected": 0,
+      "invalid": 0
+    },
+    "CSE": {
+      "accepted": 147,
+      "rejected": 0,
+      "invalid": 0
+    },
+    "STRENGTH_REDUCTION": {
+      "accepted": 88,
+      "rejected": 97,
+      "invalid": 0
+    },
+    "COPY_PROPAGATION": {
+      "accepted": 6453,
+      "rejected": 14,
+      "invalid": 0
+    }
+  }
+}

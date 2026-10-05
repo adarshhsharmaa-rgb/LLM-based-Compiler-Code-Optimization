@@ -1,0 +1,9 @@
+// category: mixed  (program 053)
+int n = 16 + 6;
+int g = 0;
+for (int i = 0; i < 2; i = i + 1) {
+    g = g + (2 + 4);
+}
+int c = g + (17 * 3);
+int w = c * 16;
+print(c + w);

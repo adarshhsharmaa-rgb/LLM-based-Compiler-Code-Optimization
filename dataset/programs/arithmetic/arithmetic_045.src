@@ -1,0 +1,5 @@
+// category: arithmetic  (program 045)
+int r = 14 + 15;
+int tmp = 2 - 20;
+int u = tmp + 3 - 12;
+print(u);

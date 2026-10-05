@@ -1,0 +1,11 @@
+// category: dead_code  (program 031)
+int u = 19;
+int c = u + 6;
+int r = c + 7;
+int z = 80;
+int h = 23;
+int w = r * 9;
+u = 79;
+u = u + 1;
+int p = u + 15;
+print(p);

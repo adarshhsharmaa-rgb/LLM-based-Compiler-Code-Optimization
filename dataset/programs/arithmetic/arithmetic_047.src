@@ -1,0 +1,4 @@
+// category: arithmetic  (program 047)
+int n = 5 + 16;
+int res = 18 - 15;
+print(res);

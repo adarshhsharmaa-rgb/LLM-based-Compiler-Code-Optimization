@@ -1,0 +1,9 @@
+// category: dead_code  (program 020)
+int g = 3;
+int c = g - 7;
+int z = 1;
+int k = 18;
+int n = 68;
+int h = k - 2;
+int res = z + 14;
+print(res);

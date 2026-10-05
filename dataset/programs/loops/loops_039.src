@@ -1,0 +1,9 @@
+// category: loops  (program 039)
+int prod = 1;
+int i = 0;
+while (i < 3) {
+    int u = 3 + 0;
+    prod = prod * u;
+    i = i + 1;
+}
+print(prod);

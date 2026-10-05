@@ -1,0 +1,8 @@
+// category: loops  (program 009)
+int total = 0;
+for (int i = 0; i < 12; i = i + 1) {
+    int h = 8 + 1;
+    total = total + 0 + h;
+}
+print(total);
+print(total * 2);

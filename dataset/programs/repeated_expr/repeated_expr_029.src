@@ -1,0 +1,8 @@
+// category: repeated_expr  (program 029)
+int a = 12;
+int k = 12;
+int c = a + k;
+int r = a + k;
+a = a + 5;
+int p = (a + k) + c;
+print(p);

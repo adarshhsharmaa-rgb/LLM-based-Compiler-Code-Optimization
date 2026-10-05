@@ -1,0 +1,66 @@
+=== Program: repeated_expr_051.src ===
+--- Iteration 1 ---
+  [ANALYZE] Found 10 opportunities: DEAD_CODE (priority=80), CSE (priority=70), COPY_PROPAGATIONx8 (priority=50)
+  [PROPOSE] Applying DEAD_CODE at instruction 3: k = t1 → (removed)
+  [VERIFY]  PASS (differential: 38/38 inputs matched, symbolic: equivalent)
+  [COST]    Before: 31.5, After: 29.0 (reduction: 7.9%)
+  [ACCEPT]  ✓ Change accepted
+--- Iteration 2 ---
+  [ANALYZE] Found 9 opportunities: DEAD_CODE (priority=80), CSE (priority=70), COPY_PROPAGATIONx7 (priority=50)
+  [PROPOSE] Applying DEAD_CODE at instruction 2: t1 = in_x * in_n → (removed)
+  [VERIFY]  PASS (differential: 38/38 inputs matched, symbolic: equivalent)
+  [COST]    Before: 29.0, After: 25.5 (reduction: 12.1%)
+  [ACCEPT]  ✓ Change accepted
+--- Iteration 3 ---
+  [ANALYZE] Found 7 opportunities: COPY_PROPAGATIONx7 (priority=50)
+  [PROPOSE] Applying COPY_PROPAGATION at instruction 1: t0 = in_x * in_n; a = t0 → a = in_x * in_n
+  [VERIFY]  PASS (differential: 38/38 inputs matched, symbolic: equivalent)
+  [COST]    Before: 25.5, After: 22.5 (reduction: 11.8%)
+  [ACCEPT]  ✓ Change accepted
+--- Iteration 4 ---
+  [ANALYZE] Found 5 opportunities: COPY_PROPAGATIONx5 (priority=50)
+  [PROPOSE] Applying COPY_PROPAGATION at instruction 1: t2 = 2 → uses of t2 -> 2 at instr 2
+  [VERIFY]  PASS (differential: 38/38 inputs matched, symbolic: equivalent)
+  [COST]    Before: 22.5, After: 19.5 (reduction: 13.3%)
+  [ACCEPT]  ✓ Change accepted
+--- Iteration 5 ---
+  [ANALYZE] Found 4 opportunities: COPY_PROPAGATIONx4 (priority=50)
+  [PROPOSE] Applying COPY_PROPAGATION at instruction 2: t3 = in_x + 2; in_x = t3 → in_x = in_x + 2
+  [VERIFY]  PASS (differential: 38/38 inputs matched, symbolic: equivalent)
+  [COST]    Before: 19.5, After: 16.5 (reduction: 15.4%)
+  [ACCEPT]  ✓ Change accepted
+--- Iteration 6 ---
+  [ANALYZE] Found 2 opportunities: COPY_PROPAGATIONx2 (priority=50)
+  [PROPOSE] Applying COPY_PROPAGATION at instruction 4: t5 = t4 + a; res = t5 → res = t4 + a
+  [VERIFY]  PASS (differential: 38/38 inputs matched, symbolic: equivalent)
+  [COST]    Before: 16.5, After: 13.5 (reduction: 18.2%)
+  [ACCEPT]  ✓ Change accepted
+--- Iteration 7 ---
+  [ANALYZE] No more opportunities found.
+=== RESULT ===
+  Original cost: 31.5
+  Final cost:    13.5
+  Reduction:     57.1%
+  Iterations:    7
+  Accepted:      6
+  Rejected:      0
+  Invalid:       0
+  Output match:  PASS ✓
+=== Original TAC ===
+   0 |     t0 = in_x * in_n
+   1 |     a = t0
+   2 |     t1 = in_x * in_n
+   3 |     k = t1
+   4 |     t2 = 2
+   5 |     t3 = in_x + t2
+   6 |     in_x = t3
+   7 |     t4 = in_x * in_n
+   8 |     t5 = t4 + a
+   9 |     res = t5
+  10 |     print res
+=== Optimized TAC ===
+  0 |     a = in_x * in_n
+  1 |     in_x = in_x + 2
+  2 |     t4 = in_x * in_n
+  3 |     res = t4 + a
+  4 |     print res

@@ -1,0 +1,10 @@
+// category: conditionals  (program 011)
+int num = 6;
+int s = 0;
+if (num != 1) {
+    s = 0 + num;
+    s = s + (3 * 3);
+} else {
+    s = num + 4;
+}
+print(s);

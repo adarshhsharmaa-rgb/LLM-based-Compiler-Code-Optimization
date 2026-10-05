@@ -1,0 +1,14 @@
+// category: mixed  (program 055)
+int p = 12 + 8;
+int f = p;
+if (p > 3) {
+    f = f * 1 + 4;
+} else {
+    f = f - 0;
+}
+int acc = p + (16 * 15);
+int e = 73;
+int y = f * f;
+int val = f * f + y;
+int z = f * 2;
+print(val + z);

@@ -1,0 +1,8 @@
+// category: repeated_expr  (program 002)
+int n = 4;
+int g = 17;
+int w = n - g;
+int num = n - g;
+n = n + 2;
+int f = (n - g) + w;
+print(f);

@@ -1,0 +1,11 @@
+// category: mixed  (program 075)
+// inputs: in_x
+int d = 0;
+for (int i = 0; i < 5; i = i + 1) {
+    d = d + (4 + 1);
+}
+int w = d * d;
+int y = d * d + w;
+int m = d + (6 * 1);
+int p = y * 8;
+print(m + p);

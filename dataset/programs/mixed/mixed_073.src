@@ -1,0 +1,8 @@
+// category: mixed  (program 073)
+// inputs: in_c
+int a = in_c + (13 * 13);
+int y = a - 0;
+int s = 88;
+int r = y * y;
+int c = y * y + r;
+print(y + c);

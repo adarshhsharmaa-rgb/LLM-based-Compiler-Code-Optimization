@@ -1,0 +1,10 @@
+// category: mixed  (program 021)
+// inputs: in_b
+int x = in_b * in_b;
+int p = in_b * in_b + x;
+int v = p + 0;
+int h = 0;
+for (int i = 0; i < 6; i = i + 1) {
+    h = h + (4 + 2);
+}
+print(v + h);

@@ -1,0 +1,7 @@
+// category: arithmetic  (program 034)
+int val = 9 + 6;
+int acc = 10 - 12;
+int s = 5 * 3;
+int b = 1 + 17;
+print(b);
+print(val * 15);

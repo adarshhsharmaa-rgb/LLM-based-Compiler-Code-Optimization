@@ -1,0 +1,10 @@
+// category: conditionals  (program 058)
+int q = 8;
+int w = 0;
+if (q <= -10) {
+    w = q - 0;
+    w = w + (1 * 4);
+} else {
+    w = q - 4;
+}
+print(w);

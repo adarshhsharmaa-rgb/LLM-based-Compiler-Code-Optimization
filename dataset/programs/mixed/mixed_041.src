@@ -1,0 +1,6 @@
+// category: mixed  (program 041)
+// inputs: in_y
+int r = in_y * 2;
+int b = in_y - 0;
+int f = 10;
+print(r + b);

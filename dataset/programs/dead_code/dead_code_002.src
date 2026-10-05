@@ -1,0 +1,6 @@
+// category: dead_code  (program 002)
+int tmp = 15;
+int w = 68;
+int m = 9;
+int y = tmp + 11;
+print(y);

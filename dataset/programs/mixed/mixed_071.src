@@ -1,0 +1,9 @@
+// category: mixed  (program 071)
+int u = 17 + 8;
+int a = u * 1;
+int e = a * 2;
+int x = 12;
+int p = u * a;
+int d = u * a + p;
+int r = u + (7 * 4);
+print(d + r);

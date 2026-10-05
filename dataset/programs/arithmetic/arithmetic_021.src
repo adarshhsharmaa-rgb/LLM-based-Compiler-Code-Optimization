@@ -1,0 +1,5 @@
+// category: arithmetic  (program 021)
+int m = 19 + 14;
+int val = 8 + 9;
+int c = m + 6 - 20;
+print(c);

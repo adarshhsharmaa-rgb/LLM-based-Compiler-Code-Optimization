@@ -1,0 +1,9 @@
+// category: repeated_expr  (program 005)
+int u = 12;
+int z = 13;
+int q = u + z;
+int n = u + z;
+u = u + 3;
+int p = (u + z) + q;
+int g = q * n + q * n;
+print(p + g);

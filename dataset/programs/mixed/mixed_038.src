@@ -1,0 +1,14 @@
+// category: mixed  (program 038)
+int q = 5 + 14;
+int k = q * q;
+int h = q * q + k;
+int w = h / 1;
+int e = q + (7 * 1);
+int x = e * 16;
+int a = q;
+if (q > -1) {
+    a = a * 1 + 2;
+} else {
+    a = a - 0;
+}
+print(x + a);

@@ -1,0 +1,9 @@
+// category: repeated_expr  (program 024)
+int x = 11;
+int w = 20;
+int h = x * w;
+int u = w * x;
+x = x + 5;
+int k = (x * w) + h;
+int g = h * u + h * u;
+print(k + g);

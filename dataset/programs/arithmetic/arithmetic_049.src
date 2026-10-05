@@ -1,0 +1,4 @@
+// category: arithmetic  (program 049)
+int h = 19 - 7;
+int q = h + 16 - 10;
+print(q);

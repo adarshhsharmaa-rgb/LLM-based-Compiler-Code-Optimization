@@ -1,0 +1,8 @@
+// category: repeated_expr  (program 059)
+int n = 7;
+int tmp = 13;
+int val = n - tmp;
+int g = n - tmp;
+int s = (n * tmp) * (n * tmp);
+int f = val * g + val * g;
+print(s + f);

@@ -1,0 +1,67 @@
+=== Program: conditionals_014.src ===
+--- Iteration 1 ---
+  [ANALYZE] Found 4 opportunities: COPY_PROPAGATIONx4 (priority=50)
+  [PROPOSE] Applying COPY_PROPAGATION at instruction 0: t0 = 0 → uses of t0 -> 0 at instr 1
+  [VERIFY]  PASS (differential: 32/32 inputs matched, symbolic: skipped (control flow))
+  [COST]    Before: 24.5, After: 21.5 (reduction: 12.2%)
+  [ACCEPT]  ✓ Change accepted
+--- Iteration 2 ---
+  [ANALYZE] Found 3 opportunities: COPY_PROPAGATIONx3 (priority=50)
+  [PROPOSE] Applying COPY_PROPAGATION at instruction 1: t1 = 8 → uses of t1 -> 8 at instr 2
+  [VERIFY]  PASS (differential: 32/32 inputs matched, symbolic: skipped (control flow))
+  [COST]    Before: 21.5, After: 18.5 (reduction: 14.0%)
+  [ACCEPT]  ✓ Change accepted
+--- Iteration 3 ---
+  [ANALYZE] Found 3 opportunities: CONSTANT_FOLD (priority=100), COPY_PROPAGATIONx2 (priority=50)
+  [PROPOSE] Applying CONSTANT_FOLD at instruction 1: t2 = -8 → t2 = -8 (forwarded into uses of t2)
+  [VERIFY]  PASS (differential: 35/35 inputs matched, symbolic: skipped (control flow))
+  [COST]    Before: 18.5, After: 17.0 (reduction: 8.1%)
+  [ACCEPT]  ✓ Change accepted
+--- Iteration 4 ---
+  [ANALYZE] Found 2 opportunities: COPY_PROPAGATIONx2 (priority=50)
+  [PROPOSE] Applying COPY_PROPAGATION at instruction 3: t4 = 1 → uses of t4 -> 1 at instr 4
+  [VERIFY]  PASS (differential: 32/32 inputs matched, symbolic: skipped (control flow))
+  [COST]    Before: 17.0, After: 14.0 (reduction: 17.6%)
+  [ACCEPT]  ✓ Change accepted
+--- Iteration 5 ---
+  [ANALYZE] Found 2 opportunities: ALGEBRAIC_SIMPLIFY (priority=90), COPY_PROPAGATION (priority=50)
+  [PROPOSE] Applying ALGEBRAIC_SIMPLIFY at instruction 3: t5 = in_y * 1 → t5 = in_y
+  [VERIFY]  PASS (differential: 32/32 inputs matched, symbolic: skipped (control flow))
+  [COST]    Before: 14.0, After: 13.5 (reduction: 3.6%)
+  [ACCEPT]  ✓ Change accepted
+--- Iteration 6 ---
+  [ANALYZE] Found 1 opportunity: COPY_PROPAGATION (priority=50)
+  [PROPOSE] Applying COPY_PROPAGATION at instruction 3: t5 = in_y → uses of t5 -> in_y at instr 4
+  [VERIFY]  PASS (differential: 31/31 inputs matched, symbolic: skipped (control flow))
+  [COST]    Before: 13.5, After: 10.5 (reduction: 22.2%)
+  [ACCEPT]  ✓ Change accepted
+--- Iteration 7 ---
+  [ANALYZE] No more opportunities found.
+=== RESULT ===
+  Original cost: 24.5
+  Final cost:    10.5
+  Reduction:     57.1%
+  Iterations:    7
+  Accepted:      6
+  Rejected:      0
+  Invalid:       0
+  Output match:  PASS ✓
+=== Original TAC ===
+   0 |     t0 = 0
+   1 |     v = t0
+   2 |     t1 = 8
+   3 |     t2 = -t1
+   4 |     t3 = in_y == t2
+   5 |     ifFalse t3 goto L0
+   6 |     t4 = 1
+   7 |     t5 = in_y * t4
+   8 |     v = t5
+   9 | L0:
+  10 |     print v
+=== Optimized TAC ===
+  0 |     v = 0
+  1 |     t3 = in_y == -8
+  2 |     ifFalse t3 goto L0
+  3 |     v = in_y
+  4 | L0:
+  5 |     print v

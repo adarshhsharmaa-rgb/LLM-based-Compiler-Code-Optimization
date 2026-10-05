@@ -1,0 +1,8 @@
+// category: repeated_expr  (program 004)
+int w = 2;
+int d = 3;
+int g = w * d;
+int x = d * w;
+w = w + 5;
+int q = (w * d) + g;
+print(q);

@@ -1,0 +1,8 @@
+// category: mixed  (program 057)
+// inputs: in_c
+int v = in_c * 3;
+int z = in_c * 4;
+int val = in_c + 0;
+int u = in_c * val;
+int w = in_c * val + u;
+print(val + w);

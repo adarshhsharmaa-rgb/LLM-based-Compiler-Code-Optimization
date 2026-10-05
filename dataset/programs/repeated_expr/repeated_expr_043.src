@@ -1,0 +1,7 @@
+// category: repeated_expr  (program 043)
+int u = 16;
+int val = 4;
+int d = u * val;
+int f = val * u;
+int q = (u - val) * (u - val);
+print(q);

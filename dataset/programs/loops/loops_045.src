@@ -1,0 +1,12 @@
+// category: loops  (program 045)
+int prod = 1;
+int g = 0;
+for (int i = 0; i < 6; i = i + 1) {
+    int x = 1 + 0;
+    prod = prod * 1 * x;
+    for (int j = 0; j < 3; j = j + 1) {
+        g = g + 1;
+    }
+}
+print(prod);
+print(g);

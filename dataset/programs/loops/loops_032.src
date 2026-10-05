@@ -1,0 +1,11 @@
+// category: loops  (program 032)
+int prod = 1;
+int i = 0;
+while (i < 6) {
+    int val = 3 * 0;
+    prod = prod * val;
+    int a = val * 19;
+    i = i + 1;
+}
+print(prod);
+print(prod * 1);

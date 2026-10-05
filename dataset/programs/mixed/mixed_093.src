@@ -1,0 +1,14 @@
+// category: mixed  (program 093)
+int b = 20 + 4;
+int r = b - 0;
+int q = r;
+if (r > -2) {
+    q = q * 1 + 5;
+} else {
+    q = q - 0;
+}
+int u = 0;
+for (int i = 0; i < 2; i = i + 1) {
+    u = u + (2 + 3);
+}
+print(q + u);

@@ -1,0 +1,8 @@
+// category: loops  (program 017)
+int acc = 0;
+for (int i = 0; i < 11; i = i + 1) {
+    int h = 3 * 4;
+    acc = acc + h + 0;
+}
+print(acc);
+print(acc * 2);

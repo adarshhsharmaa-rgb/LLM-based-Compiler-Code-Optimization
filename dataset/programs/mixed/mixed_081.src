@@ -1,0 +1,15 @@
+// category: mixed  (program 081)
+int v = 18 + 4;
+int w = 0;
+for (int i = 0; i < 6; i = i + 1) {
+    w = w + (1 + 2);
+}
+int n = w;
+if (w > 11) {
+    n = n * 1 + 5;
+} else {
+    n = n - 0;
+}
+int acc = n * w;
+int c = n * w + acc;
+print(n + c);

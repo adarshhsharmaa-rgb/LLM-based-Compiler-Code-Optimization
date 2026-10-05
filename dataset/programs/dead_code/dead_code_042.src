@@ -1,0 +1,9 @@
+// category: dead_code  (program 042)
+int g = 6;
+int res = 59;
+int e = 8;
+int w = 95;
+int y = res / 9;
+int acc = e + 19;
+int b = acc + 3;
+print(b);

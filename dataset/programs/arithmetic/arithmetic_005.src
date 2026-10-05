@@ -1,0 +1,5 @@
+// category: arithmetic  (program 005)
+int num = 15 + 8;
+int n = 11 + 19;
+int h = num + 3;
+print(h);

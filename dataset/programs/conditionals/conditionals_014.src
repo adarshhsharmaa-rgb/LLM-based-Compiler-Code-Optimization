@@ -1,0 +1,7 @@
+// category: conditionals  (program 014)
+// inputs: in_y
+int v = 0;
+if (in_y == -8) {
+    v = in_y * 1;
+}
+print(v);

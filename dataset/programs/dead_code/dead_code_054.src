@@ -1,0 +1,7 @@
+// category: dead_code  (program 054)
+int d = 1;
+int g = d + 8;
+g = 77;
+g = g + 20;
+int n = d + 14;
+print(n);

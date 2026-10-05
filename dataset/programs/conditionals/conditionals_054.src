@@ -1,0 +1,14 @@
+// category: conditionals  (program 054)
+int b = -5;
+int v = 0;
+if (b <= 2) {
+    v = 0 + b;
+    v = v + (1 * 1);
+} else {
+    v = b - 4;
+}
+int h = 8;
+if (h > 2) {
+    v = v + h * 1;
+}
+print(v);

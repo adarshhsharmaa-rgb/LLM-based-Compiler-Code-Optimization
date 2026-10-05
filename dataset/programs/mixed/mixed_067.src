@@ -1,0 +1,15 @@
+// category: mixed  (program 067)
+int s = 9 + 6;
+int r = s;
+if (s > 9) {
+    r = r * 1 + 1;
+} else {
+    r = r - 0;
+}
+int d = 0;
+for (int i = 0; i < 6; i = i + 1) {
+    d = d + (2 + 1);
+}
+int e = 62;
+int g = d / 1;
+print(d + g);

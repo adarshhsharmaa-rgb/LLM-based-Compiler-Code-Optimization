@@ -1,0 +1,104 @@
+=== Program: conditionals_078.src ===
+--- Iteration 1 ---
+  [ANALYZE] Found 7 opportunities: COPY_PROPAGATIONx7 (priority=50)
+  [PROPOSE] Applying COPY_PROPAGATION at instruction 0: t0 = 9 → uses of t0 -> 9 at instr 1
+  [VERIFY]  PASS (differential: 25/25 inputs matched, symbolic: skipped (control flow))
+  [COST]    Before: 31.5, After: 28.5 (reduction: 9.5%)
+  [ACCEPT]  ✓ Change accepted
+--- Iteration 2 ---
+  [ANALYZE] Found 7 opportunities: CONSTANT_FOLD (priority=100), COPY_PROPAGATIONx6 (priority=50)
+  [PROPOSE] Applying CONSTANT_FOLD at instruction 0: t1 = -9 → t1 = -9 (forwarded into uses of t1)
+  [VERIFY]  PASS (differential: 25/25 inputs matched, symbolic: skipped (control flow))
+  [COST]    Before: 28.5, After: 27.0 (reduction: 5.3%)
+  [ACCEPT]  ✓ Change accepted
+--- Iteration 3 ---
+  [ANALYZE] Found 5 opportunities: COPY_PROPAGATIONx5 (priority=50)
+  [PROPOSE] Applying COPY_PROPAGATION at instruction 0: z = -9 → uses of z -> -9 at instr 5, 8
+  [VERIFY]  PASS (differential: 25/25 inputs matched, symbolic: skipped (control flow))
+  [COST]    Before: 27.0, After: 24.5 (reduction: 9.3%)
+  [ACCEPT]  ✓ Change accepted
+--- Iteration 4 ---
+  [ANALYZE] Found 4 opportunities: COPY_PROPAGATIONx4 (priority=50)
+  [PROPOSE] Applying COPY_PROPAGATION at instruction 0: t2 = 0 → uses of t2 -> 0 at instr 1
+  [VERIFY]  PASS (differential: 25/25 inputs matched, symbolic: skipped (control flow))
+  [COST]    Before: 24.5, After: 21.5 (reduction: 12.2%)
+  [ACCEPT]  ✓ Change accepted
+--- Iteration 5 ---
+  [ANALYZE] Found 3 opportunities: COPY_PROPAGATIONx3 (priority=50)
+  [PROPOSE] Applying COPY_PROPAGATION at instruction 1: t3 = 3 → uses of t3 -> 3 at instr 2
+  [VERIFY]  PASS (differential: 25/25 inputs matched, symbolic: skipped (control flow))
+  [COST]    Before: 21.5, After: 18.5 (reduction: 14.0%)
+  [ACCEPT]  ✓ Change accepted
+--- Iteration 6 ---
+  [ANALYZE] Found 3 opportunities: CONSTANT_FOLD (priority=100), COPY_PROPAGATIONx2 (priority=50)
+  [PROPOSE] Applying CONSTANT_FOLD at instruction 1: t4 = -3 → t4 = -3 (forwarded into uses of t4)
+  [VERIFY]  PASS (differential: 25/25 inputs matched, symbolic: skipped (control flow))
+  [COST]    Before: 18.5, After: 17.0 (reduction: 8.1%)
+  [ACCEPT]  ✓ Change accepted
+--- Iteration 7 ---
+  [ANALYZE] Found 3 opportunities: CONSTANT_FOLD (priority=100), COPY_PROPAGATIONx2 (priority=50)
+  [PROPOSE] Applying CONSTANT_FOLD at instruction 1: t5 = -9 <= -3 → t5 = 1 (forwarded into uses of t5)
+  [VERIFY]  PASS (differential: 25/25 inputs matched, symbolic: skipped (control flow))
+  [COST]    Before: 17.0, After: 15.5 (reduction: 8.8%)
+  [ACCEPT]  ✓ Change accepted
+--- Iteration 8 ---
+  [ANALYZE] Found 2 opportunities: COPY_PROPAGATIONx2 (priority=50)
+  [PROPOSE] Applying COPY_PROPAGATION at instruction 2: t6 = 1 → uses of t6 -> 1 at instr 3
+  [VERIFY]  PASS (differential: 25/25 inputs matched, symbolic: skipped (control flow))
+  [COST]    Before: 15.5, After: 12.5 (reduction: 19.4%)
+  [ACCEPT]  ✓ Change accepted
+--- Iteration 9 ---
+  [ANALYZE] Found 2 opportunities: CONSTANT_FOLD (priority=100), COPY_PROPAGATION (priority=50)
+  [PROPOSE] Applying CONSTANT_FOLD at instruction 2: t7 = -9 * 1 → t7 = -9
+  [VERIFY]  PASS (differential: 25/25 inputs matched, symbolic: skipped (control flow))
+  [COST]    Before: 12.5, After: 12.0 (reduction: 4.0%)
+  [ACCEPT]  ✓ Change accepted
+--- Iteration 10 ---
+  [ANALYZE] Found 1 opportunity: COPY_PROPAGATION (priority=50)
+  [PROPOSE] Applying COPY_PROPAGATION at instruction 2: t7 = -9 → uses of t7 -> -9 at instr 3
+  [VERIFY]  PASS (differential: 25/25 inputs matched, symbolic: skipped (control flow))
+  [COST]    Before: 12.0, After: 9.0 (reduction: 25.0%)
+  [ACCEPT]  ✓ Change accepted
+--- Iteration 11 ---
+  [ANALYZE] No more opportunities found.
+  [LLM]     LLM proposal: Constant folding: The condition "1" is always true, so the `ifFalse 1 goto L0` instruction will never branch, and the assignment `w = 0` can be eliminated as it is immediately overwritten.
+  [VERIFY]  PASS (differential: 25/25 inputs matched, symbolic: skipped (control flow))
+  [COST]    Before: 9.0, After: 4.5 (reduction: 50.0%)
+  [ACCEPT]  ✓ Change accepted
+--- Iteration 12 ---
+  [ANALYZE] Found 1 opportunity: COPY_PROPAGATION (priority=50)
+  [PROPOSE] Applying COPY_PROPAGATION at instruction 0: w = -9 → uses of w -> -9 at instr 2
+  [VERIFY]  PASS (differential: 25/25 inputs matched, symbolic: skipped (control flow))
+  [COST]    Before: 4.5, After: 2.0 (reduction: 55.6%)
+  [ACCEPT]  ✓ Change accepted
+--- Iteration 13 ---
+  [ANALYZE] No more opportunities found.
+  [LLM]     LLM produced no usable TAC: LLM returned unchanged TAC; reasoning: No optimization can be applied to this code as it contains no expressions to evaluate, no redundant computations, no dead code, and no variable manipulations.
+=== RESULT ===
+  Original cost: 31.5
+  Final cost:    2.0
+  Reduction:     93.7%
+  Iterations:    13
+  Accepted:      12
+  Rejected:      0
+  Invalid:       0
+  LLM proposals: 1 (1 passed verification)
+  Output match:  PASS ✓
+=== Original TAC ===
+   0 |     t0 = 9
+   1 |     t1 = -t0
+   2 |     z = t1
+   3 |     t2 = 0
+   4 |     w = t2
+   5 |     t3 = 3
+   6 |     t4 = -t3
+   7 |     t5 = z <= t4
+   8 |     ifFalse t5 goto L0
+   9 |     t6 = 1
+  10 |     t7 = z * t6
+  11 |     w = t7
+  12 | L0:
+  13 |     print w
+=== Optimized TAC ===
+  0 | L0:
+  1 |     print -9

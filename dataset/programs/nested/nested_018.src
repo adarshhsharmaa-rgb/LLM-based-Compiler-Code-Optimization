@@ -1,0 +1,5 @@
+// category: nested  (program 018)
+int g = (3 - 12) + (13 % 3);
+int v = (14 - (6 * g)) - ((10 + 1) + (19 / 2));
+int x = g + (g * (20 - 20));
+print(x);

@@ -1,0 +1,7 @@
+// category: arithmetic  (program 035)
+int p = 14 + 10;
+int f = p - 2;
+int q = 20 + 1;
+int n = 7 + 9;
+print(n);
+print(p + 1);

@@ -1,0 +1,7 @@
+// category: repeated_expr  (program 053)
+int b = 8;
+int tmp = 20;
+int v = b + tmp;
+int a = b + tmp;
+int num = v + a;
+print(num);

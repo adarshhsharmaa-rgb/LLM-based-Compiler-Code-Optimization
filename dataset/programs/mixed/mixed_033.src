@@ -1,0 +1,15 @@
+// category: mixed  (program 033)
+int h = 3 + 9;
+int r = 0;
+for (int i = 0; i < 6; i = i + 1) {
+    r = r + (4 + 1);
+}
+int w = r;
+if (r > 15) {
+    w = w * 1 + 1;
+} else {
+    w = w - 0;
+}
+int v = r * h;
+int p = r * h + v;
+print(w + p);

@@ -1,0 +1,10 @@
+// category: conditionals  (program 075)
+// inputs: in_a
+int z = 0;
+if (in_a <= -3 && in_a != -1) {
+    int y = 1 + 8;
+    z = in_a - 0;
+} else {
+    z = in_a + 3;
+}
+print(z);

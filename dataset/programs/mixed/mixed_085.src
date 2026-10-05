@@ -1,0 +1,14 @@
+// category: mixed  (program 085)
+int r = 4 + 13;
+int u = r;
+if (r > 6) {
+    u = u * 1 + 5;
+} else {
+    u = u - 0;
+}
+int c = r + (14 * 14);
+int p = c * r;
+int a = c * r + p;
+int b = c * 4;
+int s = a - 0;
+print(b + s);

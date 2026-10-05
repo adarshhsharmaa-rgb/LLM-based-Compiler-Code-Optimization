@@ -1,0 +1,7 @@
+// category: dead_code  (program 009)
+int h = 2;
+int g = 68;
+int x = 4;
+int b = 88;
+int a = h + 18;
+print(a);

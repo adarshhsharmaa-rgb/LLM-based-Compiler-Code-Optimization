@@ -1,0 +1,10 @@
+// category: conditionals  (program 028)
+int g = -8;
+int m = 0;
+if (g > -8) {
+    m = g / 1;
+    m = m + (3 * 5);
+} else {
+    m = g - 5;
+}
+print(m);

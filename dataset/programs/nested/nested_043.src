@@ -1,0 +1,6 @@
+// category: nested  (program 043)
+int e = 6 * 9;
+int y = ((12 - 9) + (20 * 19)) % 4;
+int val = ((y * y) - (5 * y)) - ((3 / 3) * 11);
+int h = val + (val * (10 - 20));
+print(h);

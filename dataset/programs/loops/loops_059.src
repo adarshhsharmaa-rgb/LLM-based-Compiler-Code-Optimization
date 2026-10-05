@@ -1,0 +1,11 @@
+// category: loops  (program 059)
+int total = 0;
+int i = 0;
+while (i < 3) {
+    int res = 5 - 2;
+    total = total + res;
+    int h = res * 13;
+    i = i + 1;
+}
+print(total);
+print(total * 2);

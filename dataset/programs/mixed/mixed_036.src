@@ -1,0 +1,14 @@
+// category: mixed  (program 036)
+int res = 10 + 18;
+int num = res + (5 * 18);
+int a = num;
+if (num > 13) {
+    a = a * 1 + 4;
+} else {
+    a = a - 0;
+}
+int z = a * 4;
+int b = 0 + num;
+int w = b * res;
+int q = b * res + w;
+print(b + q);

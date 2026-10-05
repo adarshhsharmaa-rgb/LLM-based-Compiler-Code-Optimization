@@ -1,0 +1,9 @@
+// category: conditionals  (program 029)
+int tmp = -5;
+int n = 0;
+if (tmp == -10) {
+    n = tmp - 0;
+} else {
+    n = tmp * 4;
+}
+print(n);

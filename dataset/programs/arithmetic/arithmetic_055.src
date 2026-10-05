@@ -1,0 +1,6 @@
+// category: arithmetic  (program 055)
+int n = 8 + 2;
+int d = n + 2;
+int y = 11 * 4;
+int val = n + 18;
+print(val);

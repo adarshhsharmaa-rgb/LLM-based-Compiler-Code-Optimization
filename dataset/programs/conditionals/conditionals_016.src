@@ -1,0 +1,14 @@
+// category: conditionals  (program 016)
+int b = -7;
+int acc = 0;
+if (b > 2) {
+    acc = b * 1;
+    acc = acc + (2 * 5);
+} else {
+    acc = b - 2;
+}
+int e = 4;
+if (e > 1) {
+    acc = acc + e * 1;
+}
+print(acc);

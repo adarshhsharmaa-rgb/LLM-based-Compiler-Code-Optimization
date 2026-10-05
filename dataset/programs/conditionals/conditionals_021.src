@@ -1,0 +1,12 @@
+// category: conditionals  (program 021)
+// inputs: in_n
+int k = 0;
+if (in_n == 0) {
+    int y = 8 + 15;
+    k = 1 * in_n;
+}
+int r = 5;
+if (r > 2) {
+    k = k + r * 1;
+}
+print(k);

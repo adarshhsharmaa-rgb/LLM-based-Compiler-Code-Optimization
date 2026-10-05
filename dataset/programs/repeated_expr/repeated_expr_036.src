@@ -1,0 +1,8 @@
+// category: repeated_expr  (program 036)
+int u = 19;
+int tmp = 5;
+int s = u + tmp;
+int num = tmp + u;
+int n = (u * tmp) * (u * tmp);
+int f = s * num + s * num;
+print(n + f);

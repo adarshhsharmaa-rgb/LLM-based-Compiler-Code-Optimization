@@ -1,0 +1,6 @@
+// category: nested  (program 058)
+int p = ((8 * 7) + (15 * 14)) / 9;
+int y = (p + 18) / 5;
+int val = 2 + 19;
+int e = val + (val * (10 - 3));
+print(e);

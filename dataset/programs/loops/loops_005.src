@@ -1,0 +1,13 @@
+// category: loops  (program 005)
+int prod = 1;
+int tmp = 0;
+for (int i = 0; i < 6; i = i + 1) {
+    int b = 3 * 1;
+    prod = prod * b;
+    for (int j = 0; j < 2; j = j + 1) {
+        tmp = tmp + 1;
+    }
+}
+print(prod);
+print(tmp);
+print(prod * 2);

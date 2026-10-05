@@ -1,0 +1,95 @@
+=== Program: repeated_expr_057.src ===
+--- Iteration 1 ---
+  [ANALYZE] Found 11 opportunities: CSEx3 (priority=70), COPY_PROPAGATIONx8 (priority=50)
+  [PROPOSE] Applying CSE at instruction 2: t1 = in_a - in_n → t1 = t0
+  [VERIFY]  PASS (differential: 25/25 inputs matched, symbolic: equivalent)
+  [COST]    Before: 42.5, After: 42.0 (reduction: 1.2%)
+  [ACCEPT]  ✓ Change accepted
+--- Iteration 2 ---
+  [ANALYZE] Found 9 opportunities: CSEx2 (priority=70), COPY_PROPAGATIONx7 (priority=50)
+  [PROPOSE] Applying CSE at instruction 5: t3 = in_a * in_n → t3 = t2
+  [VERIFY]  PASS (differential: 25/25 inputs matched, symbolic: equivalent)
+  [COST]    Before: 42.0, After: 41.5 (reduction: 1.2%)
+  [ACCEPT]  ✓ Change accepted
+--- Iteration 3 ---
+  [ANALYZE] Found 9 opportunities: CSE (priority=70), COPY_PROPAGATIONx8 (priority=50)
+  [PROPOSE] Applying CSE at instruction 9: t6 = w * res → t6 = t5
+  [VERIFY]  PASS (differential: 25/25 inputs matched, symbolic: equivalent)
+  [COST]    Before: 41.5, After: 41.0 (reduction: 1.2%)
+  [ACCEPT]  ✓ Change accepted
+--- Iteration 4 ---
+  [ANALYZE] Found 9 opportunities: COPY_PROPAGATIONx9 (priority=50)
+  [PROPOSE] Applying COPY_PROPAGATION at instruction 1: w = t0 → uses of w -> t0 at instr 8
+  [VERIFY]  PASS (differential: 25/25 inputs matched, symbolic: equivalent)
+  [COST]    Before: 41.0, After: 38.5 (reduction: 6.1%)
+  [ACCEPT]  ✓ Change accepted
+--- Iteration 5 ---
+  [ANALYZE] Found 8 opportunities: COPY_PROPAGATIONx8 (priority=50)
+  [PROPOSE] Applying COPY_PROPAGATION at instruction 1: t1 = t0 → uses of t1 -> t0 at instr 2
+  [VERIFY]  PASS (differential: 25/25 inputs matched, symbolic: equivalent)
+  [COST]    Before: 38.5, After: 35.5 (reduction: 7.8%)
+  [ACCEPT]  ✓ Change accepted
+--- Iteration 6 ---
+  [ANALYZE] Found 7 opportunities: COPY_PROPAGATIONx7 (priority=50)
+  [PROPOSE] Applying COPY_PROPAGATION at instruction 1: res = t0 → uses of res -> t0 at instr 6
+  [VERIFY]  PASS (differential: 25/25 inputs matched, symbolic: equivalent)
+  [COST]    Before: 35.5, After: 33.0 (reduction: 7.0%)
+  [ACCEPT]  ✓ Change accepted
+--- Iteration 7 ---
+  [ANALYZE] Found 6 opportunities: COPY_PROPAGATIONx6 (priority=50)
+  [PROPOSE] Applying COPY_PROPAGATION at instruction 2: t3 = t2 → uses of t3 -> t2 at instr 3
+  [VERIFY]  PASS (differential: 25/25 inputs matched, symbolic: equivalent)
+  [COST]    Before: 33.0, After: 30.0 (reduction: 9.1%)
+  [ACCEPT]  ✓ Change accepted
+--- Iteration 8 ---
+  [ANALYZE] Found 5 opportunities: COPY_PROPAGATIONx5 (priority=50)
+  [PROPOSE] Applying COPY_PROPAGATION at instruction 3: t4 = t2 * t2; k = t4 → k = t2 * t2
+  [VERIFY]  PASS (differential: 25/25 inputs matched, symbolic: equivalent)
+  [COST]    Before: 30.0, After: 27.0 (reduction: 10.0%)
+  [ACCEPT]  ✓ Change accepted
+--- Iteration 9 ---
+  [ANALYZE] Found 3 opportunities: COPY_PROPAGATIONx3 (priority=50)
+  [PROPOSE] Applying COPY_PROPAGATION at instruction 4: t6 = t5 → uses of t6 -> t5 at instr 5
+  [VERIFY]  PASS (differential: 25/25 inputs matched, symbolic: equivalent)
+  [COST]    Before: 27.0, After: 24.0 (reduction: 11.1%)
+  [ACCEPT]  ✓ Change accepted
+--- Iteration 10 ---
+  [ANALYZE] Found 2 opportunities: COPY_PROPAGATIONx2 (priority=50)
+  [PROPOSE] Applying COPY_PROPAGATION at instruction 5: t7 = t5 + t5; e = t7 → e = t5 + t5
+  [VERIFY]  PASS (differential: 25/25 inputs matched, symbolic: equivalent)
+  [COST]    Before: 24.0, After: 21.0 (reduction: 12.5%)
+  [ACCEPT]  ✓ Change accepted
+--- Iteration 11 ---
+  [ANALYZE] No more opportunities found.
+=== RESULT ===
+  Original cost: 42.5
+  Final cost:    21.0
+  Reduction:     50.6%
+  Iterations:    11
+  Accepted:      10
+  Rejected:      0
+  Invalid:       0
+  Output match:  PASS ✓
+=== Original TAC ===
+   0 |     t0 = in_a - in_n
+   1 |     w = t0
+   2 |     t1 = in_a - in_n
+   3 |     res = t1
+   4 |     t2 = in_a * in_n
+   5 |     t3 = in_a * in_n
+   6 |     t4 = t2 * t3
+   7 |     k = t4
+   8 |     t5 = w * res
+   9 |     t6 = w * res
+  10 |     t7 = t5 + t6
+  11 |     e = t7
+  12 |     t8 = k + e
+  13 |     print t8
+=== Optimized TAC ===
+  0 |     t0 = in_a - in_n
+  1 |     t2 = in_a * in_n
+  2 |     k = t2 * t2
+  3 |     t5 = t0 * t0
+  4 |     e = t5 + t5
+  5 |     t8 = k + e
+  6 |     print t8

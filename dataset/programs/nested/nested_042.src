@@ -1,0 +1,5 @@
+// category: nested  (program 042)
+int y = (12 - 20) * (18 + 9);
+int m = (6 / 9) - (y * 13);
+int v = m + (m * (15 + 19));
+print(v);

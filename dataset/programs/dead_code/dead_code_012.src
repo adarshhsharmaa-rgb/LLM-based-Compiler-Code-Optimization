@@ -1,0 +1,7 @@
+// category: dead_code  (program 012)
+int val = 17;
+int res = 10;
+int x = res - 6;
+int n = x * 10;
+int p = val + 2;
+print(p);

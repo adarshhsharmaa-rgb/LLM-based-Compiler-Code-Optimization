@@ -1,0 +1,17 @@
+// category: mixed  (program 013)
+int f = 8 + 16;
+int e = f;
+if (f > 1) {
+    e = e * 1 + 1;
+} else {
+    e = e - 0;
+}
+int p = f * 16;
+int num = 0;
+for (int i = 0; i < 2; i = i + 1) {
+    num = num + (3 + 1);
+}
+int w = p * p;
+int x = p * p + w;
+int g = num + (1 * 11);
+print(x + g);

@@ -1,0 +1,77 @@
+{
+  "programs_compared": 500,
+  "overall": {
+    "programs": 500,
+    "baseline_avg_reduction_pct": 82.49,
+    "current_avg_reduction_pct": 91.5,
+    "baseline_avg_final_cost": 11.69,
+    "current_avg_final_cost": 4.92,
+    "programs_improved": 196,
+    "programs_worse": 0
+  },
+  "per_category": {
+    "arithmetic": {
+      "programs": 60,
+      "baseline_avg_reduction_pct": 96.03,
+      "current_avg_reduction_pct": 96.03,
+      "baseline_avg_final_cost": 1.47,
+      "current_avg_final_cost": 1.47,
+      "programs_improved": 0,
+      "programs_worse": 0
+    },
+    "nested": {
+      "programs": 60,
+      "baseline_avg_reduction_pct": 98.1,
+      "current_avg_reduction_pct": 98.22,
+      "baseline_avg_final_cost": 1.84,
+      "current_avg_final_cost": 1.71,
+      "programs_improved": 2,
+      "programs_worse": 0
+    },
+    "repeated_expr": {
+      "programs": 60,
+      "baseline_avg_reduction_pct": 80.71,
+      "current_avg_reduction_pct": 81.65,
+      "baseline_avg_final_cost": 6.92,
+      "current_avg_final_cost": 6.64,
+      "programs_improved": 7,
+      "programs_worse": 0
+    },
+    "dead_code": {
+      "programs": 60,
+      "baseline_avg_reduction_pct": 97.44,
+      "current_avg_reduction_pct": 97.44,
+      "baseline_avg_final_cost": 1.0,
+      "current_avg_final_cost": 1.0,
+      "programs_improved": 0,
+      "programs_worse": 0
+    },
+    "loops": {
+      "programs": 80,
+      "baseline_avg_reduction_pct": 65.05,
+      "current_avg_reduction_pct": 93.35,
+      "baseline_avg_final_cost": 23.76,
+      "current_avg_final_cost": 4.91,
+      "programs_improved": 73,
+      "programs_worse": 0
+    },
+    "conditionals": {
+      "programs": 80,
+      "baseline_avg_reduction_pct": 73.91,
+      "current_avg_reduction_pct": 84.07,
+      "baseline_avg_final_cost": 13.98,
+      "current_avg_final_cost": 8.24,
+      "programs_improved": 46,
+      "programs_worse": 0
+    },
+    "mixed": {
+      "programs": 100,
+      "baseline_avg_reduction_pct": 77.91,
+      "current_avg_reduction_pct": 91.56,
+      "baseline_avg_final_cost": 21.5,
+      "current_avg_final_cost": 7.57,
+      "programs_improved": 68,
+      "programs_worse": 0
+    }
+  }
+}

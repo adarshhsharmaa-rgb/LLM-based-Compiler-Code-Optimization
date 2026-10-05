@@ -1,0 +1,6 @@
+// category: arithmetic  (program 007)
+int m = 15 - 14;
+int u = m + 7;
+int h = 2 + 11;
+print(h);
+print(m - 16);

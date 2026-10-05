@@ -1,0 +1,8 @@
+// category: repeated_expr  (program 039)
+int acc = 7;
+int d = 5;
+int z = acc - d;
+int f = acc - d;
+int x = z + f;
+int p = z * f + z * f;
+print(x + p);

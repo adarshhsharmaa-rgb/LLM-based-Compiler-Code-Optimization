@@ -1,0 +1,4 @@
+// category: arithmetic  (program 028)
+int val = 11 * 6;
+int acc = 18 - 17;
+print(acc);

@@ -1,0 +1,15 @@
+// category: mixed  (program 066)
+int tmp = 20 + 16;
+int k = tmp;
+if (tmp > 15) {
+    k = k * 1 + 1;
+} else {
+    k = k - 0;
+}
+int m = tmp + (15 * 19);
+int y = 0;
+for (int i = 0; i < 2; i = i + 1) {
+    y = y + (4 + 4);
+}
+int h = m * 2;
+print(y + h);

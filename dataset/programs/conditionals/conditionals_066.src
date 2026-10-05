@@ -1,0 +1,9 @@
+// category: conditionals  (program 066)
+int acc = -14;
+int c = 0;
+if (acc != -10 && acc != 25) {
+    c = acc / 1;
+} else {
+    c = acc + 9;
+}
+print(c);

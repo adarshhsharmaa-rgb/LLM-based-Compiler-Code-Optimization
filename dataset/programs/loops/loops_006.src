@@ -1,0 +1,10 @@
+// category: loops  (program 006)
+int total = 0;
+int i = 0;
+while (i < 9) {
+    int z = 3 - 9;
+    total = total + z;
+    int acc = z * 15;
+    i = i + 1;
+}
+print(total);

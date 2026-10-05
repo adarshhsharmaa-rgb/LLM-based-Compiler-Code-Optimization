@@ -1,0 +1,120 @@
+=== Program: conditionals_043.src ===
+--- Iteration 1 ---
+  [ANALYZE] Found 9 opportunities: COPY_PROPAGATIONx9 (priority=50)
+  [PROPOSE] Applying COPY_PROPAGATION at instruction 0: t0 = 0 → uses of t0 -> 0 at instr 1
+  [VERIFY]  PASS (differential: 37/37 inputs matched, symbolic: skipped (control flow))
+  [COST]    Before: 46.0, After: 43.0 (reduction: 6.5%)
+  [ACCEPT]  ✓ Change accepted
+--- Iteration 2 ---
+  [ANALYZE] Found 8 opportunities: COPY_PROPAGATIONx8 (priority=50)
+  [PROPOSE] Applying COPY_PROPAGATION at instruction 1: t1 = 8 → uses of t1 -> 8 at instr 2
+  [VERIFY]  PASS (differential: 37/37 inputs matched, symbolic: skipped (control flow))
+  [COST]    Before: 43.0, After: 40.0 (reduction: 7.0%)
+  [ACCEPT]  ✓ Change accepted
+--- Iteration 3 ---
+  [ANALYZE] Found 8 opportunities: CONSTANT_FOLD (priority=100), COPY_PROPAGATIONx7 (priority=50)
+  [PROPOSE] Applying CONSTANT_FOLD at instruction 1: t2 = -8 → t2 = -8 (forwarded into uses of t2)
+  [VERIFY]  PASS (differential: 40/40 inputs matched, symbolic: skipped (control flow))
+  [COST]    Before: 40.0, After: 38.5 (reduction: 3.8%)
+  [ACCEPT]  ✓ Change accepted
+--- Iteration 4 ---
+  [ANALYZE] Found 7 opportunities: COPY_PROPAGATIONx7 (priority=50)
+  [PROPOSE] Applying COPY_PROPAGATION at instruction 2: t4 = 25 → uses of t4 -> 25 at instr 3
+  [VERIFY]  PASS (differential: 37/37 inputs matched, symbolic: skipped (control flow))
+  [COST]    Before: 38.5, After: 35.5 (reduction: 7.8%)
+  [ACCEPT]  ✓ Change accepted
+--- Iteration 5 ---
+  [ANALYZE] Found 6 opportunities: COPY_PROPAGATIONx6 (priority=50)
+  [PROPOSE] Applying COPY_PROPAGATION at instruction 5: t7 = 0 → uses of t7 -> 0 at instr 6
+  [VERIFY]  PASS (differential: 37/37 inputs matched, symbolic: skipped (control flow))
+  [COST]    Before: 35.5, After: 32.5 (reduction: 8.5%)
+  [ACCEPT]  ✓ Change accepted
+--- Iteration 6 ---
+  [ANALYZE] Found 6 opportunities: ALGEBRAIC_SIMPLIFY (priority=90), COPY_PROPAGATIONx5 (priority=50)
+  [PROPOSE] Applying ALGEBRAIC_SIMPLIFY at instruction 5: t8 = in_a + 0 → t8 = in_a
+  [VERIFY]  PASS (differential: 37/37 inputs matched, symbolic: skipped (control flow))
+  [COST]    Before: 32.5, After: 32.0 (reduction: 1.5%)
+  [ACCEPT]  ✓ Change accepted
+--- Iteration 7 ---
+  [ANALYZE] Found 5 opportunities: COPY_PROPAGATIONx5 (priority=50)
+  [PROPOSE] Applying COPY_PROPAGATION at instruction 5: t8 = in_a → uses of t8 -> in_a at instr 6
+  [VERIFY]  PASS (differential: 37/37 inputs matched, symbolic: skipped (control flow))
+  [COST]    Before: 32.0, After: 29.0 (reduction: 9.4%)
+  [ACCEPT]  ✓ Change accepted
+--- Iteration 8 ---
+  [ANALYZE] Found 4 opportunities: COPY_PROPAGATIONx4 (priority=50)
+  [PROPOSE] Applying COPY_PROPAGATION at instruction 5: u = in_a → uses of u -> in_a at instr 9
+  [VERIFY]  PASS (differential: 37/37 inputs matched, symbolic: skipped (control flow))
+  [COST]    Before: 29.0, After: 26.5 (reduction: 8.6%)
+  [ACCEPT]  ✓ Change accepted
+--- Iteration 9 ---
+  [ANALYZE] Found 3 opportunities: COPY_PROPAGATIONx3 (priority=50)
+  [PROPOSE] Applying COPY_PROPAGATION at instruction 5: t9 = 3 → uses of t9 -> 3 at instr 7
+  [VERIFY]  PASS (differential: 37/37 inputs matched, symbolic: skipped (control flow))
+  [COST]    Before: 26.5, After: 23.5 (reduction: 11.3%)
+  [ACCEPT]  ✓ Change accepted
+--- Iteration 10 ---
+  [ANALYZE] Found 2 opportunities: COPY_PROPAGATIONx2 (priority=50)
+  [PROPOSE] Applying COPY_PROPAGATION at instruction 5: t10 = 2 → uses of t10 -> 2 at instr 6
+  [VERIFY]  PASS (differential: 37/37 inputs matched, symbolic: skipped (control flow))
+  [COST]    Before: 23.5, After: 20.5 (reduction: 12.8%)
+  [ACCEPT]  ✓ Change accepted
+--- Iteration 11 ---
+  [ANALYZE] Found 2 opportunities: CONSTANT_FOLD (priority=100), COPY_PROPAGATION (priority=50)
+  [PROPOSE] Applying CONSTANT_FOLD at instruction 5: t11 = 3 * 2 → t11 = 6
+  [VERIFY]  PASS (differential: 40/40 inputs matched, symbolic: skipped (control flow))
+  [COST]    Before: 20.5, After: 20.0 (reduction: 2.4%)
+  [ACCEPT]  ✓ Change accepted
+--- Iteration 12 ---
+  [ANALYZE] Found 2 opportunities: COPY_PROPAGATIONx2 (priority=50)
+  [PROPOSE] Applying COPY_PROPAGATION at instruction 5: t11 = 6 → uses of t11 -> 6 at instr 6
+  [VERIFY]  PASS (differential: 37/37 inputs matched, symbolic: skipped (control flow))
+  [COST]    Before: 20.0, After: 17.0 (reduction: 15.0%)
+  [ACCEPT]  ✓ Change accepted
+--- Iteration 13 ---
+  [ANALYZE] Found 1 opportunity: COPY_PROPAGATION (priority=50)
+  [PROPOSE] Applying COPY_PROPAGATION at instruction 6: t12 = in_a + 6; u = t12 → u = in_a + 6
+  [VERIFY]  PASS (differential: 37/37 inputs matched, symbolic: skipped (control flow))
+  [COST]    Before: 17.0, After: 14.0 (reduction: 17.6%)
+  [ACCEPT]  ✓ Change accepted
+--- Iteration 14 ---
+  [ANALYZE] No more opportunities found.
+  [LLM]     LLM produced no usable TAC: could not parse LLM TAC; reasoning: Algebraic simplification: the expression (in_a > -8 && in_a != 25) can be represented by a single condition in the conditional jump.
+=== RESULT ===
+  Original cost: 46.0
+  Final cost:    14.0
+  Reduction:     69.6%
+  Iterations:    14
+  Accepted:      13
+  Rejected:      0
+  Invalid:       0
+  Output match:  PASS ✓
+=== Original TAC ===
+   0 |     t0 = 0
+   1 |     u = t0
+   2 |     t1 = 8
+   3 |     t2 = -t1
+   4 |     t3 = in_a > t2
+   5 |     t4 = 25
+   6 |     t5 = in_a != t4
+   7 |     t6 = t3 && t5
+   8 |     ifFalse t6 goto L0
+   9 |     t7 = 0
+  10 |     t8 = in_a + t7
+  11 |     u = t8
+  12 |     t9 = 3
+  13 |     t10 = 2
+  14 |     t11 = t9 * t10
+  15 |     t12 = u + t11
+  16 |     u = t12
+  17 | L0:
+  18 |     print u
+=== Optimized TAC ===
+  0 |     u = 0
+  1 |     t3 = in_a > -8
+  2 |     t5 = in_a != 25
+  3 |     t6 = t3 && t5
+  4 |     ifFalse t6 goto L0
+  5 |     u = in_a + 6
+  6 | L0:
+  7 |     print u

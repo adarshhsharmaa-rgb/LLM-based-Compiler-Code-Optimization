@@ -1,0 +1,13 @@
+// category: mixed  (program 027)
+// inputs: in_b
+int v = in_b + (12 * 10);
+int b = 83;
+int w = in_b * v;
+int s = in_b * v + w;
+int u = in_b;
+if (in_b > 8) {
+    u = u * 1 + 2;
+} else {
+    u = u - 0;
+}
+print(s + u);

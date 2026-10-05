@@ -1,0 +1,11 @@
+// category: dead_code  (program 024)
+int v = 20;
+int n = v + 4;
+int z = v * 8;
+int p = 15;
+int acc = 52;
+int q = 61;
+v = 73;
+v = v + 1;
+int a = v + 12;
+print(a);

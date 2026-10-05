@@ -1,0 +1,12 @@
+// category: mixed  (program 008)
+int val = 4 + 18;
+int p = val + (12 * 6);
+int g = p * val;
+int h = p * val + g;
+int u = 18;
+int e = p * 16;
+int k = 0;
+for (int i = 0; i < 5; i = i + 1) {
+    k = k + (4 + 4);
+}
+print(e + k);

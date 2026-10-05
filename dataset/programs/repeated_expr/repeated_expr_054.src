@@ -1,0 +1,8 @@
+// category: repeated_expr  (program 054)
+int num = 9;
+int tmp = 5;
+int acc = num * tmp;
+int h = num * tmp;
+int s = (num - tmp) * (num - tmp);
+int g = acc * h + acc * h;
+print(s + g);

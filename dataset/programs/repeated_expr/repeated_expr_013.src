@@ -1,0 +1,9 @@
+// category: repeated_expr  (program 013)
+int y = 6;
+int tmp = 7;
+int e = y - tmp;
+int val = y - tmp;
+y = y + 3;
+int u = (y - tmp) + e;
+int q = e * val + e * val;
+print(u + q);

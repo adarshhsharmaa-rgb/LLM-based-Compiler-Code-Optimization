@@ -1,0 +1,13 @@
+// category: conditionals  (program 036)
+int res = 12;
+int b = 0;
+if (res != 1) {
+    b = res + 0;
+} else {
+    b = res - 3;
+}
+int w = 4;
+if (w > 9) {
+    b = b + w * 1;
+}
+print(b);

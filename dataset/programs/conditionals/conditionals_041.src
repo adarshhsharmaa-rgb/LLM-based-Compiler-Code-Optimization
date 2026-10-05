@@ -1,0 +1,9 @@
+// category: conditionals  (program 041)
+int q = 14;
+int k = 0;
+if (q <= -3 && q != 10) {
+    k = 0 + q;
+} else {
+    k = q + 7;
+}
+print(k);

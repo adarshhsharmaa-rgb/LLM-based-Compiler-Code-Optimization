@@ -1,0 +1,8 @@
+// category: loops  (program 029)
+int prod = 1;
+for (int i = 0; i < 5; i = i + 1) {
+    int z = 3 * 1;
+    prod = prod * 0 + z;
+    int q = z * 11;
+}
+print(prod);

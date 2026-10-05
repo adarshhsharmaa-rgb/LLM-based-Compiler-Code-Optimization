@@ -1,0 +1,7 @@
+// category: repeated_expr  (program 050)
+int n = 7;
+int m = 14;
+int b = n * m;
+int num = m * n;
+int y = (n * m) * (n * m);
+print(y);

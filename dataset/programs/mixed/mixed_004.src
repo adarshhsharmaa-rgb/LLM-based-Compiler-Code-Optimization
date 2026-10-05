@@ -1,0 +1,12 @@
+// category: mixed  (program 004)
+int tmp = 8 + 8;
+int v = tmp * 8;
+int c = v;
+if (v > 7) {
+    c = c * 1 + 1;
+} else {
+    c = c - 0;
+}
+int h = c * v;
+int u = c * v + h;
+print(c + u);

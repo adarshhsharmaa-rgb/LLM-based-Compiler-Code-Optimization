@@ -1,0 +1,7 @@
+// category: repeated_expr  (program 015)
+int m = 17;
+int p = 4;
+int num = m - p;
+int tmp = m - p;
+int d = (m + p) * (m + p);
+print(d);

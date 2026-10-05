@@ -1,0 +1,5 @@
+// category: nested  (program 037)
+int k = (8 + 14) - (4 % 9);
+int c = ((k % 5) + 6) * ((k + 9) + (k / 6));
+int w = k + (k * (7 * 20));
+print(w);

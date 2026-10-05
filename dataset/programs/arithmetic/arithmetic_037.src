@@ -1,0 +1,5 @@
+// category: arithmetic  (program 037)
+int h = 16 * 19;
+int p = h - 11 + 15;
+print(p);
+print(h * 10);

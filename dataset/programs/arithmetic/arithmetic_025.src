@@ -1,0 +1,4 @@
+// category: arithmetic  (program 025)
+int x = 15 + 5;
+int r = x + 16;
+print(r);

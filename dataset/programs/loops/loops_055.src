@@ -1,0 +1,15 @@
+// category: loops  (program 055)
+int sum = 0;
+int tmp = 0;
+int i = 0;
+while (i < 6) {
+    int q = 3 - 7;
+    sum = sum + q;
+    int c = q * 7;
+    for (int j = 0; j < 2; j = j + 1) {
+        tmp = tmp + 1 * 1;
+    }
+    i = i + 1;
+}
+print(sum);
+print(tmp);

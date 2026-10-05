@@ -1,0 +1,12 @@
+// category: mixed  (program 014)
+int u = 2 + 10;
+int c = 53;
+int e = 0;
+for (int i = 0; i < 2; i = i + 1) {
+    e = e + (4 + 3);
+}
+int d = e * e;
+int z = e * e + d;
+int w = u * 2;
+int x = 0 + z;
+print(w + x);

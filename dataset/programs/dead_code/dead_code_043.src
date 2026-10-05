@@ -1,0 +1,6 @@
+// category: dead_code  (program 043)
+int k = 13;
+int p = 11;
+int r = 26;
+int res = k + 4;
+print(res);

@@ -1,0 +1,10 @@
+// category: conditionals  (program 015)
+// inputs: in_y
+int p = 0;
+if (in_y != 4) {
+    p = in_y - 0;
+    p = p + (2 * 2);
+} else {
+    p = in_y - 3;
+}
+print(p);

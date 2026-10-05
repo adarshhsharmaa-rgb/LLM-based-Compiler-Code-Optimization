@@ -1,0 +1,9 @@
+// category: loops  (program 024)
+int total = 0;
+int i = 0;
+while (i < 12) {
+    int g = 7 - 8;
+    total = total + g;
+    i = i + 1;
+}
+print(total);

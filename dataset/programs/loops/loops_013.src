@@ -1,0 +1,9 @@
+// category: loops  (program 013)
+int acc = 0;
+int i = 0;
+while (i < 8) {
+    int m = 1 + 8;
+    acc = acc + m;
+    i = i + 1;
+}
+print(acc);

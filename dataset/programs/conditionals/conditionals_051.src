@@ -1,0 +1,8 @@
+// category: conditionals  (program 051)
+int r = -6;
+int k = 0;
+if (r <= -4) {
+    int e = 4 + 3;
+    k = 1 * r;
+}
+print(k);

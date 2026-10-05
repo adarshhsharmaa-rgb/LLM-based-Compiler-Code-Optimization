@@ -1,0 +1,7 @@
+// category: dead_code  (program 056)
+int w = 11;
+int n = w - 20;
+w = 66;
+w = w + 16;
+int res = n + 11;
+print(res);

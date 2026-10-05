@@ -1,0 +1,11 @@
+// category: mixed  (program 001)
+// inputs: in_b
+int q = in_b * in_b;
+int n = in_b * in_b + q;
+int d = in_b * 16;
+int z = 0;
+for (int i = 0; i < 5; i = i + 1) {
+    z = z + (1 + 2);
+}
+int s = n + (4 * 10);
+print(z + s);

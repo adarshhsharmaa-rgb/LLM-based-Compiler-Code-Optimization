@@ -1,0 +1,8 @@
+// category: dead_code  (program 035)
+int a = 1;
+int z = a - 8;
+int d = a / 5;
+int n = 38;
+int h = 13;
+int s = a + 15;
+print(s);

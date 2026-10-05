@@ -1,0 +1,10 @@
+// category: loops  (program 022)
+int prod = 1;
+int i = 0;
+while (i < 5) {
+    int g = 1 * 0;
+    prod = prod * g;
+    int u = g * 1;
+    i = i + 1;
+}
+print(prod);

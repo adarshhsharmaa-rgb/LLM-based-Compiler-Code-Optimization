@@ -1,0 +1,16 @@
+// category: mixed  (program 012)
+int f = 16 + 20;
+int s = f;
+if (f > 0) {
+    s = s * 1 + 4;
+} else {
+    s = s - 0;
+}
+int g = f - 0;
+int num = s * g;
+int q = s * g + num;
+int d = 0;
+for (int i = 0; i < 6; i = i + 1) {
+    d = d + (1 + 1);
+}
+print(q + d);

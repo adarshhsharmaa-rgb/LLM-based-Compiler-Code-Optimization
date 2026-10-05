@@ -1,0 +1,6 @@
+// category: mixed  (program 063)
+int b = 12 + 15;
+int x = b * 2;
+int num = b + (7 * 17);
+int d = 1 * b;
+print(num + d);

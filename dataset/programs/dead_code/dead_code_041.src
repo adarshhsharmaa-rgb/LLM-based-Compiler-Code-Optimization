@@ -1,0 +1,7 @@
+// category: dead_code  (program 041)
+int res = 8;
+int r = 88;
+int tmp = 70;
+int e = 22;
+int a = res + 20;
+print(a);

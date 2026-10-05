@@ -1,0 +1,5 @@
+// category: arithmetic  (program 006)
+int b = 15 + 4;
+int h = 11 + 8;
+int c = 18 * 5;
+print(c);

@@ -1,0 +1,7 @@
+// category: mixed  (program 017)
+int y = 3 + 13;
+int n = 93;
+int m = y * y;
+int h = y * y + m;
+int z = 0 + y;
+print(h + z);

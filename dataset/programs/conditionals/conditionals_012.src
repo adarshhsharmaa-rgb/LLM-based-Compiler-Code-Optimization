@@ -1,0 +1,9 @@
+// category: conditionals  (program 012)
+// inputs: in_y
+int x = 0;
+if (in_y <= 8 && in_y != -27) {
+    x = in_y / 1;
+} else {
+    x = in_y - 5;
+}
+print(x);

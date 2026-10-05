@@ -1,0 +1,8 @@
+matplotlib>=3.8
+plotly>=5.18
+seaborn>=0.13
+numpy>=1.26
+anthropic>=0.20
+kaleido>=0.2.1
+pytest>=8.0
+google-genai>=1.0

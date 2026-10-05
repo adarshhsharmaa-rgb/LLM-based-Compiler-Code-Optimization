@@ -1,0 +1,7 @@
+// category: repeated_expr  (program 012)
+int n = 5;
+int num = 20;
+int f = n * num;
+int b = num * n;
+int z = f + b;
+print(z);

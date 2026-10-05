@@ -1,0 +1,9 @@
+// category: repeated_expr  (program 011)
+int res = 17;
+int q = 16;
+int d = res - q;
+int y = res - q;
+res = res + 4;
+int v = (res - q) + d;
+int c = d * y + d * y;
+print(v + c);

@@ -1,0 +1,143 @@
+=== Program: conditionals_030.src ===
+--- Iteration 1 ---
+  [ANALYZE] Found 14 opportunities: DEAD_CODE (priority=80), COPY_PROPAGATIONx13 (priority=50)
+  [PROPOSE] Applying DEAD_CODE at instruction 3: tmp = t1 → (removed)
+  [VERIFY]  PASS (differential: 25/25 inputs matched, symbolic: skipped (control flow))
+  [COST]    Before: 66.0, After: 63.5 (reduction: 3.8%)
+  [ACCEPT]  ✓ Change accepted
+--- Iteration 2 ---
+  [ANALYZE] Found 13 opportunities: DEAD_CODE (priority=80), COPY_PROPAGATIONx12 (priority=50)
+  [PROPOSE] Applying DEAD_CODE at instruction 2: t1 = 0 → (removed)
+  [VERIFY]  PASS (differential: 25/25 inputs matched, symbolic: skipped (control flow))
+  [COST]    Before: 63.5, After: 60.5 (reduction: 4.7%)
+  [ACCEPT]  ✓ Change accepted
+--- Iteration 3 ---
+  [ANALYZE] Found 12 opportunities: COPY_PROPAGATIONx12 (priority=50)
+  [PROPOSE] Applying COPY_PROPAGATION at instruction 0: t0 = 2 → uses of t0 -> 2 at instr 1
+  [VERIFY]  PASS (differential: 25/25 inputs matched, symbolic: skipped (control flow))
+  [COST]    Before: 60.5, After: 57.5 (reduction: 5.0%)
+  [ACCEPT]  ✓ Change accepted
+--- Iteration 4 ---
+  [ANALYZE] Found 11 opportunities: COPY_PROPAGATIONx11 (priority=50)
+  [PROPOSE] Applying COPY_PROPAGATION at instruction 0: r = 2 → uses of r -> 2 at instr 2, 5, 10
+  [VERIFY]  PASS (differential: 25/25 inputs matched, symbolic: skipped (control flow))
+  [COST]    Before: 57.5, After: 55.0 (reduction: 4.3%)
+  [ACCEPT]  ✓ Change accepted
+--- Iteration 5 ---
+  [ANALYZE] Found 11 opportunities: STRENGTH_REDUCTION (priority=60), COPY_PROPAGATIONx10 (priority=50)
+  [PROPOSE] Applying STRENGTH_REDUCTION at instruction 9: t7 = 2 * t6 → t7 = t6 + t6
+  [VERIFY]  PASS (differential: 25/25 inputs matched, symbolic: skipped (control flow))
+  [COST]    Before: 55.0, After: 55.0 (reduction: 0.0%)
+  [REJECT]  ✗ Change rejected: No cost improvement
+  [LLM]     LLM proposal: Constant folding was applied to evaluate the deterministic branches and arithmetic expressions (t2=10, t3=false, t6=1, t7=2, t8=3, t9=0, t10=true, t11=1, t12=3, t13=2+3=5).
+  [VERIFY]  FAIL (output mismatch on inputs {}: original printed [5], candidate printed [8])
+  [REJECT]  ✗ Change rejected: Verification failed: output mismatch on inputs {}: original printed [5], candidate printed [8]
+--- Iteration 6 ---
+  [ANALYZE] Found 10 opportunities: COPY_PROPAGATIONx10 (priority=50)
+  [PROPOSE] Applying COPY_PROPAGATION at instruction 0: t2 = 10 → uses of t2 -> 10 at instr 1
+  [VERIFY]  PASS (differential: 25/25 inputs matched, symbolic: skipped (control flow))
+  [COST]    Before: 55.0, After: 52.0 (reduction: 5.5%)
+  [ACCEPT]  ✓ Change accepted
+--- Iteration 7 ---
+  [ANALYZE] Found 11 opportunities: CONSTANT_FOLD (priority=100), STRENGTH_REDUCTION (priority=60), COPY_PROPAGATIONx9 (priority=50)
+  [PROPOSE] Applying CONSTANT_FOLD at instruction 0: t3 = 2 == 10 → t3 = 0 (forwarded into uses of t3)
+  [VERIFY]  PASS (differential: 25/25 inputs matched, symbolic: skipped (control flow))
+  [COST]    Before: 52.0, After: 50.5 (reduction: 2.9%)
+  [ACCEPT]  ✓ Change accepted
+--- Iteration 8 ---
+  [ANALYZE] Found 10 opportunities: STRENGTH_REDUCTION (priority=60), COPY_PROPAGATIONx9 (priority=50)
+  [PROPOSE] Applying STRENGTH_REDUCTION at instruction 7: t7 = 2 * t6 → t7 = t6 + t6
+  [VERIFY]  PASS (differential: 25/25 inputs matched, symbolic: skipped (control flow))
+  [COST]    Before: 50.5, After: 50.5 (reduction: 0.0%)
+  [REJECT]  ✗ Change rejected: No cost improvement
+  [LLM]     LLM proposal: Constant folding was applied to evaluate static expressions like t5 = 2, t7 = 2, t8 = 3, and t12 = 3.
+  [VERIFY]  PASS (differential: 25/25 inputs matched, symbolic: skipped (control flow))
+  [COST]    Before: 50.5, After: 25.0 (reduction: 50.5%)
+  [ACCEPT]  ✓ Change accepted
+--- Iteration 9 ---
+  [ANALYZE] Found 3 opportunities: COPY_PROPAGATIONx3 (priority=50)
+  [PROPOSE] Applying COPY_PROPAGATION at instruction 1: tmp = 2 → uses of tmp -> 2 at instr 9
+  [VERIFY]  PASS (differential: 25/25 inputs matched, symbolic: skipped (control flow))
+  [COST]    Before: 25.0, After: 25.0 (reduction: 0.0%)
+  [REJECT]  ✗ Change rejected: No cost improvement
+--- Iteration 10 ---
+  [ANALYZE] Found 2 opportunities: COPY_PROPAGATIONx2 (priority=50)
+  [PROPOSE] Applying COPY_PROPAGATION at instruction 6: m = 3 → uses of m -> 3 at instr 7
+  [VERIFY]  PASS (differential: 25/25 inputs matched, symbolic: skipped (control flow))
+  [COST]    Before: 25.0, After: 22.5 (reduction: 10.0%)
+  [ACCEPT]  ✓ Change accepted
+--- Iteration 11 ---
+  [ANALYZE] Found 3 opportunities: CONSTANT_FOLD (priority=100), COPY_PROPAGATIONx2 (priority=50)
+  [PROPOSE] Applying CONSTANT_FOLD at instruction 6: t10 = 3 > 0 → t10 = 1 (forwarded into uses of t10)
+  [VERIFY]  PASS (differential: 25/25 inputs matched, symbolic: skipped (control flow))
+  [COST]    Before: 22.5, After: 21.0 (reduction: 6.7%)
+  [ACCEPT]  ✓ Change accepted
+--- Iteration 12 ---
+  [ANALYZE] Found 2 opportunities: COPY_PROPAGATIONx2 (priority=50)
+  [PROPOSE] Applying COPY_PROPAGATION at instruction 1: tmp = 2 → uses of tmp -> 2 at instr 7
+  [VERIFY]  PASS (differential: 25/25 inputs matched, symbolic: skipped (control flow))
+  [COST]    Before: 21.0, After: 21.0 (reduction: 0.0%)
+  [REJECT]  ✗ Change rejected: No cost improvement
+--- Iteration 13 ---
+  [ANALYZE] Found 1 opportunity: COPY_PROPAGATION (priority=50)
+  [PROPOSE] Applying COPY_PROPAGATION at instruction 8: t13 = tmp + 3; tmp = t13 → tmp = tmp + 3
+  [VERIFY]  PASS (differential: 25/25 inputs matched, symbolic: skipped (control flow))
+  [COST]    Before: 21.0, After: 18.0 (reduction: 14.3%)
+  [ACCEPT]  ✓ Change accepted
+--- Iteration 14 ---
+  [ANALYZE] Found 1 opportunity: COPY_PROPAGATION (priority=50)
+  [PROPOSE] Applying COPY_PROPAGATION at instruction 1: tmp = 2 → uses of tmp -> 2 at instr 7
+  [VERIFY]  PASS (differential: 25/25 inputs matched, symbolic: skipped (control flow))
+  [COST]    Before: 18.0, After: 18.0 (reduction: 0.0%)
+  [REJECT]  ✗ Change rejected: No cost improvement
+--- Iteration 15 ---
+  [ANALYZE] No more opportunities found.
+=== RESULT ===
+  Original cost: 66.0
+  Final cost:    18.0
+  Reduction:     72.7%
+  Iterations:    15
+  Accepted:      10
+  Rejected:      5
+  Invalid:       1
+  LLM proposals: 2 (1 passed verification)
+  Output match:  PASS ✓
+=== Original TAC ===
+   0 |     t0 = 2
+   1 |     r = t0
+   2 |     t1 = 0
+   3 |     tmp = t1
+   4 |     t2 = 10
+   5 |     t3 = r == t2
+   6 |     ifFalse t3 goto L0
+   7 |     t4 = 0
+   8 |     t5 = t4 + r
+   9 |     tmp = t5
+  10 |     goto L1
+  11 | L0:
+  12 |     t6 = 1
+  13 |     t7 = r * t6
+  14 |     tmp = t7
+  15 | L1:
+  16 |     t8 = 3
+  17 |     m = t8
+  18 |     t9 = 0
+  19 |     t10 = m > t9
+  20 |     ifFalse t10 goto L2
+  21 |     t11 = 1
+  22 |     t12 = m * t11
+  23 |     t13 = tmp + t12
+  24 |     tmp = t13
+  25 | L2:
+  26 |     print tmp
+=== Optimized TAC ===
+  0 |     ifFalse 0 goto L0
+  1 |     tmp = 2
+  2 |     goto L1
+  3 | L0:
+  4 |     tmp = 2
+  5 | L1:
+  6 |     ifFalse 1 goto L2
+  7 |     tmp = tmp + 3
+  8 | L2:
+  9 |     print tmp

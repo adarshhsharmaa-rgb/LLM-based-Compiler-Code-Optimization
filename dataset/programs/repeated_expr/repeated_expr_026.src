@@ -1,0 +1,7 @@
+// category: repeated_expr  (program 026)
+int u = 8;
+int f = 10;
+int r = u - f;
+int q = u - f;
+int e = r + q;
+print(e);

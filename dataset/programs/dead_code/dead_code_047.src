@@ -1,0 +1,8 @@
+// category: dead_code  (program 047)
+int y = 19;
+int e = 42;
+int d = 2;
+y = 82;
+y = y + 10;
+int p = d + 18;
+print(p);
