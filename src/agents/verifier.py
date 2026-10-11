@@ -213,7 +213,8 @@ class _Outcome:
 
 # Value sets for exhaustive small-input testing, widest first. The widest one whose
 # combinations (one value per input) all fit the Verifier's budget is used.
-SMALL_SCOPES = (tuple(range(-8, 9)), tuple(range(-3, 4)), (-2, -1, 0, 1, 2), (-1, 0, 1, 2), (-1, 0, 1), (0, 1))
+SMALL_SCOPES = (tuple(range(-128, 129)), tuple(range(-8, 9)), tuple(range(-3, 4)), (-2, -1, 0, 1, 2),
+                (-1, 0, 1, 2), (-1, 0, 1), (0, 1))
 
 
 @dataclass

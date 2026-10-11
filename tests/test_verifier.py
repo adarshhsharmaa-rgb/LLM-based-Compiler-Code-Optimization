@@ -170,7 +170,7 @@ def test_small_scope_shrinks_as_inputs_grow(verifier):
     def count(n):
         return len(verifier.input_sets([f"v{i}" for i in range(n)])) - 25
 
-    assert [count(n) for n in (1, 2, 3, 4, 5, 6, 8)] == [17, 289, 125, 256, 243, 64, 256]
+    assert [count(n) for n in (1, 2, 3, 4, 5, 6, 8)] == [257, 289, 125, 256, 243, 64, 256]
     assert count(9) == verifier.max_small_scope     # too many inputs: sampled instead
     assert verifier.input_sets([]) == [{}] * 25     # no inputs: nothing to add
 
@@ -201,6 +201,14 @@ def test_division_swapped_for_modulo_behind_a_branch_is_rejected(verifier):
     text = ("c = y && z\nb = 3\nif x goto L0\na = z >= 0\nd = b / c\nprint x\nb = z / d\nb = x > 3\n"
             "L0:\nprint a\nprint b\nprint c\nprint d\nprint z")
     assert not verifier.verify(P(text), P(text.replace("d = b / c", "d = b % c"))).passed
+
+
+def test_single_input_program_is_checked_on_every_value_in_a_wide_range(verifier):
+    # b % 37 against b % 36 only shows at x = 18 or -18 here: neither a boundary of a
+    # literal nor a small value. With one input every value from -128 to 128 is tried.
+    text = "b = x + x\na = b % 37\nc = -1 * b\nifFalse x goto L0\na = a < x\nL0:\nprint a\nprint b\nprint c\nprint x"
+    result = verifier.verify(P(text), P(text.replace("a = b % 37", "a = b % 36")))
+    assert not result.passed and result.details["inputs"] in ({"x": -18}, {"x": 18})
 
 
 def test_off_by_one_that_needs_two_inputs_lined_up_is_rejected(verifier):

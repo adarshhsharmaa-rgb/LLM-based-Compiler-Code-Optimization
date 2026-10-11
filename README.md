@@ -67,7 +67,7 @@ src/
 dataset/      generator.py, programs/<category>/*.src
 demo.py       terminal front end: optimize a C program step by step
 demo_programs/  sample C programs for the demo
-tests/        one test module per component, plus regression tests (331 tests)
+tests/        one test module per component, plus regression tests (332 tests)
 output/       logs/ (per-program .log + .json), metrics/ (CSV + JSON), plots/ (PNG)
 ```
 
@@ -164,7 +164,7 @@ optimized TAC.
 py -m pytest tests/ -v
 ```
 
-331 tests cover every component. The Ollama and Groq tests run against stand-in
+332 tests cover every component. The Ollama and Groq tests run against stand-in
 local servers, so they need no Ollama, API key or network. The verifier tests inject wrong changes
 (bad folds, operand swaps, CSE across non-commutative ops, deleted live
 stores, off-by-one conditions, removed loop increments, deleted trapping
@@ -222,8 +222,9 @@ verifier feeds them values.
      adds:
      * boundary values `c-1, c, c+1` for every literal `c` in either program;
      * **small-scope sets**: every combination of a few small values, zero
-       included, over all inputs (two inputs: all 289 pairs from -8..8;
-       five inputs: all 243 combinations of -1, 0, 1). Random values almost
+       included, over all inputs (one input: every value from -128 to 128;
+       two inputs: all 289 pairs from -8..8; five inputs: all 243
+       combinations of -1, 0, 1). Random values almost
        never make one input zero and another non-zero, which is exactly
        what tells `&&` from `||` or flips a branch on a flag;
      * **pairwise boundary sets**: every pair of inputs gets every pair of
