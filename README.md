@@ -23,6 +23,9 @@ cost reduction**. With Google Gemini as an additional proposer it reaches
 | False positives (output mismatch) | **0** | **0** |
 
 The rule-only run is kept in `output_rule_only/`; the Gemini run is in `output/`.
+A third run with a local model (Ollama, offline) is in `output_ollama/`: it
+reaches **83.28 %**, also with zero false positives. See
+[Results with Ollama](#results-with-ollama-qwen25-coder7b-offline-on-cpu).
 
 ---
 
@@ -345,6 +348,49 @@ whole constant loops (for example, "adds −4 twelve times" becomes
   against its final optimized TAC on fresh random inputs (seed and range
   different from the verifier's): 3,776 executions, **0 mismatches**.
 
+### Results with Ollama (`qwen2.5-coder:7b`, offline, on CPU)
+
+Run with `py main.py --run-all --quiet --offline --max-llm-calls 2 --output-dir output_ollama`,
+with no internet connection needed. Results are in `output_ollama/`.
+
+| Category | Programs | Rule-based only | Rule-based + Ollama | Programs improved by Ollama |
+|---|---:|---:|---:|---:|
+| arithmetic | 60 | 96.03 % | 96.03 % | 0 |
+| nested | 60 | 98.10 % | 98.19 % | 1 |
+| repeated_expr | 60 | 80.71 % | 80.71 % | 0 |
+| dead_code | 60 | 97.44 % | 97.44 % | 0 |
+| loops | 80 | 65.05 % | 66.09 % | 7 |
+| conditionals | 80 | 73.91 % | 75.21 % | 7 |
+| mixed | 100 | 77.91 % | 79.96 % | 17 |
+| **all** | 500 | 82.49 % | **83.28 %** | 32 (none worse) |
+
+* **Run time and calls.** The full run took 2 h 14 min on a laptop CPU
+  (13th-gen Core i5, about 13 tokens per second) and made 328 calls to the
+  model. 234 programs were already provably minimal after the rules, so
+  the model was not consulted for them.
+* **Proposal outcomes.** Of 198 parseable proposals:
+  * 60 were accepted;
+  * 25 were correct but did not lower the cost;
+  * 113 were **wrong and rejected by the verifier**.
+  * A further 104 replies returned the program unchanged, and 26 could not
+    be parsed as TAC.
+* **Validity rate.** 42.93 % of parseable proposals passed verification,
+  against 92.35 % for Gemini. A 7-billion-parameter local model is wrong
+  more often than not on this task.
+* **What that costs.** Time, not correctness. Every wrong proposal was
+  blocked, no program ended up worse than with the rules alone, and the
+  run has **zero false positives**.
+* **Independent re-check.** Every original program was re-run against its
+  final optimized TAC on every combination of small input values plus
+  random ones: 63,940 executions, **0 mismatches**.
+* **Compared with Gemini.** The local model improves 32 programs where
+  Gemini improved 196. It handles some constant loops and branches but
+  misses most of what Gemini finds. Its value is that it works offline
+  and has no quota.
+* **GPU.** This run used the CPU because Ollama's GPU runner crashed on
+  the laptop's NVIDIA driver (546.18); see *Offline mode* below. With a
+  working GPU the same run should be several times faster.
+
 ## Visualizations (`output/plots/`)
 
 Chart 7 is produced only with `--visualize --compare-with output_rule_only`.
@@ -477,8 +523,13 @@ py main.py --run-all --quiet --offline --max-llm-calls 1 --output-dir output_oll
   continues rule-based, exactly as with a missing API key.
 * A small local model is wrong more often than a cloud one. That costs
   time, not correctness: its proposals go through the same verifier, and
-  the LLM validity rate reports how often it was right. No Ollama results
-  are included in the tables above; they have not been measured yet.
+  the LLM validity rate reports how often it was right. Measured results
+  are under [Results with Ollama](#results-with-ollama-qwen25-coder7b-offline-on-cpu).
+* **If the GPU runner crashes** while loading the model (an NVIDIA driver
+  too old for Ollama's CUDA build does this), the optimizer repeats the
+  call on the CPU, stays there for the rest of the run and prints a note.
+  `OLLAMA_NUM_GPU=0` forces the CPU from the start. Updating the NVIDIA
+  driver is the real fix.
 
 ### Routing: rule-based or LLM
 
