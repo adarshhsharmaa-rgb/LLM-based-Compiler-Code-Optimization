@@ -18,7 +18,7 @@ from ..tac.instruction import (
     is_literal,
     is_variable,
 )
-from ..tac.interpreter import TACRuntimeError, eval_binary, eval_unary
+from ..tac.interpreter import MAX_SHIFT, TACRuntimeError, eval_binary, eval_unary
 from ..tac.program import TACProgram
 
 
@@ -206,6 +206,8 @@ class CodeAnalyzer:
             if const < 2 or const & (const - 1):
                 continue
             k = const.bit_length() - 1
+            if k > MAX_SHIFT:
+                continue  # x << k would be an invalid shift at runtime, x * 2^k is not
             if k == 1:
                 new = {"operator": "+", "arg1": var, "arg2": var}
                 after = f"{ins.result} = {var} + {var}"
