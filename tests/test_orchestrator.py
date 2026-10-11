@@ -126,7 +126,7 @@ def test_whole_generated_categories_never_produce_false_positives():
 
 # ------------------------------------------------------------------ LLM path
 class _FakeLLM:
-    """Stands in for LLMOptimizer: returns a fixed sequence of proposals."""
+    """Stands in for an LLM optimizer: returns a fixed sequence of proposals."""
 
     def __init__(self, proposals):
         self.proposals = list(proposals)

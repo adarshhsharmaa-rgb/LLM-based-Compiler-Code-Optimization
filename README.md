@@ -60,7 +60,7 @@ src/
   frontend/   lexer.py, parser.py, ast_nodes.py, tac_generator.py
   tac/        instruction.py, program.py, interpreter.py, printer.py, dataflow.py
   agents/     orchestrator.py, code_analyzer.py, optimization_specialist.py (router),
-              optimizer_rule.py, optimizer_llm.py (Gemini, Claude, Ollama),
+              optimizer_rule.py, optimizer_llm.py (Gemini, Ollama),
               verifier.py, cost_evaluator.py, decision_log.py
   visualization/  charts.py, report.py
   frontend/c_frontend.py   C-subset front end used by the live demo
@@ -110,8 +110,8 @@ py main.py --run-file my.src --offline --optimizer llm   # route to the LLM firs
 | `--optimizer MODE` | how the Optimization Specialist routes each step: `rule` (default), `hybrid` or `llm`; see [routing](#routing-rule-based-or-llm) |
 | `--use-llm` | enable the LLM proposer alongside the rules (same as `--optimizer hybrid`) |
 | `--offline` | offline mode: the LLM is a local Ollama model (implies `--optimizer hybrid` unless one is given) |
-| `--llm-provider P` | `auto` (default: `gemini` when online and a key is set, otherwise `ollama`), `gemini`, `anthropic` or `ollama` |
-| `--llm-model ID` | model for the LLM (defaults: `gemini-3.1-flash-lite`, `claude-sonnet-4-20250514`, `qwen2.5-coder:7b`) |
+| `--llm-provider P` | `auto` (default: `gemini` when online and a key is set, otherwise `ollama`), `gemini` or `ollama` |
+| `--llm-model ID` | model for the LLM (defaults: `gemini-3.1-flash-lite`, `qwen2.5-coder:7b`) |
 | `--compare-with DIR` | with `--visualize`: compare against another run (writes `comparison.csv` and chart 7) |
 | `--max-llm-calls N` | LLM proposals allowed per program (default 5) |
 | `--quiet` | with `--run-all`, print only progress; logs are still saved |
@@ -411,13 +411,12 @@ print(s);
 ## The LLM optimizer (optional)
 
 `--use-llm` adds an LLM proposer (`src/agents/optimizer_llm.py`). It shares
-one prompt and one reply parser across three providers, chosen with
-`--llm-provider`:
+one prompt and one reply parser across two providers, chosen with
+`--llm-provider`. Both are free to use:
 
 | Provider | Default model | Credentials | Cost |
 |---|---|---|---|
 | `gemini` | `gemini-3.1-flash-lite` | `GEMINI_API_KEY`, or a `.gemini_key` file in the project root | free tier |
-| `anthropic` | `claude-sonnet-4-20250514` | `ANTHROPIC_API_KEY` from console.anthropic.com | paid per use |
 | `ollama` | `qwen2.5-coder:7b` | none: a local Ollama server | free, runs on your machine |
 
 The default, `auto`, uses Gemini when the internet is reachable and a key is
@@ -506,7 +505,7 @@ log with its reason:
   proposal is skipped.
 * Free-tier prompts may be used by Google to improve its products.
 
-**Chat subscriptions (Claude Pro, ChatGPT Plus/Go) do not include API
+**Chat subscriptions (such as ChatGPT Plus/Go) do not include API
 access.** Without a key, the optimizer reports itself unavailable and the
 run continues rule-based only. LLM proposals are counted separately
 (`llm_proposals`, `llm_valid`) and reported as the LLM validity rate.

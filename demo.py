@@ -48,7 +48,7 @@ TYPE_LABELS = {
     "COPY_PROPAGATION": "Copy propagation",
     "LLM": "LLM proposal",
 }
-LLM_NAMES = {"gemini": "Gemini", "anthropic": "Claude", "ollama": "Ollama"}
+LLM_NAMES = {"gemini": "Gemini", "ollama": "Ollama"}
 
 
 def llm_label(result) -> str:

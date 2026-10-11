@@ -143,7 +143,7 @@ def main() -> int:
                         help="With --run-all: print only progress, not every decision log (logs are still saved)")
     parser.add_argument("--max-iterations", type=int, default=50, help="Agent iteration cap per program")
     parser.add_argument("--llm-provider", choices=["auto", *sorted(PROVIDERS)], default="auto",
-                        help="LLM backend: anthropic (Claude), gemini (Google), ollama (local model), or "
+                        help="LLM backend: gemini (Google), ollama (local model), or "
                              "auto = gemini when online and a key is set, otherwise ollama")
     parser.add_argument("--llm-model", type=str, default=None,
                         help="Model ID for the LLM (default: "

@@ -1,12 +1,10 @@
-"""LLM-based optimizer agents (Anthropic Claude, Google Gemini, or a local Ollama model).
+"""LLM-based optimizer agents (Google Gemini, or a local Ollama model).
 
 The LLM is only a *proposer*: everything it returns goes through exactly the
 same Verifier and CostEvaluator gates as rule-based proposals, so a wrong LLM
 answer can never be accepted.
 
 Providers:
-  * ``anthropic`` -- Claude via the ``anthropic`` SDK. Credentials:
-    ``ANTHROPIC_API_KEY`` or an ``ant auth login`` profile.
   * ``gemini``    -- Gemini via the ``google-genai`` SDK. Credentials:
     ``GEMINI_API_KEY`` (or ``GOOGLE_API_KEY``), free from aistudio.google.com.
   * ``ollama``    -- a model running on this machine, served by Ollama
@@ -33,12 +31,11 @@ from ..tac.program import TACParseError, TACProgram
 
 DEFAULT_PROVIDER = "gemini"
 DEFAULT_MODELS = {
-    "anthropic": "claude-sonnet-4-20250514",
     "gemini": "gemini-3.1-flash-lite",
     "ollama": "qwen2.5-coder:7b",
 }
 DEFAULT_MODEL = DEFAULT_MODELS[DEFAULT_PROVIDER]
-CLOUD_HOSTS = {"anthropic": "api.anthropic.com", "gemini": "generativelanguage.googleapis.com"}
+CLOUD_HOSTS = {"gemini": "generativelanguage.googleapis.com"}
 OLLAMA_DEFAULT_HOST = "http://127.0.0.1:11434"
 
 PROMPT_TEMPLATE = """You are a compiler optimization expert. Given this Three-Address Code (TAC), propose exactly ONE semantics-preserving optimization.
@@ -151,50 +148,6 @@ class BaseLLMOptimizer:
         if candidate == original:
             return None, f"LLM returned unchanged TAC; reasoning: {reasoning}"
         return candidate, reasoning
-
-
-# ====================================================================== #
-class LLMOptimizer(BaseLLMOptimizer):
-    """Claude via the Anthropic API."""
-
-    provider = "anthropic"
-
-    def __init__(self, model: str = DEFAULT_MODELS["anthropic"], max_tokens: int = 2000):
-        super().__init__(model)
-        self._max_tokens = max_tokens
-        try:
-            import anthropic
-            self._anthropic = anthropic
-            self._client = anthropic.Anthropic()  # uses ANTHROPIC_API_KEY env var / ant profile
-        except Exception as exc:  # pragma: no cover - depends on local environment
-            self._client = None
-            self._disable(f"could not create Anthropic client: {exc}")
-
-    def _complete(self, prompt: str) -> str:
-        anthropic = self._anthropic
-        try:
-            response = self._client.messages.create(
-                model=self._model,
-                max_tokens=self._max_tokens,
-                messages=[{"role": "user", "content": prompt}],
-            )
-        except (anthropic.AuthenticationError, anthropic.PermissionDeniedError) as exc:
-            raise _LLMUnavailable(f"authentication failed ({exc.status_code})") from exc
-        except anthropic.NotFoundError as exc:
-            raise _LLMUnavailable(f"model {self._model!r} not found") from exc
-        except anthropic.RateLimitError as exc:
-            raise _LLMSkip("LLM rate-limited (429); skipping this proposal") from exc
-        except anthropic.APIStatusError as exc:
-            raise _LLMSkip(f"LLM API error {exc.status_code}") from exc
-        except anthropic.APIConnectionError as exc:
-            raise _LLMSkip("LLM connection error") from exc
-        except Exception as exc:  # missing credentials surface as a non-API error
-            raise _LLMUnavailable(f"{type(exc).__name__}: {exc}") from exc
-        if response.stop_reason == "refusal":
-            raise _LLMSkip("LLM declined the request")
-        if response.stop_reason == "max_tokens":
-            raise _LLMSkip("LLM response was truncated (max_tokens)")
-        return "".join(block.text for block in response.content if block.type == "text")
 
 
 # ====================================================================== #
@@ -398,7 +351,7 @@ class OllamaOptimizer(BaseLLMOptimizer):
             return ""
 
 
-PROVIDERS = {"anthropic": LLMOptimizer, "gemini": GeminiOptimizer, "ollama": OllamaOptimizer}
+PROVIDERS = {"gemini": GeminiOptimizer, "ollama": OllamaOptimizer}
 
 
 def is_online(timeout: float = 2.0) -> bool:
