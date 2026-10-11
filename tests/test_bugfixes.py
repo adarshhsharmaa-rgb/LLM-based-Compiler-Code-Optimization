@@ -142,3 +142,24 @@ def test_metrics_report_suggestions_by_source():
 
 def test_gemini_is_the_default_llm_provider():
     assert DEFAULT_PROVIDER == "gemini"
+
+
+# ------------------------------------------------- strength reduction of huge powers of two
+def test_strength_reduction_never_proposes_an_invalid_shift():
+    # x * 2^65 used to become x << 65, which the interpreter rejects (shifts stop at 64),
+    # so every such proposal failed verification.
+    for k, expected in ((64, "t0 = x << 64"), (65, None), (70, None)):
+        prog = P(f"t0 = x * {2 ** k}\nprint t0")
+        opps = [o for o in CodeAnalyzer().analyze(prog) if o.type == OpportunityType.STRENGTH_REDUCTION]
+        assert [o.details["after"] for o in opps] == ([expected] if expected else [])
+        result = Orchestrator().optimize(prog)
+        assert result.invalid_count == 0 and result.output_match
+
+
+# ------------------------------------------------- metrics when the LLM made no proposals
+def test_metrics_table_when_the_llm_was_enabled_but_never_proposed():
+    record = result_to_record(Orchestrator().optimize(P("t0 = 3 + 5\nprint t0"), "arithmetic_001.src"),
+                              "arithmetic")
+    table = format_metrics_table(aggregate_metrics([record], llm_used=True))
+    assert "n/a (no LLM proposals)" in table and "n/a %" not in table
+    assert "n/a (LLM not used)" in format_metrics_table(aggregate_metrics([record], llm_used=False))
