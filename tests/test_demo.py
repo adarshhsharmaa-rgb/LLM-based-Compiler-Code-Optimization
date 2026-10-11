@@ -33,7 +33,7 @@ def test_every_sample_runs_through_all_six_stages(path):
 def test_summary_reports_rule_llm_and_total_rows():
     out = run_demo(os.path.join(ROOT, "demo_programs", "1_constants.c")).stdout
     rows = {line.split()[0]: line.split() for line in out.splitlines()
-            if line.strip().startswith(("Rule-based", "LLM (Gemini)", "Total"))}
+            if line.strip().startswith(("Rule-based", "Total"))}
     rule, total = rows["Rule-based"], rows["Total"]
     assert rule[1:] == total[1:]                      # no LLM in this run: totals equal the rules
     suggested, verified, accepted, no_gain, invalid = map(int, total[1:])
@@ -88,9 +88,9 @@ def test_summary_with_llm_counts(capsys):
     demo.suggestion_summary(result, llm_enabled=True, llm_note="", hidden=0)
     out = capsys.readouterr().out
     rows = {line.split("  ")[1].strip(): line.split() for line in out.splitlines()
-            if line.strip().startswith(("Rule-based", "LLM (Gemini)", "Total"))}
+            if line.strip().startswith(("Rule-based", "LLM", "Total"))}
     assert rows["Rule-based"][-5:] == ["1", "1", "0", "1", "0"]
-    assert rows["LLM (Gemini)"][-5:] == ["2", "1", "1", "0", "1"]
+    assert rows["LLM"][-5:] == ["2", "1", "1", "0", "1"]     # a scripted LLM has no provider name
     assert rows["Total"][-5:] == ["3", "2", "1", "1", "1"]
     assert "LLM requests sent: 3  (2 usable suggestions, 1 unusable reply)" in out
 

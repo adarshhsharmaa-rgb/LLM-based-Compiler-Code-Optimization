@@ -12,7 +12,8 @@ PROJECT_ROOT = os.path.dirname(os.path.abspath(__file__))
 if PROJECT_ROOT not in sys.path:
     sys.path.insert(0, PROJECT_ROOT)
 
-from src.agents.optimizer_llm import DEFAULT_MODELS, DEFAULT_PROVIDER, PROVIDERS  # noqa: E402
+from src.agents.optimization_specialist import MODE_SUMMARIES, MODES  # noqa: E402
+from src.agents.optimizer_llm import DEFAULT_MODELS, PROVIDERS, load_key_files  # noqa: E402
 from src.agents.orchestrator import Orchestrator  # noqa: E402
 from src.frontend import LexerError, ParseError, compile_source  # noqa: E402
 from src.visualization.report import (  # noqa: E402
@@ -51,18 +52,6 @@ def _display(path: str) -> str:
         return os.path.relpath(path, PROJECT_ROOT)
     except ValueError:
         return path
-
-
-def _load_key_file(env_var: str, filename: str) -> None:
-    """Load an API key from a git-ignored file in the project root if the env var is unset."""
-    if os.environ.get(env_var):
-        return
-    path = os.path.join(PROJECT_ROOT, filename)
-    if os.path.exists(path):
-        with open(path, encoding="utf-8") as fh:
-            key = fh.read().strip()
-        if key:
-            os.environ[env_var] = key
 
 
 def ensure_output_dirs(out_dir: str) -> None:
@@ -128,16 +117,24 @@ def main() -> int:
     parser.add_argument("--generate-dataset", action="store_true", help="Generate the 500-program dataset")
     parser.add_argument("--run-all", action="store_true", help="Run optimization on all dataset programs")
     parser.add_argument("--run-file", type=str, help="Run optimization on a single .src file")
-    parser.add_argument("--use-llm", action="store_true", help="Enable LLM-based optimizer alongside rule-based")
+    parser.add_argument("--optimizer", choices=MODES, default=None,
+                        help="How the Optimization Specialist routes each step: "
+                             + "; ".join(f"{m} = {MODE_SUMMARIES[m]}" for m in MODES)
+                             + " (default: rule, or hybrid with --use-llm / --offline)")
+    parser.add_argument("--use-llm", action="store_true",
+                        help="Enable LLM-based optimizer alongside rule-based (same as --optimizer hybrid)")
+    parser.add_argument("--offline", action="store_true",
+                        help="Offline mode: the LLM is a local Ollama model, no internet or API key needed")
     parser.add_argument("--output-dir", type=str, default="output", help="Output directory")
     parser.add_argument("--visualize", action="store_true", help="Generate all 6 visualization charts")
     parser.add_argument("--quiet", action="store_true",
                         help="With --run-all: print only progress, not every decision log (logs are still saved)")
     parser.add_argument("--max-iterations", type=int, default=50, help="Agent iteration cap per program")
-    parser.add_argument("--llm-provider", choices=sorted(PROVIDERS), default=DEFAULT_PROVIDER,
-                        help="LLM backend for --use-llm: anthropic (Claude) or gemini (Google)")
+    parser.add_argument("--llm-provider", choices=["auto", *sorted(PROVIDERS)], default="auto",
+                        help="LLM backend: gemini (Google), groq (Groq), ollama (local model), or "
+                             "auto = gemini or groq when online and a key is set, otherwise ollama")
     parser.add_argument("--llm-model", type=str, default=None,
-                        help="Model ID for --use-llm (default: "
+                        help="Model ID for the LLM (default: "
                              + ", ".join(f"{p}={m}" for p, m in DEFAULT_MODELS.items()) + ")")
     parser.add_argument("--max-llm-calls", type=int, default=5, help="LLM proposals allowed per program")
     parser.add_argument("--compare-with", type=str, default=None,
@@ -159,14 +156,21 @@ def main() -> int:
         print(f"Generated {sum(counts.values())} programs in {_display(DATASET_DIR)}")
 
     if args.run_all or args.run_file:
-        if args.use_llm and args.llm_provider == "gemini" and not os.environ.get("GOOGLE_API_KEY"):
-            _load_key_file("GEMINI_API_KEY", ".gemini_key")
-        orchestrator = Orchestrator(use_llm=args.use_llm, max_iterations=args.max_iterations,
+        mode = args.optimizer or ("hybrid" if args.use_llm or args.offline else "rule")
+        use_llm = mode != "rule"
+        if use_llm and not args.offline:
+            load_key_files(PROJECT_ROOT)      # .gemini_key / .groq_key
+        orchestrator = Orchestrator(optimizer_mode=mode, max_iterations=args.max_iterations,
                                     llm_model=args.llm_model, max_llm_calls=args.max_llm_calls,
-                                    llm_provider=args.llm_provider)
-        if args.use_llm and orchestrator.llm_optimizer and not orchestrator.llm_optimizer.available:
-            print(f"Warning: LLM optimizer unavailable ({orchestrator.llm_optimizer.unavailable_reason}); "
-                  "continuing with rule-based optimization only.")
+                                    llm_provider=args.llm_provider, offline=args.offline)
+        llm = orchestrator.llm_optimizer
+        if llm is not None:
+            why = f" - {llm.selected_because}" if llm.selected_because else ""
+            print(f"Optimizer routing: {mode} ({MODE_SUMMARIES[mode]})")
+            print(f"LLM backend: {llm.label}{why}")
+            if not llm.available:
+                print(f"Warning: LLM optimizer unavailable ({llm.unavailable_reason}); "
+                      "continuing with rule-based optimization only.")
 
         if args.run_file:
             if not os.path.exists(args.run_file):
@@ -180,10 +184,13 @@ def main() -> int:
         if args.run_all:
             records = run_all(orchestrator, out_dir, args.quiet)
             if records:
-                report_metrics(records, out_dir, llm_used=args.use_llm)
-            llm = orchestrator.llm_optimizer
-            if args.use_llm and llm is not None and not llm.available:
+                report_metrics(records, out_dir, llm_used=use_llm)
+            if llm is not None and not llm.available:
                 print(f"Note: LLM optimizer was disabled during the run ({llm.unavailable_reason}).")
+
+        if getattr(llm, "cpu_fallback", False):
+            print("Note: Ollama's GPU runner crashed, so the model ran on the CPU (slower). "
+                  "Updating the NVIDIA driver usually fixes this.")
 
     if args.visualize:
         from src.visualization.charts import generate_all_charts

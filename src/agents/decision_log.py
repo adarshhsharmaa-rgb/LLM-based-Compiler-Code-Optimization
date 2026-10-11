@@ -10,7 +10,7 @@ from dataclasses import asdict, dataclass
 @dataclass
 class DecisionEntry:
     iteration: int
-    phase: str              # "analyze", "propose", "verify", "evaluate", "accept", "reject"
+    phase: str              # "analyze", "route", "propose", "verify", "evaluate", "accept", "reject"
     opportunity_type: str | None
     description: str
     tac_before: str | None = None
@@ -25,6 +25,7 @@ class DecisionEntry:
 
 _TAGS = {
     "analyze": "[ANALYZE]",
+    "route": "[ROUTE]  ",
     "propose": "[PROPOSE]",
     "verify": "[VERIFY] ",
     "evaluate": "[COST]   ",
@@ -54,6 +55,11 @@ class DecisionLogger:
             desc = f"Found {len(opportunities)} opportunit{'y' if len(opportunities) == 1 else 'ies'}: " \
                    + ", ".join(parts)
         self.entries.append(DecisionEntry(iteration, "analyze", None, desc))
+
+    def log_route(self, iteration, source, label, reason) -> None:
+        """The Optimization Specialist's choice between the rules and the LLM."""
+        self.entries.append(DecisionEntry(iteration, "route", None, f"{label}: {reason}",
+                                          reason=reason, source=source))
 
     def log_proposal(self, iteration, opportunity, candidate_tac, tac_before=None) -> None:
         self._current_type = opportunity.type.value

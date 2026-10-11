@@ -58,6 +58,9 @@ def result_to_record(result, category: str) -> dict:
         "cost_history": list(result.cost_history),
         "llm_proposals": result.llm_proposals,
         "llm_valid": result.llm_valid,
+        "optimizer_mode": result.optimizer_mode,
+        "llm_provider": result.llm_provider,
+        "llm_model": result.llm_model,
         "hit_iteration_cap": result.hit_iteration_cap,
         "original_cost_breakdown": result.original_cost.to_dict(),
         "final_cost_breakdown": result.final_cost.to_dict(),
@@ -170,7 +173,9 @@ def format_metrics_table(m: dict) -> str:
         ("Steps to convergence (median)", _fmt(m["steps_to_convergence_median"])),
         ("Steps to convergence (min/max)", f"{m['steps_to_convergence_min']} / {m['steps_to_convergence_max']}"),
         ("Programs stopped by iteration cap", _fmt(m["programs_hitting_iteration_cap"])),
-        ("LLM validity rate", (_fmt(m["llm_validity_rate_pct"]) + " %") if m["llm_used"] else "n/a (LLM not used)"),
+        ("LLM validity rate", "n/a (LLM not used)" if not m["llm_used"]
+         else "n/a (no LLM proposals)" if m["llm_validity_rate_pct"] is None
+         else _fmt(m["llm_validity_rate_pct"]) + " %"),
         ("False positives (output mismatch)", f"{m['false_positive_count']}  ({_fmt(m['false_positive_rate_pct'])} %)"),
     ]
     width = max(len(r[0]) for r in rows) + 2
