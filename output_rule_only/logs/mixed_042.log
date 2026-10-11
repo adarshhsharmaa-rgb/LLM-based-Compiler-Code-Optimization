@@ -2,43 +2,43 @@
 --- Iteration 1 ---
   [ANALYZE] Found 18 opportunities: DEAD_CODEx2 (priority=80), COPY_PROPAGATIONx16 (priority=50)
   [PROPOSE] Applying DEAD_CODE at instruction 4: h = t3 → (removed)
-  [VERIFY]  PASS (differential: 35/35 inputs matched, symbolic: skipped (control flow))
+  [VERIFY]  PASS (differential: 292/292 inputs matched, symbolic: skipped (control flow))
   [COST]    Before: 84.0, After: 81.5 (reduction: 3.0%)
   [ACCEPT]  ✓ Change accepted
 --- Iteration 2 ---
   [ANALYZE] Found 17 opportunities: DEAD_CODEx2 (priority=80), COPY_PROPAGATIONx15 (priority=50)
   [PROPOSE] Applying DEAD_CODE at instruction 3: t3 = in_x + t2 → (removed)
-  [VERIFY]  PASS (differential: 35/35 inputs matched, symbolic: skipped (control flow))
+  [VERIFY]  PASS (differential: 292/292 inputs matched, symbolic: skipped (control flow))
   [COST]    Before: 81.5, After: 78.0 (reduction: 4.3%)
   [ACCEPT]  ✓ Change accepted
 --- Iteration 3 ---
   [ANALYZE] Found 17 opportunities: DEAD_CODEx2 (priority=80), COPY_PROPAGATIONx15 (priority=50)
   [PROPOSE] Applying DEAD_CODE at instruction 2: t2 = t0 * t1 → (removed)
-  [VERIFY]  PASS (differential: 35/35 inputs matched, symbolic: skipped (control flow))
+  [VERIFY]  PASS (differential: 292/292 inputs matched, symbolic: skipped (control flow))
   [COST]    Before: 78.0, After: 74.5 (reduction: 4.5%)
   [ACCEPT]  ✓ Change accepted
 --- Iteration 4 ---
   [ANALYZE] Found 16 opportunities: DEAD_CODEx3 (priority=80), COPY_PROPAGATIONx13 (priority=50)
   [PROPOSE] Applying DEAD_CODE at instruction 0: t0 = 10 → (removed)
-  [VERIFY]  PASS (differential: 35/35 inputs matched, symbolic: skipped (control flow))
+  [VERIFY]  PASS (differential: 292/292 inputs matched, symbolic: skipped (control flow))
   [COST]    Before: 74.5, After: 71.5 (reduction: 4.0%)
   [ACCEPT]  ✓ Change accepted
 --- Iteration 5 ---
   [ANALYZE] Found 15 opportunities: DEAD_CODEx2 (priority=80), COPY_PROPAGATIONx13 (priority=50)
   [PROPOSE] Applying DEAD_CODE at instruction 0: t1 = 2 → (removed)
-  [VERIFY]  PASS (differential: 32/32 inputs matched, symbolic: skipped (control flow))
+  [VERIFY]  PASS (differential: 289/289 inputs matched, symbolic: skipped (control flow))
   [COST]    Before: 71.5, After: 68.5 (reduction: 4.2%)
   [ACCEPT]  ✓ Change accepted
 --- Iteration 6 ---
   [ANALYZE] Found 14 opportunities: DEAD_CODE (priority=80), COPY_PROPAGATIONx13 (priority=50)
   [PROPOSE] Applying DEAD_CODE at instruction 2: acc = t5 → (removed)
-  [VERIFY]  PASS (differential: 32/32 inputs matched, symbolic: skipped (control flow))
+  [VERIFY]  PASS (differential: 289/289 inputs matched, symbolic: skipped (control flow))
   [COST]    Before: 68.5, After: 66.0 (reduction: 3.6%)
   [ACCEPT]  ✓ Change accepted
 --- Iteration 7 ---
   [ANALYZE] Found 13 opportunities: DEAD_CODE (priority=80), COPY_PROPAGATIONx12 (priority=50)
   [PROPOSE] Applying DEAD_CODE at instruction 1: t5 = t4 * in_x → (removed)
-  [VERIFY]  PASS (differential: 32/32 inputs matched, symbolic: skipped (control flow))
+  [VERIFY]  PASS (differential: 289/289 inputs matched, symbolic: skipped (control flow))
   [COST]    Before: 66.0, After: 62.5 (reduction: 5.3%)
   [ACCEPT]  ✓ Change accepted
 --- Iteration 8 ---
