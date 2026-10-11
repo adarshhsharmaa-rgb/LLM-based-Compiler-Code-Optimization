@@ -299,7 +299,6 @@
   [VERIFY]  PASS (differential: 25/25 inputs matched, symbolic: equivalent)
   [COST]    Before: 3.5, After: 1.0 (reduction: 71.4%)
   [ACCEPT]  ✓ Change accepted
-  [INFO]    Stopped: reached max_iterations=50
 === RESULT ===
   Original cost: 109.0
   Final cost:    1.0

@@ -296,7 +296,7 @@ class Verifier:
                 return VerificationResult(
                     False, "differential",
                     f"inconclusive: both programs exceeded {self.max_steps} steps on inputs {inputs}",
-                    {"inputs": inputs, "test_index": idx, "tested": idx + 1})
+                    {"inputs": inputs, "test_index": idx, "tested": idx + 1, "inconclusive": True})
             if orig != cand:
                 return VerificationResult(
                     False, "differential",

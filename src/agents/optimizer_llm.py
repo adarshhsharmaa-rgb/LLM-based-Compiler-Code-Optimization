@@ -21,7 +21,7 @@ import time
 
 from ..tac.program import TACParseError, TACProgram
 
-DEFAULT_PROVIDER = "anthropic"
+DEFAULT_PROVIDER = "gemini"
 DEFAULT_MODELS = {
     "anthropic": "claude-sonnet-4-20250514",
     "gemini": "gemini-3.1-flash-lite",

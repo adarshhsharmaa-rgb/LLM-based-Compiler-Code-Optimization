@@ -174,10 +174,15 @@ class CodeAnalyzer:
                     if key in available:
                         first_idx, source = available[key]
                         if source != ins.result:
-                            after = f"{ins.result} = {source}"
+                            # Replacing a comparison/logical/shift with a copy would *raise*
+                            # the weighted cost (a copy is dearer than a non-arithmetic op),
+                            # so for those the copy is forwarded into its uses in the same step.
+                            forward = ins.operator not in ARITHMETIC_OPS
+                            after = f"{ins.result} = {source}" + (
+                                f" (forwarded into uses of {ins.result})" if forward else "")
                             out.append(_make(OpportunityType.CSE, i,
                                              f"Reuse {source} (instr {first_idx}) for {ins.to_string()}",
-                                             source=source, first=first_idx,
+                                             source=source, first=first_idx, forward=forward,
                                              before=ins.to_string(), after=after))
                 d = ins.defined_var()
                 if d is not None:

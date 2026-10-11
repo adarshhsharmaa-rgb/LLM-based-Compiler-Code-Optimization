@@ -37,6 +37,8 @@ class OptimizationResult:
     # cost_history[k] = program cost after iteration k (index 0 = original cost)
     cost_history: list[float] = field(default_factory=list)
     final_check_reason: str = ""
+    llm_calls: int = 0                # requests sent to the LLM (including unusable replies)
+    stopped_reason: str = ""          # set when the run stopped early (e.g. program too long to verify)
     hit_iteration_cap: bool = False   # True if max_iterations stopped the loop before convergence
 
     def format_report(self) -> str:
@@ -91,6 +93,7 @@ class Orchestrator:
         cost_history = [self.cost_evaluator.evaluate(current).weighted_total]
         iteration = 0
         hit_cap = False
+        stopped_reason = ""
 
         for iteration in range(1, self.max_iterations + 1):
             # 1. ANALYZE
@@ -132,6 +135,16 @@ class Orchestrator:
             # 3. VERIFY
             ver_result = self.verifier.verify(current, candidate)
             logger.log_verification(iteration, ver_result)
+            if (ver_result.details or {}).get("inconclusive"):
+                # The program itself does not finish within the verifier's step limit, so no
+                # change to it can be checked by running it. Every other proposal would fail
+                # the same way, so stop here instead of grinding through all of them.
+                stopped_reason = (f"the program does not finish within {self.verifier.max_steps:,} steps, "
+                                  "so changes to it cannot be verified")
+                logger.log_reject(iteration, "Could not be verified (program runs too long)")
+                logger.log_info(iteration, f"Stopped: {stopped_reason}")
+                cost_history.append(cost_history[-1])
+                break
             record = {"iteration": iteration, "source": "rule", "type": opportunity.type.value,
                       "outcome": None, "cost_before": None, "cost_after": None}
             proposals.append(record)
@@ -182,7 +195,11 @@ class Orchestrator:
 
             cost_history.append(self.cost_evaluator.evaluate(current).weighted_total)
         else:
-            if self.max_iterations > 0:
+            # The loop used every iteration. That only counts as "stopped by the cap"
+            # if there was still something left to try.
+            remaining = [o for o in self.analyzer.analyze(current)
+                         if self._opportunity_key(o) not in attempted_opportunities]
+            if self.max_iterations > 0 and remaining:
                 hit_cap = True
                 logger.log_info(iteration, f"Stopped: reached max_iterations={self.max_iterations}")
 
@@ -212,6 +229,8 @@ class Orchestrator:
             cost_history=cost_history,
             final_check_reason=final_reason,
             hit_iteration_cap=hit_cap,
+            llm_calls=llm_calls,
+            stopped_reason=stopped_reason,
         )
 
     # ------------------------------------------------------------------ #
@@ -267,5 +286,7 @@ class Orchestrator:
 
     def _final_output_check(self, original: TACProgram, optimized: TACProgram) -> tuple[bool, str]:
         """End-to-end check of the final program against the untouched original."""
+        if optimized == original:
+            return True, "no changes were made, so the program is unchanged"
         result = self.verifier.verify(original, optimized)
         return result.passed, result.reason

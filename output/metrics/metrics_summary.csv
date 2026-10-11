@@ -22,7 +22,7 @@ steps_distribution.11-20,210
 steps_distribution.21-30,144
 steps_distribution.31-40,72
 steps_distribution.41-50,34
-programs_hitting_iteration_cap,7
+programs_hitting_iteration_cap,5
 llm_used,True
 llm_proposals,340
 llm_valid,314
@@ -78,3 +78,18 @@ by_optimization_type.COPY_PROPAGATION.invalid,0
 by_optimization_type.LLM.accepted,262
 by_optimization_type.LLM.rejected,52
 by_optimization_type.LLM.invalid,26
+by_source.Rule-based.suggested,10638
+by_source.Rule-based.verified,10638
+by_source.Rule-based.accepted,10566
+by_source.Rule-based.rejected,72
+by_source.Rule-based.invalid,0
+by_source.LLM.suggested,340
+by_source.LLM.verified,314
+by_source.LLM.accepted,262
+by_source.LLM.rejected,52
+by_source.LLM.invalid,26
+by_source.Total.suggested,10978
+by_source.Total.verified,10952
+by_source.Total.accepted,10828
+by_source.Total.rejected,124
+by_source.Total.invalid,26

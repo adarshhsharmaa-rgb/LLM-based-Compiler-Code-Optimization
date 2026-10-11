@@ -87,6 +87,8 @@ class RuleBasedOptimizer:
             return prog
         prog.instructions[opp.location] = TACInstruction(
             TACOp.ASSIGN, result=ins.result, arg1=opp.details["source"])
+        if opp.details.get("forward"):
+            _forward_copy(prog.instructions, opp.location)
         return prog
 
     def _apply_strength_reduction(self, prog: TACProgram, opp: Opportunity) -> TACProgram:

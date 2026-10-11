@@ -24,6 +24,9 @@ from matplotlib.colors import LinearSegmentedColormap  # noqa: E402
 from .report import CATEGORIES, OPT_TYPES, TYPE_LABELS, aggregate_metrics  # noqa: E402
 
 DPI = 150
+SHORT_TYPE_LABELS = {"CONSTANT_FOLD": "Const.\nfold", "ALGEBRAIC_SIMPLIFY": "Algebraic",
+                     "DEAD_CODE": "Dead\ncode", "CSE": "CSE", "STRENGTH_REDUCTION": "Strength\nred.",
+                     "COPY_PROPAGATION": "Copy\nprop.", "LLM": "LLM"}
 
 # ---- chart chrome ----------------------------------------------------- #
 SURFACE = "#fcfcfb"
@@ -182,7 +185,7 @@ def bar_chart_by_type(records: list[dict], out_dir: str) -> str:
                         fontsize=8.5, color=INK_2 if v else MUTED)
     ax.set_xticks(x, [TYPE_LABELS[t].replace(" ", chr(10)) for t in types])
     ax.set_ylabel("Number of proposals")
-    ax.set_ylim(0, top * 1.12)
+    ax.set_ylim(0, top * 1.25)   # headroom so the legend never sits on a bar
     ax.grid(axis="x", visible=False)
     ax.set_title("Proposal outcomes by optimization type")
     ax.legend(loc="upper left", ncols=3, bbox_to_anchor=(0, 1.0))
@@ -209,27 +212,16 @@ def line_chart_cost_trajectory(records: list[dict], out_dir: str) -> str:
     fig, ax = plt.subplots(figsize=(11, 5.8))
     picked = [(c, _representative(records, c)) for c in LINE_CATEGORIES]
     picked = [(c, r) for c, r in picked if r is not None]
-    max_x, max_y = 0, 0.0
-    ends = []
+    max_x = 0
     for cat, r in picked:
         hist = r["cost_history"]
         xs = np.arange(len(hist))
         max_x = max(max_x, xs[-1])
-        max_y = max(max_y, max(hist))
         name = r["program_name"].replace(".src", "")
-        ax.plot(xs, hist, color=CATEGORY_COLORS[cat], linewidth=2, label=f"{name} ({cat})",
-                solid_capstyle="round")
-        ends.append([hist[-1], xs[-1], f"{name}  {hist[0]:.0f}→{hist[-1]:.1f}"])
-    # dodge end labels vertically so none overlap
-    min_gap = max_y * 0.045
-    ends.sort(key=lambda e: e[0])
-    label_y = []
-    for y, _, _ in ends:
-        label_y.append(max(y, label_y[-1] + min_gap) if label_y else y)
-    for (y, x_end, text), ly in zip(ends, label_y):
-        ax.annotate(text, (x_end, y), xytext=(x_end + 0.6, ly), textcoords="data", va="center",
-                    fontsize=8.5, color=INK_2)
-    ax.set_xlim(0, max_x * 1.22 + 1)
+        # the legend carries start -> final cost, so no end labels collide with other lines
+        ax.plot(xs, hist, color=CATEGORY_COLORS[cat], linewidth=2,
+                label=f"{name}: {hist[0]:.0f} → {hist[-1]:.1f}", solid_capstyle="round")
+    ax.set_xlim(0, max_x + 1)
     ax.set_ylim(bottom=0)
     ax.set_xlabel("Agent iteration (0 = original program)")
     ax.set_ylabel("Weighted program cost")
@@ -340,7 +332,7 @@ def heatmap_category_type(records: list[dict], out_dir: str) -> str:
     cmap = LinearSegmentedColormap.from_list("blue_ramp", BLUE_RAMP)
     fig, ax = plt.subplots(figsize=(11, 5.8))
     sns.heatmap(grid, ax=ax, cmap=cmap, annot=True, fmt=",d", linewidths=2, linecolor=SURFACE,
-                xticklabels=[TYPE_LABELS[t].replace(" ", "\n") for t in types], yticklabels=cats,
+                xticklabels=[SHORT_TYPE_LABELS.get(t, t) for t in types], yticklabels=cats,
                 cbar_kws={"label": "Times applied (accepted)", "shrink": 0.85},
                 annot_kws={"fontsize": 10})
     ax.grid(False)
@@ -384,12 +376,12 @@ def comparison_chart(cmp: dict, out_dir: str, base_label: str = "Rule-based only
         for bar, v in zip(bars, vals):
             ax.annotate(f"{v:.1f}", (bar.get_x() + bar.get_width() / 2, v), xytext=(0, 3),
                         textcoords="offset points", ha="center", va="bottom", fontsize=8.5, color=INK_2)
-    ax.set_xticks(x, cats)
+    ax.set_xticks(x, [c.replace("_", "\n") for c in cats])
     ax.set_ylim(0, 108)
     ax.set_ylabel("Average cost reduction (%)")
     ax.grid(axis="x", visible=False)
     o = cmp["overall"]
     ax.set_title(f"Average cost reduction by category: {o['baseline_avg_reduction_pct']:.1f}% \u2192 "
                  f"{o['current_avg_reduction_pct']:.1f}% overall")
-    ax.legend(loc="upper center", bbox_to_anchor=(0.5, -0.07), ncols=2)
+    ax.legend(loc="upper center", bbox_to_anchor=(0.5, -0.16), ncols=2)
     return _save(fig, out_dir, "7_comparison_rule_vs_llm.png")
