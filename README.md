@@ -60,14 +60,14 @@ src/
   frontend/   lexer.py, parser.py, ast_nodes.py, tac_generator.py
   tac/        instruction.py, program.py, interpreter.py, printer.py, dataflow.py
   agents/     orchestrator.py, code_analyzer.py, optimization_specialist.py (router),
-              optimizer_rule.py, optimizer_llm.py (Gemini, Ollama),
+              optimizer_rule.py, optimizer_llm.py (Gemini, Groq, Ollama),
               verifier.py, cost_evaluator.py, decision_log.py
   visualization/  charts.py, report.py
   frontend/c_frontend.py   C-subset front end used by the live demo
 dataset/      generator.py, programs/<category>/*.src
 demo.py       terminal front end: optimize a C program step by step
 demo_programs/  sample C programs for the demo
-tests/        one test module per component, plus regression tests (299 tests)
+tests/        one test module per component, plus regression tests (321 tests)
 output/       logs/ (per-program .log + .json), metrics/ (CSV + JSON), plots/ (PNG)
 ```
 
@@ -99,7 +99,7 @@ py main.py --run-all --output-dir output          # optimize everything, print l
 py main.py --run-all --quiet                      # same, but only progress lines on the console
 py main.py --run-file dataset/programs/loops/loops_001.src
 py main.py --visualize --output-dir output        # the 6 charts, from saved results
-py main.py --run-all --use-llm                    # add the LLM proposer (Gemini; Ollama if offline)
+py main.py --run-all --use-llm                    # add the LLM proposer (Gemini or Groq; Ollama if offline)
 py main.py --run-file my.src --offline            # LLM = local Ollama model, no internet needed
 py main.py --run-file my.src --offline --optimizer llm   # route to the LLM first, the rules second
 ```
@@ -110,8 +110,8 @@ py main.py --run-file my.src --offline --optimizer llm   # route to the LLM firs
 | `--optimizer MODE` | how the Optimization Specialist routes each step: `rule` (default), `hybrid` or `llm`; see [routing](#routing-rule-based-or-llm) |
 | `--use-llm` | enable the LLM proposer alongside the rules (same as `--optimizer hybrid`) |
 | `--offline` | offline mode: the LLM is a local Ollama model (implies `--optimizer hybrid` unless one is given) |
-| `--llm-provider P` | `auto` (default: `gemini` when online and a key is set, otherwise `ollama`), `gemini` or `ollama` |
-| `--llm-model ID` | model for the LLM (defaults: `gemini-3.1-flash-lite`, `qwen2.5-coder:7b`) |
+| `--llm-provider P` | `auto` (default: `gemini` or `groq` when online and a key is set, otherwise `ollama`), `gemini`, `groq` or `ollama` |
+| `--llm-model ID` | model for the LLM (defaults: `gemini-3.1-flash-lite`, `openai/gpt-oss-120b`, `qwen2.5-coder:7b`) |
 | `--compare-with DIR` | with `--visualize`: compare against another run (writes `comparison.csv` and chart 7) |
 | `--max-llm-calls N` | LLM proposals allowed per program (default 5) |
 | `--quiet` | with `--run-all`, print only progress; logs are still saved |
@@ -126,7 +126,7 @@ py demo.py                                  # menu: pick a sample, paste code, o
 py demo.py demo_programs/3_loop.c           # run one file
 py demo.py my_program.c --fast              # no pauses
 py demo.py my_program.c --inputs n=10       # values for scanf() variables
-py demo.py my_program.c --use-llm           # add the LLM proposer (Gemini; Ollama if offline)
+py demo.py my_program.c --use-llm           # add the LLM proposer (Gemini or Groq; Ollama if offline)
 py demo.py my_program.c --offline           # add the local Ollama model as the LLM proposer
 py demo.py my_program.c --verbose           # show every decision, including repeats and routing
 ```
@@ -164,8 +164,8 @@ optimized TAC.
 py -m pytest tests/ -v
 ```
 
-299 tests cover every component. The Ollama tests run against a stand-in local
-server, so they need neither Ollama nor a network. The verifier tests inject wrong changes
+321 tests cover every component. The Ollama and Groq tests run against stand-in
+local servers, so they need no Ollama, API key or network. The verifier tests inject wrong changes
 (bad folds, operand swaps, CSE across non-commutative ops, deleted live
 stores, off-by-one conditions, removed loop increments, deleted trapping
 divisions, reordered output). Each one must be rejected.
@@ -411,22 +411,28 @@ print(s);
 ## The LLM optimizer (optional)
 
 `--use-llm` adds an LLM proposer (`src/agents/optimizer_llm.py`). It shares
-one prompt and one reply parser across two providers, chosen with
-`--llm-provider`. Both are free to use:
+one prompt and one reply parser across three providers, chosen with
+`--llm-provider`. All three are free to use:
 
 | Provider | Default model | Credentials | Cost |
 |---|---|---|---|
 | `gemini` | `gemini-3.1-flash-lite` | `GEMINI_API_KEY`, or a `.gemini_key` file in the project root | free tier |
+| `groq` | `openai/gpt-oss-120b` | `GROQ_API_KEY`, or a `.groq_key` file in the project root | free tier |
 | `ollama` | `qwen2.5-coder:7b` | none: a local Ollama server | free, runs on your machine |
 
-The default, `auto`, uses Gemini when the internet is reachable and a key is
-set, and the local Ollama model otherwise. `--offline` always uses Ollama.
+The default, `auto`, uses the first cloud provider that has a key (Gemini,
+then Groq) when the internet is reachable, and the local Ollama model
+otherwise. `--offline` always uses Ollama.
 
 ```powershell
 # put your AI Studio key (aistudio.google.com) in .gemini_key -- it is git-ignored
 py main.py --run-file dataset/programs/loops/loops_001.src --use-llm
 py main.py --run-all --quiet --use-llm --max-llm-calls 2
 py main.py --visualize --compare-with output_rule_only     # adds chart 7 + comparison table
+
+# or put a Groq key (console.groq.com) in .groq_key -- also git-ignored
+py main.py --run-file dataset/programs/loops/loops_001.src --use-llm --llm-provider groq
+py main.py --run-all --quiet --use-llm --llm-provider groq --max-llm-calls 2 --output-dir output_groq
 ```
 
 ### Offline mode (Ollama)
@@ -504,6 +510,27 @@ log with its reason:
 * A 500/503 ("high demand") is retried three times; if it persists, only that
   proposal is skipped.
 * Free-tier prompts may be used by Google to improve its products.
+
+**Groq free-tier notes** (limits as listed by Groq in October 2026; they
+have not been measured with this project yet):
+* **No SDK.** The optimizer calls Groq's OpenAI-compatible HTTP API with
+  the Python standard library, so there is nothing extra to `pip install`.
+* **Quotas are per model:** about 30 requests and 8,000 tokens a minute,
+  and 1,000 requests and 200,000 tokens a day, for `openai/gpt-oss-120b`,
+  `openai/gpt-oss-20b` and `qwen/qwen3.8-27b`. The Limits page of the Groq
+  console shows the exact numbers for your account.
+* **Sizing.** The Gemini run above made 383 calls of roughly 350 visible
+  tokens each, about 135,000 in total. These Groq models also spend hidden
+  reasoning tokens, which count, so a full run may need two days or a
+  second model (`--llm-model openai/gpt-oss-20b`).
+* Reasoning effort is set to `low` to save quota; the
+  `GROQ_REASONING_EFFORT` variable changes it (`low`, `medium`, `high`).
+* Calls are spaced about 5 s apart to stay under the per-minute token limit.
+* A per-minute 429 is waited out for as long as Groq says and retried
+  twice. A per-day 429 means the quota is spent: the LLM switches off and
+  the run finishes rule-based.
+* A 5xx error is retried three times; if it persists, only that proposal
+  is skipped.
 
 **Chat subscriptions (such as ChatGPT Plus/Go) do not include API
 access.** Without a key, the optimizer reports itself unavailable and the
