@@ -70,6 +70,8 @@ _REASONING_RE = re.compile(r"<reasoning>(.*?)</reasoning>", re.DOTALL | re.IGNOR
 _TAC_RE = re.compile(r"<tac>(.*?)</tac>", re.DOTALL | re.IGNORECASE)
 _LINE_NO_RE = re.compile(r"^\s*\d+\s*[|:.)]\s+")
 _THINK_RE = re.compile(r"<think>.*?</think>", re.DOTALL | re.IGNORECASE)   # local reasoning models
+_GPU_CRASH_RE = re.compile(r"llama-server process has terminated|llama runner process has terminated|CUDA",
+                           re.IGNORECASE)
 
 
 def parse_llm_tac(text: str) -> TACProgram | None:
@@ -392,6 +394,15 @@ def ollama_running(host: str | None = None, timeout: float = 1.0) -> bool:
         return False
 
 
+class _OllamaError(Exception):
+    """An HTTP error reply from the Ollama server."""
+
+    def __init__(self, status: int, message: str):
+        super().__init__(f"{status}: {message}")
+        self.status = status
+        self.message = message
+
+
 class OllamaOptimizer(BaseLLMOptimizer):
     """A model served on this machine by Ollama -- the offline backend.
 
@@ -404,6 +415,10 @@ class OllamaOptimizer(BaseLLMOptimizer):
     A reply can take a while on a laptop, so the read timeout is generous
     (``OLLAMA_TIMEOUT`` seconds, default 300) and a timed-out call only skips
     that proposal. If the server cannot be reached, the optimizer switches off.
+
+    If Ollama's GPU runner crashes while loading the model (an NVIDIA driver too
+    old for its CUDA build does this), the call is repeated on the CPU and the
+    rest of the run stays there. ``OLLAMA_NUM_GPU=0`` forces the CPU from the start.
     """
 
     provider = "ollama"
@@ -416,6 +431,9 @@ class OllamaOptimizer(BaseLLMOptimizer):
         self._timeout = timeout if timeout is not None else float(os.environ.get("OLLAMA_TIMEOUT", 300))
         self._max_tokens = max_tokens
         self.api_calls = 0
+        num_gpu = os.environ.get("OLLAMA_NUM_GPU", "")
+        self._num_gpu = int(num_gpu) if num_gpu.lstrip("-").isdigit() else None   # None: Ollama decides
+        self.cpu_fallback = False     # True once a GPU crash made this run switch to the CPU
         try:
             pulled = self.pulled_models(connect_timeout)
         except (OSError, ValueError):
@@ -447,18 +465,35 @@ class OllamaOptimizer(BaseLLMOptimizer):
             # The default is not pulled: use what is there, preferring a code model.
             self._model = next((name for name in usable if "code" in name), usable[0])
 
+    def _chat(self, prompt: str) -> dict:
+        options = {"temperature": 0.2, "num_predict": self._max_tokens, "num_ctx": 4096}
+        if self._num_gpu is not None:
+            options["num_gpu"] = self._num_gpu       # layers on the GPU; 0 means CPU only
+        body = {"model": self._model, "stream": False, "options": options,
+                "messages": [{"role": "user", "content": prompt}]}
+        try:
+            return self._request("/api/chat", body, self._timeout)
+        except urllib.error.HTTPError as exc:
+            raise _OllamaError(exc.code, self._error_text(exc)) from exc
+
     def _complete(self, prompt: str) -> str:
         self.api_calls += 1
-        body = {"model": self._model, "stream": False,
-                "messages": [{"role": "user", "content": prompt}],
-                "options": {"temperature": 0.2, "num_predict": self._max_tokens, "num_ctx": 4096}}
         try:
-            reply = self._request("/api/chat", body, self._timeout)
-        except urllib.error.HTTPError as exc:
-            if exc.code == 404:
+            try:
+                reply = self._chat(prompt)
+            except _OllamaError as exc:
+                if exc.status != 500 or self._num_gpu == 0 or not _GPU_CRASH_RE.search(exc.message):
+                    raise
+                # The GPU runner died (typically an NVIDIA driver too old for Ollama's CUDA
+                # build). The model still runs on the CPU, only slower, so carry on there.
+                self._num_gpu = 0
+                self.cpu_fallback = True
+                reply = self._chat(prompt)
+        except _OllamaError as exc:
+            if exc.status == 404:
                 raise _LLMUnavailable(f"Ollama model {self._model!r} is not pulled - "
                                       f"run 'ollama pull {self._model}'") from exc
-            raise _LLMSkip(f"Ollama error {exc.code}: {self._error_text(exc)}") from exc
+            raise _LLMSkip(f"Ollama error {exc.status}: {exc.message}") from exc
         except OSError as exc:
             reason = getattr(exc, "reason", exc)
             if isinstance(reason, TimeoutError):

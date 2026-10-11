@@ -188,6 +188,10 @@ def main() -> int:
             if llm is not None and not llm.available:
                 print(f"Note: LLM optimizer was disabled during the run ({llm.unavailable_reason}).")
 
+        if getattr(llm, "cpu_fallback", False):
+            print("Note: Ollama's GPU runner crashed, so the model ran on the CPU (slower). "
+                  "Updating the NVIDIA driver usually fixes this.")
+
     if args.visualize:
         from src.visualization.charts import generate_all_charts
 

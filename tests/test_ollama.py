@@ -79,7 +79,9 @@ class _FakeOllama:
 
 
 @pytest.fixture
-def ollama():
+def ollama(monkeypatch):
+    monkeypatch.delenv("OLLAMA_NUM_GPU", raising=False)
+    monkeypatch.delenv("OLLAMA_MODEL", raising=False)
     started = []
 
     def start(replies=(), models=("qwen2.5-coder:7b",)):
@@ -192,7 +194,31 @@ def test_ollama_server_error_skips_one_proposal(ollama):
     prog = P("t0 = 3 + 5\nprint t0")
     cand, reason = opt.propose(prog)
     assert cand is None and opt.available and "more system memory" in reason
+    assert len(server.requests) == 1 and not opt.cpu_fallback           # not a GPU crash: no retry
     assert opt.propose(prog)[0].to_string() == "t0 = 8\nprint t0"
+
+
+GPU_CRASH = (500, {"error": "llama-server process has terminated: exit status 0xc0000409"}, 0)
+
+
+def test_ollama_gpu_crash_falls_back_to_the_cpu(ollama):
+    server = ollama([GPU_CRASH, chat(GOOD_REPLY), chat(GOOD_REPLY)])
+    opt = OllamaOptimizer(host=server.url)
+    prog = P("t0 = 3 + 5\nprint t0")
+    assert opt.propose(prog)[0].to_string() == "t0 = 8\nprint t0"      # same call, repeated on the CPU
+    assert opt.cpu_fallback and opt.available and opt.api_calls == 1
+    assert "num_gpu" not in server.requests[0]["options"] and server.requests[1]["options"]["num_gpu"] == 0
+    opt.propose(prog)
+    assert server.requests[2]["options"]["num_gpu"] == 0                # and it stays on the CPU
+
+
+def test_ollama_crash_on_the_cpu_is_not_retried(ollama, monkeypatch):
+    monkeypatch.setenv("OLLAMA_NUM_GPU", "0")
+    server = ollama([GPU_CRASH])
+    opt = OllamaOptimizer(host=server.url)
+    cand, reason = opt.propose(P("t0 = 3 + 5\nprint t0"))
+    assert cand is None and opt.available and not opt.cpu_fallback and "terminated" in reason
+    assert len(server.requests) == 1 and server.requests[0]["options"]["num_gpu"] == 0
 
 
 def test_ollama_truncated_reply_is_skipped(ollama):

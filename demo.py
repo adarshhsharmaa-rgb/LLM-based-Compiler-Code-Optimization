@@ -465,6 +465,9 @@ def run_demo(source: str, name: str, args, pacer: Pacer, mode: str) -> int:
     elapsed = time.time() - started
     hidden = replay(result, pacer, args.verbose)
     print()
+    if getattr(orchestrator.llm_optimizer, "cpu_fallback", False):
+        print(c("  note: Ollama's GPU runner crashed, so the model ran on the CPU (slower).", "yellow"))
+        print(c("  Updating the NVIDIA driver usually fixes this.", "yellow"))
     if result.stopped_reason:
         print(c(f"  Stopped: {result.stopped_reason}.", "red", "bold"))
         print(c("  The agent only accepts changes it can check by running the program, so it made none.", "grey"))
