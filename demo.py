@@ -5,7 +5,9 @@
     py demo.py my_program.c --fast               # no pauses
     py demo.py my_program.c --step               # also pause after every agent decision
     py demo.py my_program.c --inputs n=10,k=3    # values for scanf() variables
-    py demo.py my_program.c --use-llm            # add the Gemini proposer (needs .gemini_key)
+    py demo.py my_program.c --use-llm            # add the LLM proposer (Gemini, or Ollama when offline)
+    py demo.py my_program.c --offline            # add the local Ollama model as the LLM proposer
+    py demo.py my_program.c --optimizer llm      # route to the LLM first, the rules second
     py demo.py my_program.c --verbose            # show every decision, including repeats
 
 The program goes through the same pipeline as the 500-program experiment:
@@ -29,6 +31,8 @@ if PROJECT_ROOT not in sys.path:
     sys.path.insert(0, PROJECT_ROOT)
 
 from src.agents.cost_evaluator import CostEvaluator  # noqa: E402
+from src.agents.optimization_specialist import MODE_SUMMARIES, MODES  # noqa: E402
+from src.agents.optimizer_llm import PROVIDERS, ollama_running  # noqa: E402
 from src.agents.orchestrator import Orchestrator  # noqa: E402
 from src.frontend.c_frontend import CFrontendError, compile_c  # noqa: E402
 from src.tac.interpreter import ExecutionTimeout, TACInterpreter, TACRuntimeError  # noqa: E402
@@ -44,6 +48,13 @@ TYPE_LABELS = {
     "COPY_PROPAGATION": "Copy propagation",
     "LLM": "LLM proposal",
 }
+LLM_NAMES = {"gemini": "Gemini", "anthropic": "Claude", "ollama": "Ollama"}
+
+
+def llm_label(result) -> str:
+    """Name of the LLM proposer for this run, e.g. ``LLM (Ollama)``."""
+    name = LLM_NAMES.get(result.llm_provider)
+    return f"LLM ({name})" if name else "LLM"
 
 
 class Style:
@@ -282,12 +293,12 @@ def replay(result, pacer: Pacer, verbose: bool) -> int:
         pacer.tick()
 
     for e in result.log.entries:
-        if e.phase == "analyze" and verbose:
+        if e.phase in ("analyze", "route") and verbose:
             flush()
-            print(c(f"       {e.description}", "grey"))
+            print(c(f"       {'route to ' if e.phase == 'route' else ''}{e.description}", "grey"))
         elif e.phase == "propose":
             flush()
-            kind = "LLM (Gemini)" if e.source == "llm" else e.opportunity_type
+            kind = llm_label(result) if e.source == "llm" else e.opportunity_type
             current = {"it": e.iteration, "kind": kind, "source": e.source, "what": describe(e),
                        "outcome": None, "before": 0.0, "after": 0.0, "reason": None}
         elif current is not None and e.phase == "verify":
@@ -323,7 +334,7 @@ def suggestion_summary(result, llm_enabled: bool, llm_note: str, hidden: int) ->
     rules = [p for p in result.proposals if p["source"] == "rule"]
     llm = [p for p in result.proposals if p["source"] == "llm"]
     rows = [("Rule-based", count_outcomes(rules), "cyan"),
-            ("LLM (Gemini)", count_outcomes(llm), "magenta"),
+            (llm_label(result), count_outcomes(llm), "magenta"),
             ("Total", count_outcomes(result.proposals), "bold")]
 
     print("  " + c(f"{'Source':<16}{'Suggested':>10}{'Verified':>10}{'Accepted':>10}"
@@ -379,26 +390,32 @@ def run_program(program, inputs: dict[str, int]) -> str:
         return f"prints {exc.outputs} then stops with an error: {exc}"
 
 
-def make_orchestrator(use_llm: bool, provider: str, max_iterations: int) -> tuple[Orchestrator, bool, str]:
-    """Returns (orchestrator, llm_enabled, note about the LLM when it is not enabled)."""
-    if not use_llm:
-        return Orchestrator(max_iterations=max_iterations), False, "not used (add --use-llm to include Gemini)"
-    if provider == "gemini" and not os.environ.get("GEMINI_API_KEY") and not os.environ.get("GOOGLE_API_KEY"):
+def make_orchestrator(mode: str, args) -> tuple[Orchestrator, bool, str]:
+    """Returns (orchestrator, llm_enabled, note about the LLM when it is not enabled).
+
+    ``mode`` is the Optimization Specialist's routing policy: "rule", "llm" or "hybrid".
+    """
+    if mode == "rule":
+        return (Orchestrator(max_iterations=args.max_iterations), False,
+                "not used (add --use-llm, or --offline for a local Ollama model)")
+    if (not args.offline and args.llm_provider in ("auto", "gemini")
+            and not os.environ.get("GEMINI_API_KEY") and not os.environ.get("GOOGLE_API_KEY")):
         key_path = os.path.join(PROJECT_ROOT, ".gemini_key")
         if os.path.exists(key_path):
             with open(key_path, encoding="utf-8") as fh:
                 os.environ["GEMINI_API_KEY"] = fh.read().strip()
-    orchestrator = Orchestrator(use_llm=True, max_iterations=max_iterations,
-                                llm_provider=provider, max_llm_calls=3)
+    orchestrator = Orchestrator(optimizer_mode=mode, max_iterations=args.max_iterations,
+                                llm_provider=args.llm_provider, llm_model=args.llm_model,
+                                offline=args.offline, max_llm_calls=3)
     llm = orchestrator.llm_optimizer
     if llm is None or not llm.available:
-        reason = clip(llm.unavailable_reason if llm else "not configured", 48)
+        reason = clip(llm.unavailable_reason if llm else "not configured", 100)
         orchestrator.llm_optimizer = None
         return orchestrator, False, f"unavailable ({reason})"
     return orchestrator, True, ""
 
 
-def run_demo(source: str, name: str, args, pacer: Pacer, use_llm: bool) -> int:
+def run_demo(source: str, name: str, args, pacer: Pacer, mode: str) -> int:
     # ------------------------------------------------------------ stage 1
     stage(1, f"The C program  ({name})")
     for line in numbered(source.rstrip().splitlines(), start=1):
@@ -438,12 +455,15 @@ def run_demo(source: str, name: str, args, pacer: Pacer, use_llm: bool) -> int:
 
     # ------------------------------------------------------------ stage 3
     stage(3, "Agent loop: Analyze → Propose → Verify → Evaluate → Accept/Reject")
-    orchestrator, llm_enabled, llm_note = make_orchestrator(use_llm, args.llm_provider, args.max_iterations)
-    if use_llm and not llm_enabled:
+    orchestrator, llm_enabled, llm_note = make_orchestrator(mode, args)
+    if mode != "rule" and not llm_enabled:
         print(c(f"  LLM {llm_note}; continuing with rules only.", "yellow"))
     elif llm_enabled:
-        print(c("  Rules + Gemini: the LLM is asked when a rule is rejected or the rules run out.", "magenta"))
-        print(c("  (waiting for the LLM can take a few seconds)", "grey"))
+        llm = orchestrator.llm_optimizer
+        why = f" - {llm.selected_because}" if llm.selected_because else ""
+        print(c(f"  Routing: {mode} ({MODE_SUMMARIES[mode]}).", "magenta"))
+        print(c(f"  LLM: {llm.label}{why}", "magenta"))
+        print(c("  (waiting for the LLM can take a few seconds, longer for a local model)", "grey"))
     started = time.time()
     result = orchestrator.optimize(tac, name)
     elapsed = time.time() - started
@@ -512,8 +532,15 @@ def main() -> int:
     ap.add_argument("--verbose", action="store_true",
                     help="show every decision, including repeats and what the analyzer found")
     ap.add_argument("--inputs", help="values for scanf variables, e.g. n=10,k=3")
-    ap.add_argument("--use-llm", action="store_true", help="add the LLM proposer")
-    ap.add_argument("--llm-provider", default="gemini", choices=["gemini", "anthropic"])
+    ap.add_argument("--optimizer", choices=MODES, default=None,
+                    help="how each step is routed: " + "; ".join(f"{m} = {MODE_SUMMARIES[m]}" for m in MODES)
+                         + " (default: rule, or hybrid with --use-llm / --offline)")
+    ap.add_argument("--use-llm", action="store_true", help="add the LLM proposer (same as --optimizer hybrid)")
+    ap.add_argument("--offline", action="store_true",
+                    help="offline mode: the LLM is a local Ollama model, no internet or API key needed")
+    ap.add_argument("--llm-provider", default="auto", choices=["auto", *sorted(PROVIDERS)],
+                    help="auto = gemini when online and a key is set, otherwise ollama")
+    ap.add_argument("--llm-model", default=None, help="model ID for the LLM")
     ap.add_argument("--max-iterations", type=int, default=200, help="agent iteration cap (default 200)")
     ap.add_argument("--delay", type=float, default=0.12, help="seconds between decisions")
     ap.add_argument("--no-color", action="store_true")
@@ -523,6 +550,7 @@ def main() -> int:
     if Style.enabled and os.name == "nt":
         os.system("")   # switches the Windows console to ANSI colour mode
     pacer = Pacer(args.fast, args.step, args.delay)
+    mode = args.optimizer or ("hybrid" if args.use_llm or args.offline else "rule")
     banner()
 
     if args.file:
@@ -532,21 +560,24 @@ def main() -> int:
         except OSError as exc:
             print(c(f"  Cannot read '{args.file}': {exc.strerror or exc}", "red"))
             return 1
-        return run_demo(source, os.path.basename(args.file), args, pacer, args.use_llm)
+        return run_demo(source, os.path.basename(args.file), args, pacer, mode)
 
     if not sys.stdin.isatty():            # piped input: treat it as a pasted program
-        return run_demo(sys.stdin.read(), "pasted_program.c", args, pacer, args.use_llm)
+        return run_demo(sys.stdin.read(), "pasted_program.c", args, pacer, mode)
 
+    # Offer the LLM in the menu only if one is ready: a saved Gemini key or a running Ollama.
+    llm_on_offer = mode == "rule" and args.optimizer is None and (
+        os.path.exists(os.path.join(PROJECT_ROOT, ".gemini_key")) or ollama_running())
     status = 0
     while True:
         chosen = choose_program()
         if chosen is None:
             return status
         source, name = chosen
-        use_llm = args.use_llm
-        if not use_llm and os.path.exists(os.path.join(PROJECT_ROOT, ".gemini_key")):
-            use_llm = ask_yes_no("Also use the Gemini LLM proposer?", default=False)
-        status = run_demo(source, name, args, pacer, use_llm)
+        run_mode = mode
+        if llm_on_offer and ask_yes_no("Also use the LLM proposer?", default=False):
+            run_mode = "hybrid"
+        status = run_demo(source, name, args, pacer, run_mode)
         if not ask_yes_no("Run another program?", default=True):
             return status
 

@@ -36,7 +36,7 @@ flowchart LR
     subgraph LOOP["Agent loop (Orchestrator, max 50 iterations)"]
         direction TB
         AN["1 · Code Analyzer<br/>dataflow analyses → ranked opportunities"]
-        PR["2 · Proposer<br/>rule-based (always) · LLM (optional)"]
+        PR["2 · Optimization Specialist<br/>routes each step: rule-based · LLM (cloud, or local Ollama offline)"]
         VE["3 · Verifier<br/>differential testing + symbolic equivalence"]
         CE["4 · Cost Evaluator<br/>weighted static cost"]
         AC{"5 · Decide"}
@@ -59,14 +59,15 @@ flowchart LR
 src/
   frontend/   lexer.py, parser.py, ast_nodes.py, tac_generator.py
   tac/        instruction.py, program.py, interpreter.py, printer.py, dataflow.py
-  agents/     orchestrator.py, code_analyzer.py, optimizer_rule.py, optimizer_llm.py,
+  agents/     orchestrator.py, code_analyzer.py, optimization_specialist.py (router),
+              optimizer_rule.py, optimizer_llm.py (Gemini, Claude, Ollama),
               verifier.py, cost_evaluator.py, decision_log.py
   visualization/  charts.py, report.py
   frontend/c_frontend.py   C-subset front end used by the live demo
 dataset/      generator.py, programs/<category>/*.src
 demo.py       terminal front end: optimize a C program step by step
 demo_programs/  sample C programs for the demo
-tests/        one test module per component, plus regression tests (257 tests)
+tests/        one test module per component, plus regression tests (299 tests)
 output/       logs/ (per-program .log + .json), metrics/ (CSV + JSON), plots/ (PNG)
 ```
 
@@ -98,15 +99,19 @@ py main.py --run-all --output-dir output          # optimize everything, print l
 py main.py --run-all --quiet                      # same, but only progress lines on the console
 py main.py --run-file dataset/programs/loops/loops_001.src
 py main.py --visualize --output-dir output        # the 6 charts, from saved results
-py main.py --run-all --use-llm                    # add the LLM proposer (Gemini by default)
+py main.py --run-all --use-llm                    # add the LLM proposer (Gemini; Ollama if offline)
+py main.py --run-file my.src --offline            # LLM = local Ollama model, no internet needed
+py main.py --run-file my.src --offline --optimizer llm   # route to the LLM first, the rules second
 ```
 
 | Flag | Meaning |
 |---|---|
 | `--max-iterations N` | iteration cap per program (default 50) |
-| `--use-llm` | enable the LLM proposer alongside the rules |
-| `--llm-provider P` | `gemini` (default) or `anthropic` |
-| `--llm-model ID` | model for `--use-llm` (defaults: `gemini-3.1-flash-lite`, `claude-sonnet-4-20250514`) |
+| `--optimizer MODE` | how the Optimization Specialist routes each step: `rule` (default), `hybrid` or `llm`; see [routing](#routing-rule-based-or-llm) |
+| `--use-llm` | enable the LLM proposer alongside the rules (same as `--optimizer hybrid`) |
+| `--offline` | offline mode: the LLM is a local Ollama model (implies `--optimizer hybrid` unless one is given) |
+| `--llm-provider P` | `auto` (default: `gemini` when online and a key is set, otherwise `ollama`), `gemini`, `anthropic` or `ollama` |
+| `--llm-model ID` | model for the LLM (defaults: `gemini-3.1-flash-lite`, `claude-sonnet-4-20250514`, `qwen2.5-coder:7b`) |
 | `--compare-with DIR` | with `--visualize`: compare against another run (writes `comparison.csv` and chart 7) |
 | `--max-llm-calls N` | LLM proposals allowed per program (default 5) |
 | `--quiet` | with `--run-all`, print only progress; logs are still saved |
@@ -121,8 +126,9 @@ py demo.py                                  # menu: pick a sample, paste code, o
 py demo.py demo_programs/3_loop.c           # run one file
 py demo.py my_program.c --fast              # no pauses
 py demo.py my_program.c --inputs n=10       # values for scanf() variables
-py demo.py my_program.c --use-llm           # add the Gemini proposer
-py demo.py my_program.c --verbose           # show every decision, including repeats
+py demo.py my_program.c --use-llm           # add the LLM proposer (Gemini; Ollama if offline)
+py demo.py my_program.c --offline           # add the local Ollama model as the LLM proposer
+py demo.py my_program.c --verbose           # show every decision, including repeats and routing
 ```
 
 | Stage | What it shows |
@@ -158,7 +164,8 @@ optimized TAC.
 py -m pytest tests/ -v
 ```
 
-257 tests cover every component. The verifier tests inject wrong changes
+299 tests cover every component. The Ollama tests run against a stand-in local
+server, so they need neither Ollama nor a network. The verifier tests inject wrong changes
 (bad folds, operand swaps, CSE across non-commutative ops, deleted live
 stores, off-by-one conditions, removed loop increments, deleted trapping
 divisions, reordered output). Each one must be rejected.
@@ -201,11 +208,13 @@ verifier feeds them values.
    | `STRENGTH_REDUCTION` | 60 | `x*2 → x+x`, `x*2^k → x<<k` |
    | `COPY_PROPAGATION` | 50 | `x = y` propagated wherever the copy is *available* (forward must-analysis), plus copy coalescing `t = a op b; x = t → x = a op b` |
 
-2. **Propose.** `RuleBasedOptimizer.propose()` deep-copies the program and
-   applies exactly one opportunity. With `--use-llm`, `LLMOptimizer` asks
-   Claude for one optimization whenever a rule proposal is turned down, or
-   once the rules run out. The reply is parsed back into TAC and goes
-   through the same gates as a rule proposal.
+2. **Propose** (`optimization_specialist.py`). The Optimization Specialist
+   routes the step to one of its two proposers. The rule-based one
+   (`RuleBasedOptimizer.propose()`) deep-copies the program and applies
+   exactly one opportunity. The LLM one sends the TAC to a language model
+   and asks for one optimization; the reply is parsed back into TAC. Either
+   proposal goes through the same gates. See
+   [routing](#routing-rule-based-or-llm) for who is asked when.
 3. **Verify** (`verifier.py`). Both checks must pass:
    * **Differential testing.** The original and candidate run in the TAC
      interpreter on 20 random input sets (values in [-100, 100]) plus edge
@@ -402,13 +411,17 @@ print(s);
 ## The LLM optimizer (optional)
 
 `--use-llm` adds an LLM proposer (`src/agents/optimizer_llm.py`). It shares
-one prompt and one reply parser across two providers, chosen with
+one prompt and one reply parser across three providers, chosen with
 `--llm-provider`:
 
 | Provider | Default model | Credentials | Cost |
 |---|---|---|---|
 | `gemini` | `gemini-3.1-flash-lite` | `GEMINI_API_KEY`, or a `.gemini_key` file in the project root | free tier |
 | `anthropic` | `claude-sonnet-4-20250514` | `ANTHROPIC_API_KEY` from console.anthropic.com | paid per use |
+| `ollama` | `qwen2.5-coder:7b` | none: a local Ollama server | free, runs on your machine |
+
+The default, `auto`, uses Gemini when the internet is reachable and a key is
+set, and the local Ollama model otherwise. `--offline` always uses Ollama.
 
 ```powershell
 # put your AI Studio key (aistudio.google.com) in .gemini_key -- it is git-ignored
@@ -417,13 +430,69 @@ py main.py --run-all --quiet --use-llm --max-llm-calls 2
 py main.py --visualize --compare-with output_rule_only     # adds chart 7 + comparison table
 ```
 
-When the LLM is consulted:
-* after a rule-based proposal is rejected, and
-* once the rule-based opportunities run out.
+### Offline mode (Ollama)
 
-It is **not** consulted when the program is already nothing but
-`print <constant>` lines. That form is provably minimal, so a call could only
-waste quota.
+One-time setup, while online:
+
+```powershell
+winget install Ollama.Ollama          # or the installer from ollama.com
+ollama pull qwen2.5-coder:7b          # about 4.7 GB; qwen2.5-coder:3b (1.9 GB) for less memory
+```
+
+After that no internet or API key is needed:
+
+```powershell
+py main.py --run-file dataset/programs/loops/loops_001.src --offline
+py demo.py demo_programs/3_loop.c --offline
+py main.py --run-all --quiet --offline --max-llm-calls 1 --output-dir output_ollama
+```
+
+* The optimizer talks to the Ollama server over its local HTTP API using
+  only the Python standard library, so there is nothing extra to `pip install`.
+* **Model.** `--llm-model NAME` or the `OLLAMA_MODEL` variable picks the
+  model. If the default is not pulled but another chat model is, that one
+  is used (a code model first).
+* **Server.** The address comes from `OLLAMA_HOST` (default
+  `127.0.0.1:11434`). The Ollama app starts the server by itself; from a
+  terminal it is `ollama serve`.
+* **Speed.** A reply is awaited for up to `OLLAMA_TIMEOUT` seconds
+  (default 300). A timed-out call only skips that proposal.
+* **If Ollama is not running** or has no model, the run prints why and
+  continues rule-based, exactly as with a missing API key.
+* A small local model is wrong more often than a cloud one. That costs
+  time, not correctness: its proposals go through the same verifier, and
+  the LLM validity rate reports how often it was right. No Ollama results
+  are included in the tables above; they have not been measured yet.
+
+### Routing: rule-based or LLM
+
+The Optimization Specialist (`src/agents/optimization_specialist.py`) owns
+both proposers and decides, for every step, which one gets the program.
+`--optimizer` sets its policy:
+
+| Mode | First choice | Falls back to the other when |
+|---|---|---|
+| `rule` (default) | rules | never: the LLM is not used |
+| `hybrid` (`--use-llm`, `--offline`) | rules | the rule proposal for this step was turned down, or the rules have nothing left to try |
+| `llm` | LLM | the LLM is not running, its call budget is used up, or its proposal was turned down |
+
+In every mode the rules still get every step the LLM does not win, so the
+loop stops only when the rules have nothing left to try either. The LLM is
+**never** asked when the program is already nothing but `print <constant>` lines.
+That form is provably minimal, so a call could only waste time or quota.
+
+When an LLM is attached, each routing decision is written to the decision
+log with its reason:
+
+```
+--- Iteration 21 ---
+  [ANALYZE] No more opportunities found.
+  [ROUTE]   LLM optimizer (ollama qwen2.5-coder:7b): the rules have nothing left to try
+  [LLM]     LLM proposal: evaluated the whole program at compile time
+  [VERIFY]  PASS (differential: 25/25 inputs matched, symbolic: skipped (control flow))
+  [COST]    Before: 20.0, After: 2.0 (reduction: 90.0%)
+  [ACCEPT]  ✓ Change accepted
+```
 
 **Gemini free-tier notes** (measured October 2026):
 * **Quotas are per model, per day.** `gemini-3.5-flash` allows only

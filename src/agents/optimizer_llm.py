@@ -1,4 +1,4 @@
-"""LLM-based optimizer agents (Anthropic Claude or Google Gemini).
+"""LLM-based optimizer agents (Anthropic Claude, Google Gemini, or a local Ollama model).
 
 The LLM is only a *proposer*: everything it returns goes through exactly the
 same Verifier and CostEvaluator gates as rule-based proposals, so a wrong LLM
@@ -9,15 +9,25 @@ Providers:
     ``ANTHROPIC_API_KEY`` or an ``ant auth login`` profile.
   * ``gemini``    -- Gemini via the ``google-genai`` SDK. Credentials:
     ``GEMINI_API_KEY`` (or ``GOOGLE_API_KEY``), free from aistudio.google.com.
+  * ``ollama``    -- a model running on this machine, served by Ollama
+    (ollama.com). No key and no internet, so this is the offline backend.
+    Server address: ``OLLAMA_HOST`` (default 127.0.0.1:11434).
+  * ``auto``      -- accepted by ``create_llm_optimizer`` only: the cloud default
+    when it can be reached and is configured, otherwise Ollama.
 
-If credentials are missing, or the API fails with a non-retryable error, the
-optimizer marks itself unavailable and the orchestrator carries on with
-rule-based optimization only.
+If credentials are missing, the local server is not running, or the API fails
+with a non-retryable error, the optimizer marks itself unavailable and the
+orchestrator carries on with rule-based optimization only.
 """
 from __future__ import annotations
 
+import json
+import os
 import re
+import socket
 import time
+import urllib.error
+import urllib.request
 
 from ..tac.program import TACParseError, TACProgram
 
@@ -25,8 +35,11 @@ DEFAULT_PROVIDER = "gemini"
 DEFAULT_MODELS = {
     "anthropic": "claude-sonnet-4-20250514",
     "gemini": "gemini-3.1-flash-lite",
+    "ollama": "qwen2.5-coder:7b",
 }
 DEFAULT_MODEL = DEFAULT_MODELS[DEFAULT_PROVIDER]
+CLOUD_HOSTS = {"anthropic": "api.anthropic.com", "gemini": "generativelanguage.googleapis.com"}
+OLLAMA_DEFAULT_HOST = "http://127.0.0.1:11434"
 
 PROMPT_TEMPLATE = """You are a compiler optimization expert. Given this Three-Address Code (TAC), propose exactly ONE semantics-preserving optimization.
 
@@ -55,6 +68,7 @@ modified TAC here
 _REASONING_RE = re.compile(r"<reasoning>(.*?)</reasoning>", re.DOTALL | re.IGNORECASE)
 _TAC_RE = re.compile(r"<tac>(.*?)</tac>", re.DOTALL | re.IGNORECASE)
 _LINE_NO_RE = re.compile(r"^\s*\d+\s*[|:.)]\s+")
+_THINK_RE = re.compile(r"<think>.*?</think>", re.DOTALL | re.IGNORECASE)   # local reasoning models
 
 
 def parse_llm_tac(text: str) -> TACProgram | None:
@@ -84,11 +98,21 @@ class _LLMSkip(Exception):
 
 class BaseLLMOptimizer:
     provider = "base"
+    selected_because = ""      # set by create_llm_optimizer: why this backend was picked
 
     def __init__(self, model: str):
         self._model = model
         self.available = True
         self.unavailable_reason = ""
+
+    @property
+    def model(self) -> str:
+        return self._model
+
+    @property
+    def label(self) -> str:
+        """Short name for logs, e.g. ``ollama qwen2.5-coder:7b``."""
+        return f"{self.provider} {self._model}"
 
     def _disable(self, reason: str) -> None:
         self.available = False
@@ -260,10 +284,156 @@ class GeminiOptimizer(BaseLLMOptimizer):
         return text
 
 
-PROVIDERS = {"anthropic": LLMOptimizer, "gemini": GeminiOptimizer}
+# ====================================================================== #
+def ollama_host(host: str | None = None) -> str:
+    """Base URL of the Ollama server: the argument, else ``$OLLAMA_HOST``, else the local default."""
+    host = (host or os.environ.get("OLLAMA_HOST") or OLLAMA_DEFAULT_HOST).strip().rstrip("/")
+    if "://" not in host:
+        host = "http://" + host + ("" if ":" in host else ":11434")
+    # OLLAMA_HOST is often the server's bind address; 0.0.0.0 is not one a client can connect to.
+    return host.replace("//0.0.0.0", "//127.0.0.1")
 
 
-def create_llm_optimizer(provider: str = DEFAULT_PROVIDER, model: str | None = None) -> BaseLLMOptimizer:
+def _open_local(url: str, data: bytes | None, timeout: float):
+    """Open a URL on the Ollama server, never through a system HTTP proxy."""
+    request = urllib.request.Request(url, data=data, headers={"Content-Type": "application/json"})
+    return urllib.request.build_opener(urllib.request.ProxyHandler({})).open(request, timeout=timeout)
+
+
+def ollama_running(host: str | None = None, timeout: float = 1.0) -> bool:
+    """Quick check that an Ollama server answers (used before offering offline mode)."""
+    try:
+        with _open_local(ollama_host(host) + "/api/version", None, timeout):
+            return True
+    except (OSError, ValueError):
+        return False
+
+
+class OllamaOptimizer(BaseLLMOptimizer):
+    """A model served on this machine by Ollama -- the offline backend.
+
+    Needs no API key, no internet and no extra Python package: it talks to the
+    Ollama server's HTTP API with the standard library. Set up once with
+    ``ollama pull qwen2.5-coder:7b``. Any chat model works: pass ``--llm-model``
+    or set ``OLLAMA_MODEL``. If the default model is not pulled but another one
+    is, that one is used.
+
+    A reply can take a while on a laptop, so the read timeout is generous
+    (``OLLAMA_TIMEOUT`` seconds, default 300) and a timed-out call only skips
+    that proposal. If the server cannot be reached, the optimizer switches off.
+    """
+
+    provider = "ollama"
+
+    def __init__(self, model: str | None = None, host: str | None = None, timeout: float | None = None,
+                 connect_timeout: float = 3.0, max_tokens: int = 2000):
+        requested = model or os.environ.get("OLLAMA_MODEL")
+        super().__init__(requested or DEFAULT_MODELS["ollama"])
+        self._host = ollama_host(host)
+        self._timeout = timeout if timeout is not None else float(os.environ.get("OLLAMA_TIMEOUT", 300))
+        self._max_tokens = max_tokens
+        self.api_calls = 0
+        try:
+            pulled = self.pulled_models(connect_timeout)
+        except (OSError, ValueError):
+            self._disable(f"no Ollama server at {self._host} - install it from ollama.com, "
+                          "then run 'ollama serve'")
+            return
+        self._select_model(pulled, explicit=bool(requested))
+
+    def _request(self, path: str, body: dict | None, timeout: float) -> dict:
+        data = json.dumps(body).encode("utf-8") if body is not None else None
+        with _open_local(self._host + path, data, timeout) as response:
+            return json.loads(response.read().decode("utf-8"))
+
+    def pulled_models(self, timeout: float = 3.0) -> list[str]:
+        """Names of the models on the server. Raises OSError if it cannot be reached."""
+        return [m.get("name", "") for m in self._request("/api/tags", None, timeout).get("models") or []]
+
+    def _select_model(self, pulled: list[str], explicit: bool) -> None:
+        wanted = self._model
+        if wanted in pulled or f"{wanted}:latest" in pulled:
+            return
+        usable = [name for name in pulled if "embed" not in name]   # embedding models cannot chat
+        if not usable:
+            self._disable(f"Ollama has no model yet - run 'ollama pull {wanted}'")
+        elif explicit:
+            self._disable(f"Ollama model {wanted!r} is not pulled - run 'ollama pull {wanted}' "
+                          f"(pulled: {', '.join(usable[:5])})")
+        else:
+            # The default is not pulled: use what is there, preferring a code model.
+            self._model = next((name for name in usable if "code" in name), usable[0])
+
+    def _complete(self, prompt: str) -> str:
+        self.api_calls += 1
+        body = {"model": self._model, "stream": False,
+                "messages": [{"role": "user", "content": prompt}],
+                "options": {"temperature": 0.2, "num_predict": self._max_tokens, "num_ctx": 4096}}
+        try:
+            reply = self._request("/api/chat", body, self._timeout)
+        except urllib.error.HTTPError as exc:
+            if exc.code == 404:
+                raise _LLMUnavailable(f"Ollama model {self._model!r} is not pulled - "
+                                      f"run 'ollama pull {self._model}'") from exc
+            raise _LLMSkip(f"Ollama error {exc.code}: {self._error_text(exc)}") from exc
+        except OSError as exc:
+            reason = getattr(exc, "reason", exc)
+            if isinstance(reason, TimeoutError):
+                raise _LLMSkip(f"Ollama gave no reply within {self._timeout:.0f}s") from exc
+            raise _LLMUnavailable(f"lost the Ollama server at {self._host} ({reason})") from exc
+        except ValueError as exc:
+            raise _LLMSkip("Ollama sent an unreadable reply") from exc
+        if reply.get("done_reason") == "length":
+            raise _LLMSkip("Ollama reply was truncated (num_predict)")
+        text = _THINK_RE.sub("", (reply.get("message") or {}).get("content") or "")
+        if not text.strip():
+            raise _LLMSkip("Ollama returned no text")
+        return text
+
+    @staticmethod
+    def _error_text(exc: urllib.error.HTTPError) -> str:
+        try:
+            return str(json.loads(exc.read().decode("utf-8")).get("error", ""))[:150]
+        except (OSError, ValueError, AttributeError):
+            return ""
+
+
+PROVIDERS = {"anthropic": LLMOptimizer, "gemini": GeminiOptimizer, "ollama": OllamaOptimizer}
+
+
+def is_online(timeout: float = 2.0) -> bool:
+    """True if the default cloud provider's API host accepts a connection."""
+    try:
+        with socket.create_connection((CLOUD_HOSTS[DEFAULT_PROVIDER], 443), timeout=timeout):
+            return True
+    except OSError:
+        return False
+
+
+def create_llm_optimizer(provider: str = DEFAULT_PROVIDER, model: str | None = None,
+                         offline: bool = False) -> BaseLLMOptimizer:
+    """Build the LLM backend.
+
+    ``offline=True`` always gives the local Ollama model. ``provider="auto"``
+    gives the cloud default when the internet is up and it is configured, and
+    falls back to Ollama otherwise.
+    """
+    kwargs = {"model": model} if model else {}
+    why = ""
+    if offline:
+        provider, why = "ollama", "offline mode"
+    elif provider == "auto":
+        if is_online():
+            cloud = PROVIDERS[DEFAULT_PROVIDER](**kwargs)
+            if cloud.available:
+                cloud.selected_because = "online"
+                return cloud
+            why = f"{DEFAULT_PROVIDER} is unavailable: {cloud.unavailable_reason}"
+        else:
+            why = "no internet connection"
+        provider = "ollama"
     if provider not in PROVIDERS:
         raise ValueError(f"unknown LLM provider {provider!r}; choose from {sorted(PROVIDERS)}")
-    return PROVIDERS[provider](model=model or DEFAULT_MODELS[provider])
+    optimizer = PROVIDERS[provider](**kwargs)
+    optimizer.selected_because = why
+    return optimizer

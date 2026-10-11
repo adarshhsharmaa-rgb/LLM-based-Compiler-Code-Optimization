@@ -1,16 +1,22 @@
 """Orchestrator: drives the Analyze -> Propose -> Verify -> Evaluate -> Accept/Reject loop."""
 from __future__ import annotations
 
+from collections import Counter
 from dataclasses import dataclass, field
 
-from ..tac.instruction import TACOp, is_literal
 from ..tac.printer import format_tac
 from ..tac.program import TACProgram
 from .code_analyzer import CodeAnalyzer, Opportunity
 from .cost_evaluator import CostBreakdown, CostEvaluator
 from .decision_log import DecisionLogger
+from .optimization_specialist import (
+    DEFAULT_MODE,
+    OptimizationSpecialist,
+    Proposal,
+    Route,
+    is_provably_minimal,
+)
 from .optimizer_llm import DEFAULT_PROVIDER, create_llm_optimizer
-from .optimizer_rule import RuleBasedOptimizer
 from .verifier import Verifier
 
 
@@ -40,6 +46,9 @@ class OptimizationResult:
     llm_calls: int = 0                # requests sent to the LLM (including unusable replies)
     stopped_reason: str = ""          # set when the run stopped early (e.g. program too long to verify)
     hit_iteration_cap: bool = False   # True if max_iterations stopped the loop before convergence
+    optimizer_mode: str = "rule"      # the specialist's routing policy: "rule", "llm" or "hybrid"
+    llm_provider: str = ""            # LLM backend the specialist could route to ("" if none)
+    llm_model: str = ""
 
     def format_report(self) -> str:
         """Full per-program report: decision log, result summary and both TAC listings."""
@@ -51,6 +60,8 @@ class OptimizationResult:
         lines.append(f"  Accepted:      {self.accepted_count}")
         lines.append(f"  Rejected:      {self.rejected_count}")
         lines.append(f"  Invalid:       {self.invalid_count}")
+        if self.llm_provider:
+            lines.append(f"  Routing:       {self.optimizer_mode} (LLM: {self.llm_provider} {self.llm_model})")
         if self.llm_proposals:
             lines.append(f"  LLM proposals: {self.llm_proposals} ({self.llm_valid} passed verification)")
         match_text = "PASS ✓" if self.output_match else "FAIL ✗"
@@ -65,14 +76,29 @@ class OptimizationResult:
 class Orchestrator:
     def __init__(self, use_llm: bool = False, max_iterations: int = 50,
                  llm_model: str | None = None, max_llm_calls: int = 5,
-                 llm_provider: str = DEFAULT_PROVIDER):
+                 llm_provider: str = DEFAULT_PROVIDER, optimizer_mode: str | None = None,
+                 offline: bool = False):
+        """``optimizer_mode`` is the Optimization Specialist's routing policy ("rule", "llm"
+        or "hybrid"). ``use_llm`` is the older switch and means "hybrid". ``offline`` makes
+        the LLM the local Ollama model instead of a cloud one."""
         self.analyzer = CodeAnalyzer()
-        self.rule_optimizer = RuleBasedOptimizer()
-        self.llm_optimizer = create_llm_optimizer(llm_provider, llm_model) if use_llm else None
+        self.specialist = OptimizationSpecialist(optimizer_mode or DEFAULT_MODE, max_llm_calls=max_llm_calls)
+        if optimizer_mode in ("llm", "hybrid") or (optimizer_mode is None and use_llm):
+            self.specialist.llm_optimizer = create_llm_optimizer(llm_provider, llm_model, offline=offline)
         self.verifier = Verifier()
         self.cost_evaluator = CostEvaluator()
         self.max_iterations = max_iterations
-        self.max_llm_calls = max_llm_calls
+
+    # The LLM proposer lives in the specialist; this keeps ``orchestrator.llm_optimizer`` working.
+    @property
+    def llm_optimizer(self):
+        return self.specialist.llm_optimizer
+
+    @llm_optimizer.setter
+    def llm_optimizer(self, value) -> None:
+        self.specialist.llm_optimizer = value
+
+    is_provably_minimal = staticmethod(is_provably_minimal)
 
     @staticmethod
     def _opportunity_key(opp: Opportunity) -> tuple:
@@ -80,14 +106,12 @@ class Orchestrator:
 
     def optimize(self, program: TACProgram, program_name: str = "") -> OptimizationResult:
         logger = DecisionLogger(program_name)
+        specialist = self.specialist
         current = program.copy()
-        accepted = 0
-        rejected = 0
-        invalid = 0
+        outcomes: Counter = Counter()        # every proposal, by outcome
+        llm_outcomes: Counter = Counter()    # the LLM's share of them
         types_applied: list[str] = []
         attempted_opportunities: set[tuple] = set()  # track to avoid infinite loops
-        llm_proposals = 0
-        llm_valid = 0
         llm_calls = 0
         proposals: list[dict] = []
         cost_history = [self.cost_evaluator.evaluate(current).weighted_total]
@@ -96,104 +120,53 @@ class Orchestrator:
         stopped_reason = ""
 
         for iteration in range(1, self.max_iterations + 1):
-            # 1. ANALYZE
-            opportunities = self.analyzer.analyze(current)
-            # Filter out already-attempted opportunities
-            opportunities = [o for o in opportunities
+            # 1. ANALYZE (leaving out opportunities already turned down for this program)
+            opportunities = [o for o in self.analyzer.analyze(current)
                              if self._opportunity_key(o) not in attempted_opportunities]
-
-            if not opportunities:
-                logger.log_analysis(iteration, [])
-                # Rule-based search is exhausted; give the LLM a chance if enabled.
-                if self._llm_ready(llm_calls) and self.is_provably_minimal(current):
-                    logger.log_info(iteration, "LLM not consulted: program is only constant prints "
-                                               "(provably minimal)")
-                if self._llm_ready(llm_calls, current):
-                    llm_calls += 1
-                    outcome, current = self._llm_step(iteration, current, logger, proposals)
-                    llm_proposals += outcome != "no_proposal"
-                    llm_valid += outcome in ("accepted", "rejected")
-                    if outcome == "accepted":
-                        accepted += 1
-                        types_applied.append("LLM")
-                        attempted_opportunities.clear()
-                        cost_history.append(self.cost_evaluator.evaluate(current).weighted_total)
-                        continue
-                    rejected += outcome == "rejected"
-                    invalid += outcome == "invalid"
-                cost_history.append(cost_history[-1])
-                break
-
-            opportunity = opportunities[0]
             logger.log_analysis(iteration, opportunities)
-            attempted_opportunities.add(self._opportunity_key(opportunity))
 
-            # 2. PROPOSE
-            candidate = self.rule_optimizer.propose(current, opportunity)
-            logger.log_proposal(iteration, opportunity, candidate, tac_before=current)
+            # 2-5. PROPOSE -> VERIFY -> EVALUATE -> ACCEPT/REJECT. The specialist routes the
+            # step to the rules or to the LLM; if that proposal is turned down, it may give
+            # the same step to the other one.
+            tried: list[Route] = []
+            outcome = None
+            while outcome not in ("accepted", "unverifiable"):
+                decision = specialist.route(current, opportunities, llm_calls, tried)
+                if decision.route is None:
+                    if not tried and decision.llm_note:
+                        logger.log_info(iteration, f"LLM not consulted: {decision.llm_note}")
+                    break
+                tried.append(decision.route)
+                if specialist.llm_attached:
+                    logger.log_route(iteration, decision.route.value,
+                                     specialist.route_label(decision.route), decision.reason)
+                proposal = specialist.propose(current, decision, opportunities)
+                if proposal.source == "llm":
+                    llm_calls += 1
+                else:
+                    attempted_opportunities.add(self._opportunity_key(proposal.opportunity))
+                outcome = self._judge(iteration, current, proposal, logger, proposals)
+                outcomes[outcome] += 1
+                if proposal.source == "llm":
+                    llm_outcomes[outcome] += 1
+                if outcome == "accepted":
+                    current = proposal.candidate
+                    types_applied.append(proposal.type)
+                    # Reset attempted set after acceptance -- new opportunities may appear
+                    attempted_opportunities.clear()
 
-            # 3. VERIFY
-            ver_result = self.verifier.verify(current, candidate)
-            logger.log_verification(iteration, ver_result)
-            if (ver_result.details or {}).get("inconclusive"):
+            if outcome == "unverifiable":
                 # The program itself does not finish within the verifier's step limit, so no
                 # change to it can be checked by running it. Every other proposal would fail
                 # the same way, so stop here instead of grinding through all of them.
                 stopped_reason = (f"the program does not finish within {self.verifier.max_steps:,} steps, "
                                   "so changes to it cannot be verified")
-                logger.log_reject(iteration, "Could not be verified (program runs too long)")
                 logger.log_info(iteration, f"Stopped: {stopped_reason}")
                 cost_history.append(cost_history[-1])
                 break
-            record = {"iteration": iteration, "source": "rule", "type": opportunity.type.value,
-                      "outcome": None, "cost_before": None, "cost_after": None}
-            proposals.append(record)
-
-            step_accepted = False
-            if not ver_result.passed:
-                invalid += 1
-                record["outcome"] = "invalid"
-                logger.log_reject(iteration, f"Verification failed: {ver_result.reason}")
-            else:
-                # 4. EVALUATE
-                old_cost = self.cost_evaluator.evaluate(current)
-                new_cost = self.cost_evaluator.evaluate(candidate)
-                logger.log_cost(iteration, old_cost, new_cost)
-                record["cost_before"] = old_cost.weighted_total
-                record["cost_after"] = new_cost.weighted_total
-
-                if not self.cost_evaluator.is_improvement(old_cost, new_cost):
-                    rejected += 1
-                    record["outcome"] = "rejected"
-                    logger.log_reject(iteration, "No cost improvement")
-                else:
-                    # 5. ACCEPT
-                    accepted += 1
-                    record["outcome"] = "accepted"
-                    types_applied.append(opportunity.type.value)
-                    logger.log_accept(iteration,
-                                      f"Cost reduced: {old_cost.weighted_total} → {new_cost.weighted_total}")
-                    current = candidate
-                    # Reset attempted set after acceptance -- new opportunities may appear
-                    attempted_opportunities.clear()
-                    step_accepted = True
-
-            # Alternative path: when the rule-based proposal was turned down, ask the LLM.
-            if not step_accepted and self._llm_ready(llm_calls, current):
-                llm_calls += 1
-                outcome, current = self._llm_step(iteration, current, logger, proposals)
-                llm_proposals += outcome != "no_proposal"
-                llm_valid += outcome in ("accepted", "rejected")
-                if outcome == "accepted":
-                    accepted += 1
-                    types_applied.append("LLM")
-                    attempted_opportunities.clear()
-                elif outcome == "rejected":
-                    rejected += 1
-                elif outcome == "invalid":
-                    invalid += 1
-
             cost_history.append(self.cost_evaluator.evaluate(current).weighted_total)
+            if outcome != "accepted" and not opportunities:
+                break       # nothing was accepted and the rules have nothing left to try
         else:
             # The loop used every iteration. That only counts as "stopped by the cap"
             # if there was still something left to try.
@@ -208,6 +181,7 @@ class Orchestrator:
 
         orig_cost = self.cost_evaluator.evaluate(program)
         fin_cost = self.cost_evaluator.evaluate(current)
+        llm = specialist.llm_optimizer if specialist.llm_attached else None
 
         return OptimizationResult(
             program_name=program_name,
@@ -217,72 +191,69 @@ class Orchestrator:
             final_cost=fin_cost,
             cost_reduction_pct=self.cost_evaluator.reduction_percentage(orig_cost, fin_cost),
             iterations=iteration,
-            accepted_count=accepted,
-            rejected_count=rejected,
-            invalid_count=invalid,
+            accepted_count=outcomes["accepted"],
+            rejected_count=outcomes["rejected"],
+            invalid_count=outcomes["invalid"],
             optimization_types_applied=types_applied,
             log=logger,
             output_match=final_match,
-            llm_proposals=llm_proposals,
-            llm_valid=llm_valid,
+            llm_proposals=llm_outcomes["accepted"] + llm_outcomes["rejected"] + llm_outcomes["invalid"],
+            llm_valid=llm_outcomes["accepted"] + llm_outcomes["rejected"],
             proposals=proposals,
             cost_history=cost_history,
             final_check_reason=final_reason,
             hit_iteration_cap=hit_cap,
             llm_calls=llm_calls,
             stopped_reason=stopped_reason,
+            optimizer_mode=specialist.mode if llm is not None else "rule",
+            llm_provider=getattr(llm, "provider", ""),
+            llm_model=getattr(llm, "model", ""),
         )
 
     # ------------------------------------------------------------------ #
-    def _llm_ready(self, llm_calls: int, current: TACProgram | None = None) -> bool:
-        if self.llm_optimizer is None or not self.llm_optimizer.available:
-            return False
-        if llm_calls >= self.max_llm_calls:
-            return False
-        return current is None or not self.is_provably_minimal(current)
+    def _judge(self, iteration: int, current: TACProgram, proposal: Proposal, logger: DecisionLogger,
+               proposals: list[dict]) -> str:
+        """Send one proposal through the verify and cost gates (the same for rules and LLM).
 
-    @staticmethod
-    def is_provably_minimal(program: TACProgram) -> bool:
-        """True if the program is nothing but ``print <constant>`` lines.
-
-        Every print must stay (it is observable output) and nothing else is
-        left, so no optimizer can lower the cost -- asking the LLM would only
-        waste an API call.
+        Returns "accepted", "rejected" (correct but not cheaper), "invalid" (failed
+        verification), "no_proposal" (the LLM returned nothing usable) or "unverifiable".
         """
-        return all(ins.op == TACOp.PRINT and is_literal(ins.arg1) for ins in program.instructions)
+        # 2. PROPOSE
+        if proposal.source == "llm":
+            logger.log_llm_proposal(iteration, proposal.reasoning, proposal.candidate, tac_before=current)
+            if proposal.candidate is None:
+                return "no_proposal"
+        else:
+            logger.log_proposal(iteration, proposal.opportunity, proposal.candidate, tac_before=current)
 
-    def _llm_step(self, iteration: int, current: TACProgram, logger: DecisionLogger,
-                  proposals: list[dict]) -> tuple[str, TACProgram]:
-        """One LLM proposal through the same verify/evaluate gates.
-
-        Returns (outcome, new_current) where outcome is one of
-        "accepted", "rejected", "invalid", "no_proposal".
-        """
-        candidate, reasoning = self.llm_optimizer.propose(current)
-        logger.log_llm_proposal(iteration, reasoning, candidate, tac_before=current)
-        if candidate is None:
-            return "no_proposal", current
-        record = {"iteration": iteration, "source": "llm", "type": "LLM",
-                  "outcome": None, "cost_before": None, "cost_after": None}
-        proposals.append(record)
-        ver_result = self.verifier.verify(current, candidate)
+        # 3. VERIFY
+        ver_result = self.verifier.verify(current, proposal.candidate)
         logger.log_verification(iteration, ver_result)
+        if (ver_result.details or {}).get("inconclusive"):
+            logger.log_reject(iteration, "Could not be verified (program runs too long)")
+            return "unverifiable"
+        record = {"iteration": iteration, "source": proposal.source, "type": proposal.type,
+                  "outcome": "invalid", "cost_before": None, "cost_after": None}
+        proposals.append(record)
         if not ver_result.passed:
-            record["outcome"] = "invalid"
             logger.log_reject(iteration, f"Verification failed: {ver_result.reason}")
-            return "invalid", current
+            return "invalid"
+
+        # 4. EVALUATE
         old_cost = self.cost_evaluator.evaluate(current)
-        new_cost = self.cost_evaluator.evaluate(candidate)
+        new_cost = self.cost_evaluator.evaluate(proposal.candidate)
         logger.log_cost(iteration, old_cost, new_cost)
         record["cost_before"] = old_cost.weighted_total
         record["cost_after"] = new_cost.weighted_total
+
+        # 5. ACCEPT / REJECT
         if not self.cost_evaluator.is_improvement(old_cost, new_cost):
             record["outcome"] = "rejected"
             logger.log_reject(iteration, "No cost improvement")
-            return "rejected", current
+            return "rejected"
         record["outcome"] = "accepted"
         logger.log_accept(iteration, f"Cost reduced: {old_cost.weighted_total} → {new_cost.weighted_total}")
-        return "accepted", candidate
+        return "accepted"
 
     def _final_output_check(self, original: TACProgram, optimized: TACProgram) -> tuple[bool, str]:
         """End-to-end check of the final program against the untouched original."""
