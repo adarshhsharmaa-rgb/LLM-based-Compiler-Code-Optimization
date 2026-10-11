@@ -103,6 +103,14 @@ def aggregate_metrics(records: list[dict], llm_used: bool | None = None) -> dict
         c = Counter(p["outcome"] for p in proposals if p["type"] == t)
         by_type[t] = {"accepted": c["accepted"], "rejected": c["rejected"], "invalid": c["invalid"]}
 
+    by_source = {}
+    for key, label in (("rule", "Rule-based"), ("llm", "LLM")):
+        c = Counter(p["outcome"] for p in proposals if p.get("source", "rule") == key)
+        by_source[label] = {"suggested": sum(c.values()), "verified": c["accepted"] + c["rejected"],
+                            "accepted": c["accepted"], "rejected": c["rejected"], "invalid": c["invalid"]}
+    by_source["Total"] = {"suggested": total, "verified": verified, "accepted": outcomes["accepted"],
+                          "rejected": outcomes["rejected"], "invalid": outcomes["invalid"]}
+
     n = len(records)
     return {
         "total_programs": n,
@@ -133,6 +141,7 @@ def aggregate_metrics(records: list[dict], llm_used: bool | None = None) -> dict
         "false_positive_rate_pct": _pct(false_positives, n) if n else 0.0,
         "per_category": per_category,
         "by_optimization_type": by_type,
+        "by_source": by_source,
     }
 
 
@@ -175,6 +184,13 @@ def format_metrics_table(m: dict) -> str:
     out.append(f"  {'Category':<15}{'Programs':>9}{'Avg red.%':>11}{'Avg iters':>11}")
     for cat, c in m["per_category"].items():
         out.append(f"  {cat:<15}{c['programs']:>9}{c['avg_reduction_pct']:>11.2f}{c['avg_iterations']:>11.2f}")
+    if m.get("by_source"):
+        out.append("")
+        out.append(f"  {'Suggestions by source':<22}{'Suggested':>10}{'Verified':>10}{'Accepted':>10}"
+                   f"{'Rejected':>10}{'Invalid':>9}")
+        for label, c in m["by_source"].items():
+            out.append(f"  {label:<22}{c['suggested']:>10}{c['verified']:>10}{c['accepted']:>10}"
+                       f"{c['rejected']:>10}{c['invalid']:>9}")
     out.append("")
     out.append(f"  {'Optimization type':<20}{'Accepted':>10}{'Rejected':>10}{'Invalid':>9}")
     for t, c in m["by_optimization_type"].items():

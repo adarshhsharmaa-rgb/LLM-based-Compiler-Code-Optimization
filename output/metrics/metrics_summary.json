@@ -24,7 +24,7 @@
     "31-40": 72,
     "41-50": 34
   },
-  "programs_hitting_iteration_cap": 7,
+  "programs_hitting_iteration_cap": 5,
   "llm_used": true,
   "llm_proposals": 340,
   "llm_valid": 314,
@@ -109,6 +109,29 @@
     "LLM": {
       "accepted": 262,
       "rejected": 52,
+      "invalid": 26
+    }
+  },
+  "by_source": {
+    "Rule-based": {
+      "suggested": 10638,
+      "verified": 10638,
+      "accepted": 10566,
+      "rejected": 72,
+      "invalid": 0
+    },
+    "LLM": {
+      "suggested": 340,
+      "verified": 314,
+      "accepted": 262,
+      "rejected": 52,
+      "invalid": 26
+    },
+    "Total": {
+      "suggested": 10978,
+      "verified": 10952,
+      "accepted": 10828,
+      "rejected": 124,
       "invalid": 26
     }
   }

@@ -12,7 +12,7 @@ PROJECT_ROOT = os.path.dirname(os.path.abspath(__file__))
 if PROJECT_ROOT not in sys.path:
     sys.path.insert(0, PROJECT_ROOT)
 
-from src.agents.optimizer_llm import DEFAULT_MODELS, PROVIDERS  # noqa: E402
+from src.agents.optimizer_llm import DEFAULT_MODELS, DEFAULT_PROVIDER, PROVIDERS  # noqa: E402
 from src.agents.orchestrator import Orchestrator  # noqa: E402
 from src.frontend import LexerError, ParseError, compile_source  # noqa: E402
 from src.visualization.report import (  # noqa: E402
@@ -134,7 +134,7 @@ def main() -> int:
     parser.add_argument("--quiet", action="store_true",
                         help="With --run-all: print only progress, not every decision log (logs are still saved)")
     parser.add_argument("--max-iterations", type=int, default=50, help="Agent iteration cap per program")
-    parser.add_argument("--llm-provider", choices=sorted(PROVIDERS), default="anthropic",
+    parser.add_argument("--llm-provider", choices=sorted(PROVIDERS), default=DEFAULT_PROVIDER,
                         help="LLM backend for --use-llm: anthropic (Claude) or gemini (Google)")
     parser.add_argument("--llm-model", type=str, default=None,
                         help="Model ID for --use-llm (default: "

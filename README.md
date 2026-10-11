@@ -62,8 +62,11 @@ src/
   agents/     orchestrator.py, code_analyzer.py, optimizer_rule.py, optimizer_llm.py,
               verifier.py, cost_evaluator.py, decision_log.py
   visualization/  charts.py, report.py
+  frontend/c_frontend.py   C-subset front end used by the live demo
 dataset/      generator.py, programs/<category>/*.src
-tests/        one test module per component (190 tests)
+demo.py       terminal front end: optimize a C program step by step
+demo_programs/  sample C programs for the demo
+tests/        one test module per component, plus regression tests (257 tests)
 output/       logs/ (per-program .log + .json), metrics/ (CSV + JSON), plots/ (PNG)
 ```
 
@@ -85,32 +88,77 @@ installed. The HTML version of the Sankey is always written next to the PNG.
 
 ## Usage
 
+The commands below use the Windows launcher `py`. On Linux or macOS, use
+`python3` instead. (On Windows, plain `python` may open the Microsoft Store
+instead of running Python.)
+
 ```bash
-python main.py --generate-dataset                     # 500 programs -> dataset/programs/
-python main.py --run-all --output-dir output          # optimize everything, print logs + metrics
-python main.py --run-all --quiet                      # same, but only progress lines on the console
-python main.py --run-file dataset/programs/loops/loops_001.src
-python main.py --visualize --output-dir output        # the 6 charts, from saved results
-python main.py --run-all --use-llm                    # add the Claude-based proposer
+py main.py --generate-dataset                     # 500 programs -> dataset/programs/
+py main.py --run-all --output-dir output          # optimize everything, print logs + metrics
+py main.py --run-all --quiet                      # same, but only progress lines on the console
+py main.py --run-file dataset/programs/loops/loops_001.src
+py main.py --visualize --output-dir output        # the 6 charts, from saved results
+py main.py --run-all --use-llm                    # add the LLM proposer (Gemini by default)
 ```
 
 | Flag | Meaning |
 |---|---|
 | `--max-iterations N` | iteration cap per program (default 50) |
 | `--use-llm` | enable the LLM proposer alongside the rules |
-| `--llm-provider P` | `anthropic` (default) or `gemini` |
-| `--llm-model ID` | model for `--use-llm` (defaults: `claude-sonnet-4-20250514`, `gemini-3.1-flash-lite`) |
+| `--llm-provider P` | `gemini` (default) or `anthropic` |
+| `--llm-model ID` | model for `--use-llm` (defaults: `gemini-3.1-flash-lite`, `claude-sonnet-4-20250514`) |
 | `--compare-with DIR` | with `--visualize`: compare against another run (writes `comparison.csv` and chart 7) |
 | `--max-llm-calls N` | LLM proposals allowed per program (default 5) |
 | `--quiet` | with `--run-all`, print only progress; logs are still saved |
 
+## Live demo: the terminal front end
+
+`demo.py` takes a real C program and walks through the whole pipeline on
+screen, pausing between stages:
+
+```bash
+py demo.py                                  # menu: pick a sample, paste code, or type a path
+py demo.py demo_programs/3_loop.c           # run one file
+py demo.py my_program.c --fast              # no pauses
+py demo.py my_program.c --inputs n=10       # values for scanf() variables
+py demo.py my_program.c --use-llm           # add the Gemini proposer
+py demo.py my_program.c --verbose           # show every decision, including repeats
+```
+
+| Stage | What it shows |
+|---|---|
+| 1 | The C program |
+| 2 | The Three-Address Code it becomes, with its cost |
+| 3 | Each agent decision: what was suggested, verified or not, cost before and after, accepted or rejected |
+| 4 | **Suggestion counts**: how many came from the rules, from the LLM and in total, and how many of each were verified, accepted, rejected for no gain, or invalid; then the same by optimization type |
+| 5 | Original and optimized code side by side, with the cost reduction |
+| 6 | Proof: both versions are run and their outputs compared |
+
+The demo accepts a subset of C (`src/frontend/c_frontend.py`):
+
+* **Supported:** `#include`, `int main()`, `int` variables with C block
+  scoping, `if / else if / else`, `while`, `for`, `+= -= *= /= %= ++ --`,
+  `printf("%d", ...)` and `scanf("%d", &x)`.
+* **Not supported:** arrays, pointers, other functions, `float`/`char`,
+  `break`/`continue`. These stop with a message such as
+  `C error at line 3: arrays are not supported`.
+* **`scanf` variables** become program inputs, which the verifier tests with
+  many values.
+* **Text inside `printf`** is ignored: only the `%d` values are printed.
+* **Programs that run too long** (more than 100,000 executed instructions)
+  cannot be verified by running them, so the demo stops and says so.
+
+The front end was checked against real `gcc`: random C programs were compiled
+with gcc and run, and their output had to match both the unoptimized and the
+optimized TAC.
+
 ## Running the tests
 
 ```bash
-python -m pytest tests/ -v
+py -m pytest tests/ -v
 ```
 
-190 tests cover every component. The verifier tests inject wrong changes
+257 tests cover every component. The verifier tests inject wrong changes
 (bad folds, operand swaps, CSE across non-commutative ops, deleted live
 stores, off-by-one conditions, removed loop increments, deleted trapping
 divisions, reordered output). Each one must be rejected.
@@ -179,6 +227,9 @@ verifier feeds them values.
    the "already tried" set is cleared because new opportunities may appear.
    Rejected opportunities are not retried until something else is accepted.
    The loop ends when nothing is left to try or the iteration cap is hit.
+   If the program itself does not finish within the verifier's step limit,
+   no change to it can be checked, so the loop stops at once and leaves the
+   program unchanged.
    Finally the optimized program is verified once more against the untouched
    original (`output_match`).
 
@@ -199,13 +250,16 @@ verifier feeds them values.
 
 The cost weights make a copy (`x = y`, 2.5) dearer than a comparison or
 unary op (1.0). So some textbook steps would *raise* cost when applied alone,
-and the strict cost gate would reject them. Two rules take care of this:
+and the strict cost gate would reject them. Three rules take care of this:
 
 * **Copy propagation** removes the copy in the same step when it becomes dead.
   Otherwise the step would be cost-neutral.
 * **Constant folding** of a comparison, logical, shift or unary op forwards
   the folded constant into its uses in the same step. Arithmetic folds are
   a plain replace, as specified.
+* **CSE** of a comparison, logical or shift expression forwards the copy
+  into its uses in the same step, for the same reason. Arithmetic CSE is a
+  plain replace, as specified.
 
 `x*2 → x+x` is cost-neutral under these weights, so the evaluator rejects it.
 These are the 97 strength-reduction rejections in the results. `x*4 → x<<2`
@@ -223,6 +277,10 @@ is accepted, because a shift is not one of the arithmetic ops `+ - * / %`.
 | Steps to convergence | iterations per program (mean, median, min/max, distribution) |
 | LLM validity rate | LLM proposals passing verification / LLM proposals (only with `--use-llm`) |
 | False positives | programs whose optimized output differs from the original. **Must be 0** |
+
+The console summary also lists **suggestions by source**: how many
+proposals came from the rules, from the LLM and in total, and how many of
+each were verified, accepted, rejected or invalid.
 
 Written to `output/metrics/metrics_summary.{json,csv}`,
 `output/metrics/per_program_results.csv`, and `output/metrics/results.json`
@@ -354,9 +412,9 @@ one prompt and one reply parser across two providers, chosen with
 
 ```powershell
 # put your AI Studio key (aistudio.google.com) in .gemini_key -- it is git-ignored
-python main.py --run-file dataset/programs/loops/loops_001.src --use-llm --llm-provider gemini
-python main.py --run-all --quiet --use-llm --llm-provider gemini --max-llm-calls 2
-python main.py --visualize --compare-with output_rule_only     # adds chart 7 + comparison table
+py main.py --run-file dataset/programs/loops/loops_001.src --use-llm
+py main.py --run-all --quiet --use-llm --max-llm-calls 2
+py main.py --visualize --compare-with output_rule_only     # adds chart 7 + comparison table
 ```
 
 When the LLM is consulted:

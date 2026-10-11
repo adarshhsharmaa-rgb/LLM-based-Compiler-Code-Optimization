@@ -1,0 +1,37 @@
+Create a 22-slide 16:9 presentation for a university compiler design project titled "Automated LLM/Agent-Guided Compiler Code Optimization".
+
+STYLE (important):
+- Clean and professional, like a well-made student or conference talk. Not flashy, not plain.
+- Light warm off-white background (#FAFAF8). Dark navy text (#1D2433). One main accent colour, blue (#2A78D6). Green (#0B8A0B) only for positive results, muted red (#C23434) only for problems/gaps.
+- No gradients, glows, neon, 3D shapes, robot or AI stock images, or emoji.
+- Fonts: a clean sans-serif for headings (e.g. Inter or Montserrat, semi-bold) and body (Open Sans or Inter). Monospace (e.g. Roboto Mono) only for code and logs.
+- Consistent layout: left-aligned titles, a thin blue accent line under each title, small slide number and project name in the footer.
+- Max 5-6 short bullets per slide, generous white space. Simple flat line icons only where they help.
+- Tables: plain, light grey header row, thin dividers, no heavy borders.
+- Leave clearly marked empty image frames where noted; the charts will be uploaded later and have light backgrounds.
+
+SLIDES:
+1. Title: project title, subtitle "A Multi-Agent System for Autonomous TAC Analysis, Transformation & Verification", "Compiler Design Project · October 2026", space for two student names.
+2. Introduction: fixed compiler passes vs. an agent that analyzes, proposes, verifies and improves code; every change must be verified correct AND lower cost; tested on 500 programs with 0 incorrect changes accepted.
+3. Objectives: 7 short points with simple check-mark icons.
+4. Literature Review: a 3-column table (Area / Key Works / Relevance) with 6 rows.
+5. Research Gaps: 5 gaps on the left (muted red markers), "Our contribution" box on the right (green).
+6. Proposed Methodology: a simple 7-step numbered flow (Parse, Analyze, Propose, Verify, Evaluate, Repeat, Final check) and one highlighted "key principle" line.
+7. Dataset: table of 7 program categories (total 500) plus 3 bullets.
+8. System Architecture: one large empty image frame (wide) with 3 short labels underneath.
+9. Agent Workflow: tall image frame on the left, 5 key points on the right.
+10. Tools & Technologies: table (Layer / Technology / Purpose) and a small code-style box with the project folder structure.
+11. Implementation, The Five Agents: 5 numbered compact cards.
+12. Verification Deep Dive: 3 "gates" shown as 3 cards plus a final result line: "10,978 proposals → 0 incorrect changes accepted".
+13. Results, Key Metrics: comparison table "Rule-based only" vs "Rule-based + Gemini"; highlight 82.49% → 91.50% average cost reduction and 0 false positives in large numbers.
+14. Results, Per-Category: table of 7 categories; highlight the Loops, Conditionals and Mixed rows.
+15. Results, Proposal Flow: one large image frame and a caption.
+16. Results, Optimization Types: two image frames side by side with captions.
+17. Results, Cost Over Iterations & Steps vs Improvement: two image frames side by side with captions.
+18. Results, Heatmap & Rule vs LLM: two image frames side by side with captions.
+19. Example Decision Log: a dark terminal-style box with monospace text (the only dark element in the deck).
+20. Project Status: two columns, "Work completed" and "Next steps".
+21. Conclusion: 6 key-takeaway cards with bold numbers (82.5%, 91.5%, 0 incorrect changes, +28 points on loops).
+22. References: 12 references in small left-aligned academic style.
+
+Keep the same visual style on every slide so the deck looks designed by one person.

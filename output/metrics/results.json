@@ -97548,7 +97548,7 @@
   ],
   "llm_proposals": 0,
   "llm_valid": 0,
-  "hit_iteration_cap": true,
+  "hit_iteration_cap": false,
   "original_cost_breakdown": {
    "instruction_count": 39,
    "arithmetic_ops": 16,
@@ -98429,7 +98429,7 @@
   ],
   "llm_proposals": 0,
   "llm_valid": 0,
-  "hit_iteration_cap": true,
+  "hit_iteration_cap": false,
   "original_cost_breakdown": {
    "instruction_count": 35,
    "arithmetic_ops": 16,

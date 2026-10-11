@@ -3500,20 +3500,6 @@
       "decision": "ACCEPT",
       "reason": "Cost reduced: 3.5 \u2192 1.0",
       "source": "rule"
-    },
-    {
-      "iteration": 50,
-      "phase": "info",
-      "opportunity_type": null,
-      "description": "Stopped: reached max_iterations=50",
-      "tac_before": null,
-      "tac_after": null,
-      "verification_result": null,
-      "cost_before": null,
-      "cost_after": null,
-      "decision": null,
-      "reason": null,
-      "source": "rule"
     }
   ]
 }
