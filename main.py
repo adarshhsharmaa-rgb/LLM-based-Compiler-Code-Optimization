@@ -13,7 +13,7 @@ if PROJECT_ROOT not in sys.path:
     sys.path.insert(0, PROJECT_ROOT)
 
 from src.agents.optimization_specialist import MODE_SUMMARIES, MODES  # noqa: E402
-from src.agents.optimizer_llm import DEFAULT_MODELS, PROVIDERS  # noqa: E402
+from src.agents.optimizer_llm import DEFAULT_MODELS, PROVIDERS, load_key_files  # noqa: E402
 from src.agents.orchestrator import Orchestrator  # noqa: E402
 from src.frontend import LexerError, ParseError, compile_source  # noqa: E402
 from src.visualization.report import (  # noqa: E402
@@ -52,18 +52,6 @@ def _display(path: str) -> str:
         return os.path.relpath(path, PROJECT_ROOT)
     except ValueError:
         return path
-
-
-def _load_key_file(env_var: str, filename: str) -> None:
-    """Load an API key from a git-ignored file in the project root if the env var is unset."""
-    if os.environ.get(env_var):
-        return
-    path = os.path.join(PROJECT_ROOT, filename)
-    if os.path.exists(path):
-        with open(path, encoding="utf-8") as fh:
-            key = fh.read().strip()
-        if key:
-            os.environ[env_var] = key
 
 
 def ensure_output_dirs(out_dir: str) -> None:
@@ -143,8 +131,8 @@ def main() -> int:
                         help="With --run-all: print only progress, not every decision log (logs are still saved)")
     parser.add_argument("--max-iterations", type=int, default=50, help="Agent iteration cap per program")
     parser.add_argument("--llm-provider", choices=["auto", *sorted(PROVIDERS)], default="auto",
-                        help="LLM backend: gemini (Google), ollama (local model), or "
-                             "auto = gemini when online and a key is set, otherwise ollama")
+                        help="LLM backend: gemini (Google), groq (Groq), ollama (local model), or "
+                             "auto = gemini or groq when online and a key is set, otherwise ollama")
     parser.add_argument("--llm-model", type=str, default=None,
                         help="Model ID for the LLM (default: "
                              + ", ".join(f"{p}={m}" for p, m in DEFAULT_MODELS.items()) + ")")
@@ -170,9 +158,8 @@ def main() -> int:
     if args.run_all or args.run_file:
         mode = args.optimizer or ("hybrid" if args.use_llm or args.offline else "rule")
         use_llm = mode != "rule"
-        if (use_llm and not args.offline and args.llm_provider in ("auto", "gemini")
-                and not os.environ.get("GOOGLE_API_KEY")):
-            _load_key_file("GEMINI_API_KEY", ".gemini_key")
+        if use_llm and not args.offline:
+            load_key_files(PROJECT_ROOT)      # .gemini_key / .groq_key
         orchestrator = Orchestrator(optimizer_mode=mode, max_iterations=args.max_iterations,
                                     llm_model=args.llm_model, max_llm_calls=args.max_llm_calls,
                                     llm_provider=args.llm_provider, offline=args.offline)

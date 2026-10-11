@@ -32,7 +32,7 @@ if PROJECT_ROOT not in sys.path:
 
 from src.agents.cost_evaluator import CostEvaluator  # noqa: E402
 from src.agents.optimization_specialist import MODE_SUMMARIES, MODES  # noqa: E402
-from src.agents.optimizer_llm import PROVIDERS, ollama_running  # noqa: E402
+from src.agents.optimizer_llm import KEY_FILES, PROVIDERS, load_key_files, ollama_running  # noqa: E402
 from src.agents.orchestrator import Orchestrator  # noqa: E402
 from src.frontend.c_frontend import CFrontendError, compile_c  # noqa: E402
 from src.tac.interpreter import ExecutionTimeout, TACInterpreter, TACRuntimeError  # noqa: E402
@@ -48,7 +48,7 @@ TYPE_LABELS = {
     "COPY_PROPAGATION": "Copy propagation",
     "LLM": "LLM proposal",
 }
-LLM_NAMES = {"gemini": "Gemini", "ollama": "Ollama"}
+LLM_NAMES = {"gemini": "Gemini", "groq": "Groq", "ollama": "Ollama"}
 
 
 def llm_label(result) -> str:
@@ -398,12 +398,8 @@ def make_orchestrator(mode: str, args) -> tuple[Orchestrator, bool, str]:
     if mode == "rule":
         return (Orchestrator(max_iterations=args.max_iterations), False,
                 "not used (add --use-llm, or --offline for a local Ollama model)")
-    if (not args.offline and args.llm_provider in ("auto", "gemini")
-            and not os.environ.get("GEMINI_API_KEY") and not os.environ.get("GOOGLE_API_KEY")):
-        key_path = os.path.join(PROJECT_ROOT, ".gemini_key")
-        if os.path.exists(key_path):
-            with open(key_path, encoding="utf-8") as fh:
-                os.environ["GEMINI_API_KEY"] = fh.read().strip()
+    if not args.offline:
+        load_key_files(PROJECT_ROOT)      # .gemini_key / .groq_key
     orchestrator = Orchestrator(optimizer_mode=mode, max_iterations=args.max_iterations,
                                 llm_provider=args.llm_provider, llm_model=args.llm_model,
                                 offline=args.offline, max_llm_calls=3)
@@ -539,7 +535,7 @@ def main() -> int:
     ap.add_argument("--offline", action="store_true",
                     help="offline mode: the LLM is a local Ollama model, no internet or API key needed")
     ap.add_argument("--llm-provider", default="auto", choices=["auto", *sorted(PROVIDERS)],
-                    help="auto = gemini when online and a key is set, otherwise ollama")
+                    help="auto = gemini or groq when online and a key is set, otherwise ollama")
     ap.add_argument("--llm-model", default=None, help="model ID for the LLM")
     ap.add_argument("--max-iterations", type=int, default=200, help="agent iteration cap (default 200)")
     ap.add_argument("--delay", type=float, default=0.12, help="seconds between decisions")
@@ -565,9 +561,10 @@ def main() -> int:
     if not sys.stdin.isatty():            # piped input: treat it as a pasted program
         return run_demo(sys.stdin.read(), "pasted_program.c", args, pacer, mode)
 
-    # Offer the LLM in the menu only if one is ready: a saved Gemini key or a running Ollama.
+    # Offer the LLM in the menu only if one is ready: a saved API key or a running Ollama.
     llm_on_offer = mode == "rule" and args.optimizer is None and (
-        os.path.exists(os.path.join(PROJECT_ROOT, ".gemini_key")) or ollama_running())
+        any(os.path.exists(os.path.join(PROJECT_ROOT, name)) for name in KEY_FILES.values())
+        or ollama_running())
     status = 0
     while True:
         chosen = choose_program()
