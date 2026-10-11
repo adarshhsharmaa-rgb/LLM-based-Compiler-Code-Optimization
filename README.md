@@ -67,7 +67,7 @@ src/
 dataset/      generator.py, programs/<category>/*.src
 demo.py       terminal front end: optimize a C program step by step
 demo_programs/  sample C programs for the demo
-tests/        one test module per component, plus regression tests (321 tests)
+tests/        one test module per component, plus regression tests (332 tests)
 output/       logs/ (per-program .log + .json), metrics/ (CSV + JSON), plots/ (PNG)
 ```
 
@@ -164,7 +164,7 @@ optimized TAC.
 py -m pytest tests/ -v
 ```
 
-321 tests cover every component. The Ollama and Groq tests run against stand-in
+332 tests cover every component. The Ollama and Groq tests run against stand-in
 local servers, so they need no Ollama, API key or network. The verifier tests inject wrong changes
 (bad folds, operand swaps, CSE across non-commutative ops, deleted live
 stores, off-by-one conditions, removed loop increments, deleted trapping
@@ -219,8 +219,19 @@ verifier feeds them values.
    * **Differential testing.** The original and candidate run in the TAC
      interpreter on 20 random input sets (values in [-100, 100]) plus edge
      cases (all 0 / 1 / -1 / 99 / -99). When there are free inputs, it also
-     adds boundary values `c-1, c, c+1` for every literal `c` in either
-     program. Printed output *and* failure mode (division by zero, timeout,
+     adds:
+     * boundary values `c-1, c, c+1` for every literal `c` in either program;
+     * **small-scope sets**: every combination of a few small values, zero
+       included, over all inputs (one input: every value from -128 to 128;
+       two inputs: all 289 pairs from -8..8; five inputs: all 243
+       combinations of -1, 0, 1). Random values almost
+       never make one input zero and another non-zero, which is exactly
+       what tells `&&` from `||` or flips a branch on a flag;
+     * **pairwise boundary sets**: every pair of inputs gets every pair of
+       boundary values (and zero) at least once, for changes that only show
+       when one input sits on a boundary while another steers the branch.
+
+     Printed output *and* failure mode (division by zero, timeout,
      undefined variable) must match. Both programs timing out counts as
      inconclusive and is rejected.
    * **Symbolic verification** (straight-line code). Values become canonical
@@ -365,20 +376,20 @@ print(s);
 --- Iteration 1 ---
   [ANALYZE] Found 7 opportunities: CSE (priority=70), COPY_PROPAGATIONx6 (priority=50)
   [PROPOSE] Applying CSE at instruction 2: t1 = in_b + in_a → t1 = t0
-  [VERIFY]  PASS (differential: 25/25 inputs matched, symbolic: equivalent)
+  [VERIFY]  PASS (differential: 314/314 inputs matched, symbolic: equivalent)
   [COST]    Before: 19.0, After: 18.5 (reduction: 2.6%)
   [ACCEPT]  ✓ Change accepted
 --- Iteration 2 ---
   [ANALYZE] Found 5 opportunities: COPY_PROPAGATIONx5 (priority=50)
   [PROPOSE] Applying COPY_PROPAGATION at instruction 1: a = t0 → uses of a -> t0 at instr 4
-  [VERIFY]  PASS (differential: 25/25 inputs matched, symbolic: equivalent)
+  [VERIFY]  PASS (differential: 314/314 inputs matched, symbolic: equivalent)
   [COST]    Before: 18.5, After: 16.0 (reduction: 13.5%)
   [ACCEPT]  ✓ Change accepted
   ...
 --- Iteration 5 ---
   [ANALYZE] Found 2 opportunities: COPY_PROPAGATIONx2 (priority=50)
   [PROPOSE] Applying COPY_PROPAGATION at instruction 2: t2 = t0 + t0; s = t2 → s = t0 + t0
-  [VERIFY]  PASS (differential: 25/25 inputs matched, symbolic: equivalent)
+  [VERIFY]  PASS (differential: 314/314 inputs matched, symbolic: equivalent)
   [COST]    Before: 10.5, After: 7.5 (reduction: 28.6%)
   [ACCEPT]  ✓ Change accepted
 --- Iteration 6 ---

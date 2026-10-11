@@ -152,7 +152,69 @@ def test_input_sets_include_boundary_values(verifier):
 
 def test_input_sets_include_edge_cases(verifier):
     sets = verifier.input_sets(["a", "b"])
-    assert len(sets) == 25
+    assert len(sets) == 25 + 17 * 17          # 20 random + 5 edge cases + every pair of values in -8..8
     for edge in (0, 1, -1, 99, -99):
-        assert {"a": edge, "b": edge} in sets
+        assert {"a": edge, "b": edge} in sets[:25]
     assert all(-100 <= v <= 100 for s in sets for v in s.values())
+
+
+# ------------------------------------------------------------------ small-scope and pairwise inputs
+def test_small_scope_sets_cover_every_zero_and_nonzero_mix(verifier):
+    sets = verifier.input_sets(["a", "b", "c"])[25:]
+    assert len(sets) == 5 ** 3                # three inputs: every combination of -2..2
+    patterns = {tuple(bool(s[v]) for v in "abc") for s in sets}
+    assert len(patterns) == 8                 # e.g. a zero while b and c are not
+
+
+def test_small_scope_shrinks_as_inputs_grow(verifier):
+    def count(n):
+        return len(verifier.input_sets([f"v{i}" for i in range(n)])) - 25
+
+    assert [count(n) for n in (1, 2, 3, 4, 5, 6, 8)] == [257, 289, 125, 256, 243, 64, 256]
+    assert count(9) == verifier.max_small_scope     # too many inputs: sampled instead
+    assert verifier.input_sets([]) == [{}] * 25     # no inputs: nothing to add
+
+
+def test_pairwise_sets_give_every_two_inputs_every_two_boundary_values(verifier):
+    variables = ["a", "b", "c", "d", "e"]
+    sets = verifier._pairwise_sets(variables, [2, 3, 4, 149, 150, 151])
+    values = [0, 2, 3, 4, 149, 150, 151]
+    for x in variables:
+        for y in variables:
+            if x != y:
+                seen = {(s[x], s[y]) for s in sets}
+                assert all((p, q) in seen for p in values for q in values if p != q), (x, y)
+    assert verifier._pairwise_sets(["a"], [1, 2, 3]) == [] and verifier._pairwise_sets(variables, []) == []
+
+
+def test_and_swapped_for_or_behind_a_branch_is_rejected(verifier):
+    # Only differs when x is non-zero and z is zero. Random values and "all inputs equal"
+    # sets never produce that, so this used to pass verification.
+    text = ("ifFalse 5 goto L0\nc = x || y\na = x || z\nif x goto L1\na = a % 10\nb = z || x\n"
+            "L0:\nL1:\nprint a\nprint b\nprint c\nprint b")
+    result = verifier.verify(P(text), P(text.replace("a = x || z", "a = x && z")))
+    assert not result.passed and "output mismatch" in result.reason
+
+
+def test_division_swapped_for_modulo_behind_a_branch_is_rejected(verifier):
+    # Only differs when x is zero while y and z are not.
+    text = ("c = y && z\nb = 3\nif x goto L0\na = z >= 0\nd = b / c\nprint x\nb = z / d\nb = x > 3\n"
+            "L0:\nprint a\nprint b\nprint c\nprint d\nprint z")
+    assert not verifier.verify(P(text), P(text.replace("d = b / c", "d = b % c"))).passed
+
+
+def test_single_input_program_is_checked_on_every_value_in_a_wide_range(verifier):
+    # b % 37 against b % 36 only shows at x = 18 or -18 here: neither a boundary of a
+    # literal nor a small value. With one input every value from -128 to 128 is tried.
+    text = "b = x + x\na = b % 37\nc = -1 * b\nifFalse x goto L0\na = a < x\nL0:\nprint a\nprint b\nprint c\nprint x"
+    result = verifier.verify(P(text), P(text.replace("a = b % 37", "a = b % 36")))
+    assert not result.passed and result.details["inputs"] in ({"x": -18}, {"x": 18})
+
+
+def test_off_by_one_that_needs_two_inputs_lined_up_is_rejected(verifier):
+    # 3 <= d against 3 < d only shows when d is exactly 3 AND y is 0 (which skips the
+    # instructions that would overwrite d). The pairwise boundary sets line the two up.
+    text = ("ifFalse y goto L0\nc = y >= z\nd = c\na = x <= -1\nprint y\nifFalse c goto L1\nd = d > 3\n"
+            "L0:\na = 3 <= d\nprint d\nd = 2 < y\nc = -40\nc = y % z\nb = y == z\n"
+            "L1:\nprint a\nprint b\nprint c\nprint d\nprint 1")
+    assert not verifier.verify(P(text), P(text.replace("a = 3 <= d", "a = 3 < d"))).passed

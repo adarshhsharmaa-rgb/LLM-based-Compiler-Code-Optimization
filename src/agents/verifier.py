@@ -1,10 +1,11 @@
 """Verification agent. A candidate is accepted only if BOTH checks pass.
 
 1. Differential testing: run original and candidate on 20 random input sets plus
-   5 edge-case sets (plus boundary values around every literal when there are
-   free inputs) and compare printed output *and* failure mode (division by
-   zero, timeout, ...). For a program with no free input variables there is
-   exactly one possible execution, so a match is a proof of equivalence.
+   5 edge-case sets and, when there are free inputs, boundary values around
+   every literal and every combination of a few small values (zero included).
+   Compare printed output *and* failure mode (division by zero, timeout, ...).
+   For a program with no free input variables there is exactly one possible
+   execution, so a match is a proof of equivalence.
 
 2. Symbolic verification (straight-line code only): evaluate both programs over
    symbolic inputs. ``+``, ``-``, ``*`` and constant shifts are normalised to
@@ -15,6 +16,7 @@
 """
 from __future__ import annotations
 
+import itertools
 import random
 from dataclasses import dataclass, field
 
@@ -209,6 +211,12 @@ class _Outcome:
         return f"printed {list(self.outputs)}"
 
 
+# Value sets for exhaustive small-input testing, widest first. The widest one whose
+# combinations (one value per input) all fit the Verifier's budget is used.
+SMALL_SCOPES = (tuple(range(-128, 129)), tuple(range(-8, 9)), tuple(range(-3, 4)), (-2, -1, 0, 1, 2),
+                (-1, 0, 1, 2), (-1, 0, 1), (0, 1))
+
+
 @dataclass
 class Verifier:
     num_random: int = 20
@@ -217,6 +225,8 @@ class Verifier:
     max_steps: int = 100_000
     max_boundary_constants: int = 15
     num_mixed: int = 10
+    max_small_scope: int = 300
+    max_pairwise: int = 400
     interpreter: TACInterpreter = field(default_factory=TACInterpreter)
 
     def verify(self, original: TACProgram, candidate: TACProgram) -> VerificationResult:
@@ -249,19 +259,60 @@ class Verifier:
         for every literal c in either program, all inputs = c-1, c, c+1, plus
         random mixes drawn from that pool. This catches off-by-one changes such
         as ``x > 5`` -> ``x >= 5`` that uniform random sampling would miss.
+        Last come the small-scope sets and the pairwise boundary sets (see
+        ``_small_scope_sets`` and ``_pairwise_sets``).
         """
         rng = random.Random(self.seed)
         lo, hi = self.value_range
         sets = [{v: rng.randint(lo, hi) for v in variables} for _ in range(self.num_random)]
         for edge in (0, 1, -1, 99, -99):
             sets.append({v: edge for v in variables})
+        pool: list[int] = []
         if variables and constants:
             pool = sorted({k for c in sorted(constants)[:self.max_boundary_constants]
                            for k in (c - 1, c, c + 1)})
             sets.extend({v: k for v in variables} for k in pool)
             if len(variables) > 1:
                 sets.extend({v: rng.choice(pool) for v in variables} for _ in range(self.num_mixed))
+        sets.extend(self._small_scope_sets(variables, rng))
+        sets.extend(self._pairwise_sets(variables, pool))
         return sets
+
+    def _pairwise_sets(self, variables: list[str], pool: list[int]) -> list[dict[str, int]]:
+        """Give every pair of inputs every pair of boundary values (and zero) at least once.
+
+        One input sitting exactly on a literal's boundary only matters if another input
+        steers execution to the instruction that uses it, and random mixes rarely line
+        the two up. The inputs are split into two groups in ceil(log2(n)) ways (by the
+        bits of their position); for each split one group gets value a and the other
+        value b, for all a != b. Two different inputs land in different groups in at
+        least one split, so no pair of values is missed. The pool is cut to the values
+        nearest zero when all pairs would exceed ``max_pairwise``.
+        """
+        if len(variables) < 2 or not pool:
+            return []
+        splits = (len(variables) - 1).bit_length()
+        size = max(2, int((self.max_pairwise / splits) ** 0.5))
+        values = sorted(set(pool) | {0}, key=lambda k: (abs(k), k))[:size]
+        return [{v: (a if (i >> bit) & 1 else b) for i, v in enumerate(variables)}
+                for bit in range(splits) for a in values for b in values if a != b]
+
+    def _small_scope_sets(self, variables: list[str], rng: random.Random) -> list[dict[str, int]]:
+        """Every combination of a few small values, zero included, over all inputs.
+
+        Random values almost never make one input zero and another non-zero, yet
+        that is exactly what tells ``&&`` from ``||`` or flips a branch on a flag.
+        The more inputs there are, the smaller the value set, so the number of
+        combinations stays within ``max_small_scope``.
+        """
+        if not variables:
+            return []
+        for values in SMALL_SCOPES:
+            if len(values) ** len(variables) <= self.max_small_scope:
+                return [dict(zip(variables, combo))
+                        for combo in itertools.product(values, repeat=len(variables))]
+        # Too many inputs to try every combination: sample zero / non-zero patterns instead.
+        return [{v: rng.choice((0, 0, 1, -1, 2)) for v in variables} for _ in range(self.max_small_scope)]
 
     @staticmethod
     def _constants(*programs: TACProgram) -> set[int]:
