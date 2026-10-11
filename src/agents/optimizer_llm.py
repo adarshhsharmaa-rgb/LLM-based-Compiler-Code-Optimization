@@ -1,4 +1,4 @@
-"""LLM-based optimizer agents (Google Gemini, or a local Ollama model).
+"""LLM-based optimizer agents (Google Gemini, Groq, or a local Ollama model).
 
 The LLM is only a *proposer*: everything it returns goes through exactly the
 same Verifier and CostEvaluator gates as rule-based proposals, so a wrong LLM
@@ -7,11 +7,13 @@ answer can never be accepted.
 Providers:
   * ``gemini``    -- Gemini via the ``google-genai`` SDK. Credentials:
     ``GEMINI_API_KEY`` (or ``GOOGLE_API_KEY``), free from aistudio.google.com.
+  * ``groq``      -- an open model hosted by Groq, via its OpenAI-compatible
+    HTTP API. Credentials: ``GROQ_API_KEY``, free from console.groq.com.
   * ``ollama``    -- a model running on this machine, served by Ollama
     (ollama.com). No key and no internet, so this is the offline backend.
     Server address: ``OLLAMA_HOST`` (default 127.0.0.1:11434).
-  * ``auto``      -- accepted by ``create_llm_optimizer`` only: the cloud default
-    when it can be reached and is configured, otherwise Ollama.
+  * ``auto``      -- accepted by ``create_llm_optimizer`` only: the first cloud
+    provider that is configured (Gemini, then Groq) when online, otherwise Ollama.
 
 If credentials are missing, the local server is not running, or the API fails
 with a non-retryable error, the optimizer marks itself unavailable and the
@@ -32,10 +34,12 @@ from ..tac.program import TACParseError, TACProgram
 DEFAULT_PROVIDER = "gemini"
 DEFAULT_MODELS = {
     "gemini": "gemini-3.1-flash-lite",
+    "groq": "openai/gpt-oss-120b",
     "ollama": "qwen2.5-coder:7b",
 }
 DEFAULT_MODEL = DEFAULT_MODELS[DEFAULT_PROVIDER]
-CLOUD_HOSTS = {"gemini": "generativelanguage.googleapis.com"}
+CLOUD_HOSTS = {"gemini": "generativelanguage.googleapis.com", "groq": "api.groq.com"}
+GROQ_BASE_URL = "https://api.groq.com/openai/v1"
 OLLAMA_DEFAULT_HOST = "http://127.0.0.1:11434"
 
 PROMPT_TEMPLATE = """You are a compiler optimization expert. Given this Three-Address Code (TAC), propose exactly ONE semantics-preserving optimization.
@@ -96,11 +100,19 @@ class _LLMSkip(Exception):
 class BaseLLMOptimizer:
     provider = "base"
     selected_because = ""      # set by create_llm_optimizer: why this backend was picked
+    _min_interval = 0.0        # seconds to leave between API calls (cloud rate limits)
+    _last_call = 0.0
 
     def __init__(self, model: str):
         self._model = model
         self.available = True
         self.unavailable_reason = ""
+
+    def _throttle(self) -> None:
+        wait = self._min_interval - (time.monotonic() - self._last_call)
+        if wait > 0:
+            time.sleep(wait)
+        self._last_call = time.monotonic()
 
     @property
     def model(self) -> str:
@@ -188,12 +200,6 @@ class GeminiOptimizer(BaseLLMOptimizer):
             self._client = None
             self._disable(f"could not create Gemini client - set GEMINI_API_KEY ({exc})")
 
-    def _throttle(self) -> None:
-        wait = self._min_interval - (time.monotonic() - self._last_call)
-        if wait > 0:
-            time.sleep(wait)
-        self._last_call = time.monotonic()
-
     def _complete(self, prompt: str) -> str:
         errors = self._errors
         rate_limited = overloaded = 0
@@ -234,6 +240,130 @@ class GeminiOptimizer(BaseLLMOptimizer):
             if response.candidates:
                 reason = str(response.candidates[0].finish_reason)
             raise _LLMSkip(f"Gemini returned no text ({reason or 'blocked or empty'})")
+        return text
+
+
+# ====================================================================== #
+class GroqOptimizer(BaseLLMOptimizer):
+    """An open model hosted by Groq (free tier; key from console.groq.com).
+
+    Uses Groq's OpenAI-compatible chat API with the standard library only, so
+    there is no SDK to install. Credentials: ``GROQ_API_KEY``.
+
+    Free-tier limits are per model: about 30 requests and 8,000 tokens a
+    minute, 1,000 requests and 200,000 tokens a day when this was written
+    (October 2026; the Limits page of the Groq console has the exact numbers).
+    Calls are spaced ``min_interval`` seconds apart to stay under the
+    per-minute token limit. A per-minute 429 is waited out for as long as Groq
+    says and retried twice; a per-day 429 means the quota is spent and the
+    optimizer switches off. 5xx errors are retried three times; if they
+    persist only that proposal is skipped.
+
+    The default models reason before answering, and those hidden tokens count
+    against the daily quota, so reasoning effort is kept low
+    (``GROQ_REASONING_EFFORT`` changes it: low, medium or high).
+    """
+
+    provider = "groq"
+    MAX_RATE_LIMIT_RETRIES = 2
+    MAX_OVERLOAD_RETRIES = 3
+    MAX_RETRY_AFTER = 90.0     # a longer wait than this is the daily quota, not the per-minute one
+    # Groq's front door rejects the standard library's default User-Agent with a bare 403.
+    USER_AGENT = "tac-optimization-agent/1.0"
+
+    def __init__(self, model: str = DEFAULT_MODELS["groq"], min_interval: float = 5.0,
+                 retry_wait: float = 20.0, base_url: str = GROQ_BASE_URL, timeout: float = 90.0,
+                 max_tokens: int = 4000):
+        super().__init__(model)
+        self._min_interval = min_interval
+        self._retry_wait = retry_wait
+        self._url = base_url.rstrip("/") + "/chat/completions"
+        self._timeout = timeout
+        self._max_tokens = max_tokens
+        self._effort = os.environ.get("GROQ_REASONING_EFFORT", "low")
+        self._send_reasoning_options = True
+        self.api_calls = 0
+        self._key = os.environ.get("GROQ_API_KEY", "").strip()
+        if not self._key:
+            self._disable("no Groq API key - set GROQ_API_KEY or put the key in a .groq_key file")
+
+    def _reasoning_options(self) -> dict:
+        if not self._send_reasoning_options:
+            return {}
+        if "gpt-oss" in self._model:
+            return {"reasoning_effort": self._effort, "include_reasoning": False}
+        if "qwen" in self._model:
+            return {"reasoning_effort": self._effort, "reasoning_format": "hidden"}
+        return {}
+
+    def _post(self, prompt: str) -> dict:
+        body = {"model": self._model, "messages": [{"role": "user", "content": prompt}],
+                "temperature": 0.2, "max_completion_tokens": self._max_tokens, **self._reasoning_options()}
+        request = urllib.request.Request(
+            self._url, data=json.dumps(body).encode("utf-8"),
+            headers={"Content-Type": "application/json", "Authorization": f"Bearer {self._key}",
+                     "User-Agent": self.USER_AGENT})
+        with urllib.request.urlopen(request, timeout=self._timeout) as response:
+            return json.loads(response.read().decode("utf-8"))
+
+    @staticmethod
+    def _error(exc: urllib.error.HTTPError) -> tuple[str, str]:
+        """(message, code) from an error reply; both '' if the body is not Groq's JSON."""
+        try:
+            error = json.loads(exc.read().decode("utf-8")).get("error") or {}
+            return str(error.get("message", ""))[:200], str(error.get("code", ""))
+        except (OSError, ValueError, AttributeError):
+            return "", ""
+
+    def _retry_after(self, exc: urllib.error.HTTPError, attempt: int) -> float:
+        try:
+            return float(exc.headers.get("retry-after"))
+        except (TypeError, ValueError):
+            return self._retry_wait * attempt
+
+    def _complete(self, prompt: str) -> str:
+        rate_limited = overloaded = 0
+        while True:
+            self._throttle()
+            self.api_calls += 1
+            try:
+                reply = self._post(prompt)
+                break
+            except urllib.error.HTTPError as exc:
+                message, code = self._error(exc)
+                if exc.code == 429:
+                    rate_limited += 1
+                    wait = self._retry_after(exc, rate_limited)
+                    if "per day" in message or wait > self.MAX_RETRY_AFTER:
+                        raise _LLMUnavailable(f"Groq daily quota used up (429): {message}") from exc
+                    if rate_limited <= self.MAX_RATE_LIMIT_RETRIES:
+                        time.sleep(wait)
+                        continue
+                    raise _LLMSkip("Groq still rate-limited (429) after "
+                                   f"{self.MAX_RATE_LIMIT_RETRIES} retries") from exc
+                if exc.code >= 500 or exc.code == 498:
+                    overloaded += 1
+                    if overloaded <= self.MAX_OVERLOAD_RETRIES:
+                        time.sleep(self._retry_wait / 3 * 2 ** (overloaded - 1))
+                        continue
+                    raise _LLMSkip(f"Groq API error {exc.code} (still failing after "
+                                   f"{self.MAX_OVERLOAD_RETRIES} retries)") from exc
+                if exc.code in (401, 403):
+                    raise _LLMUnavailable(f"Groq rejected the API key ({exc.code})") from exc
+                if exc.code == 404 or code in ("model_not_found", "model_decommissioned"):
+                    raise _LLMUnavailable(f"Groq model {self._model!r} is not available: {message}") from exc
+                if exc.code == 400 and "reasoning" in message and self._send_reasoning_options:
+                    self._send_reasoning_options = False    # this model takes no reasoning options
+                    continue
+                raise _LLMSkip(f"Groq API error {exc.code}: {message}") from exc
+            except (OSError, ValueError) as exc:  # network failures, timeouts, unreadable replies
+                raise _LLMSkip(f"Groq request failed: {type(exc).__name__}") from exc
+        choice = (reply.get("choices") or [{}])[0]
+        if choice.get("finish_reason") == "length":
+            raise _LLMSkip("Groq reply was truncated (max_completion_tokens)")
+        text = _THINK_RE.sub("", (choice.get("message") or {}).get("content") or "")
+        if not text.strip():
+            raise _LLMSkip("Groq returned no text")
         return text
 
 
@@ -351,7 +481,25 @@ class OllamaOptimizer(BaseLLMOptimizer):
             return ""
 
 
-PROVIDERS = {"gemini": GeminiOptimizer, "ollama": OllamaOptimizer}
+PROVIDERS = {"gemini": GeminiOptimizer, "groq": GroqOptimizer, "ollama": OllamaOptimizer}
+
+
+AUTO_CLOUD_ORDER = ("gemini", "groq")     # tried in this order by provider="auto"
+KEY_FILES = {"GEMINI_API_KEY": ".gemini_key", "GROQ_API_KEY": ".groq_key"}
+
+
+def load_key_files(root: str) -> None:
+    """Load API keys from the git-ignored key files in ``root`` for variables that are not set."""
+    for env_var, filename in KEY_FILES.items():
+        path = os.path.join(root, filename)
+        if os.environ.get(env_var) or not os.path.exists(path):
+            continue
+        if env_var == "GEMINI_API_KEY" and os.environ.get("GOOGLE_API_KEY"):
+            continue      # the Gemini SDK already has a key
+        with open(path, encoding="utf-8") as fh:
+            key = fh.read().strip()
+        if key:
+            os.environ[env_var] = key
 
 
 def is_online(timeout: float = 2.0) -> bool:
@@ -368,8 +516,8 @@ def create_llm_optimizer(provider: str = DEFAULT_PROVIDER, model: str | None = N
     """Build the LLM backend.
 
     ``offline=True`` always gives the local Ollama model. ``provider="auto"``
-    gives the cloud default when the internet is up and it is configured, and
-    falls back to Ollama otherwise.
+    gives the first cloud provider that is configured (Gemini, then Groq) when
+    the internet is up, and falls back to Ollama otherwise.
     """
     kwargs = {"model": model} if model else {}
     why = ""
@@ -377,11 +525,15 @@ def create_llm_optimizer(provider: str = DEFAULT_PROVIDER, model: str | None = N
         provider, why = "ollama", "offline mode"
     elif provider == "auto":
         if is_online():
-            cloud = PROVIDERS[DEFAULT_PROVIDER](**kwargs)
-            if cloud.available:
-                cloud.selected_because = "online"
-                return cloud
-            why = f"{DEFAULT_PROVIDER} is unavailable: {cloud.unavailable_reason}"
+            passed_over = []
+            for name in AUTO_CLOUD_ORDER:
+                cloud = PROVIDERS[name](**kwargs)
+                if cloud.available:
+                    cloud.selected_because = "online" + (
+                        f", {' and '.join(passed_over)} not available" if passed_over else "")
+                    return cloud
+                passed_over.append(name)
+            why = f"{' and '.join(passed_over)} not available"
         else:
             why = "no internet connection"
         provider = "ollama"

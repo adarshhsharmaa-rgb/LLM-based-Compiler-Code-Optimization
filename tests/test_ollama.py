@@ -233,11 +233,11 @@ def test_auto_provider_uses_ollama_without_internet(ollama, monkeypatch):
 def test_auto_provider_uses_ollama_when_the_cloud_llm_is_not_configured(ollama, monkeypatch):
     monkeypatch.setenv("OLLAMA_HOST", ollama().url)
     monkeypatch.setattr(optimizer_llm, "is_online", lambda: True)
-    monkeypatch.delenv("GEMINI_API_KEY", raising=False)
-    monkeypatch.delenv("GOOGLE_API_KEY", raising=False)
+    for name in ("GEMINI_API_KEY", "GOOGLE_API_KEY", "GROQ_API_KEY"):
+        monkeypatch.delenv(name, raising=False)
     opt = create_llm_optimizer("auto")
     assert isinstance(opt, OllamaOptimizer) and opt.available
-    assert opt.selected_because.startswith("gemini is unavailable")
+    assert opt.selected_because == "gemini and groq not available"
 
 
 def test_auto_provider_prefers_the_cloud_llm_when_online(monkeypatch):
