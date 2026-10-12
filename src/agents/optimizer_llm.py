@@ -66,6 +66,22 @@ Format:
 modified TAC here
 </tac>"""
 
+# Sent when a proposal was rejected: the model sees its own answer and what was wrong with it.
+REPAIR_TEMPLATE = """You are a compiler optimization expert. You proposed an optimization of the Three-Address Code (TAC) below, but your answer was rejected.
+
+Original TAC:
+{tac_string}
+
+Your rejected answer:
+{rejected}
+
+Why it was rejected:
+{problem}
+
+Propose ONE semantics-preserving optimization of the ORIGINAL TAC that does not have this problem. If you are not sure a change is correct, make a smaller and safer one.
+
+Rules:""" + PROMPT_TEMPLATE.split("Rules:", 1)[1]
+
 _REASONING_RE = re.compile(r"<reasoning>(.*?)</reasoning>", re.DOTALL | re.IGNORECASE)
 _TAC_RE = re.compile(r"<tac>(.*?)</tac>", re.DOTALL | re.IGNORECASE)
 _LINE_NO_RE = re.compile(r"^\s*\d+\s*[|:.)]\s+")
@@ -74,8 +90,7 @@ _GPU_CRASH_RE = re.compile(r"llama-server process has terminated|llama runner pr
                            re.IGNORECASE)
 
 
-def parse_llm_tac(text: str) -> TACProgram | None:
-    """Robustly turn the body of a <tac> block into a TACProgram (None on failure)."""
+def _tac_lines(text: str) -> list[str]:
     lines = []
     for raw in text.splitlines():
         line = raw.strip()
@@ -83,12 +98,30 @@ def parse_llm_tac(text: str) -> TACProgram | None:
             continue
         line = _LINE_NO_RE.sub("", line)   # strip "3 | " / "3: " listing prefixes
         lines.append(line)
+    return lines
+
+
+def parse_llm_tac(text: str) -> TACProgram | None:
+    """Robustly turn the body of a <tac> block into a TACProgram (None on failure)."""
+    lines = _tac_lines(text)
     if not lines:
         return None
     try:
         return TACProgram.from_string("\n".join(lines))
     except TACParseError:
         return None
+
+
+def tac_parse_error(text: str) -> str:
+    """Why the body of a <tac> block is not valid TAC ('' if it is)."""
+    lines = _tac_lines(text)
+    if not lines:
+        return "the <tac> block is empty"
+    try:
+        TACProgram.from_string("\n".join(lines))
+    except TACParseError as exc:
+        return str(exc)
+    return ""
 
 
 class _LLMUnavailable(Exception):
@@ -104,6 +137,8 @@ class BaseLLMOptimizer:
     selected_because = ""      # set by create_llm_optimizer: why this backend was picked
     _min_interval = 0.0        # seconds to leave between API calls (cloud rate limits)
     _last_call = 0.0
+    last_failure = ""          # why the last reply was unusable: "", "error", "no_tac", "unparseable", "unchanged"
+    last_tac = ""              # the TAC text of the last reply (used when asking for a repair)
 
     def __init__(self, model: str):
         self._model = model
@@ -138,30 +173,50 @@ class BaseLLMOptimizer:
 
     def propose(self, program: TACProgram) -> tuple[TACProgram | None, str]:
         """Returns (proposed_program, reasoning). Returns (None, error_msg) on failure."""
+        return self._ask(self._build_prompt(program), program)
+
+    def repair(self, program: TACProgram, rejected: str, problem: str) -> tuple[TACProgram | None, str]:
+        """A second chance after a rejected answer: the model is shown that answer and what
+        was wrong with it (a counterexample from the verifier, or a syntax error) and asked
+        again. Returns the same as ``propose``."""
+        prompt = REPAIR_TEMPLATE.format(tac_string=program.to_string(),
+                                        rejected=rejected.strip() or "(nothing usable)", problem=problem)
+        return self._ask(prompt, program)
+
+    def _ask(self, prompt: str, program: TACProgram) -> tuple[TACProgram | None, str]:
+        self.last_failure, self.last_tac = "error", ""
         if not self.available:
             return None, f"LLM unavailable: {self.unavailable_reason}"
         try:
-            text = self._complete(self._build_prompt(program))
+            text = self._complete(prompt)
         except _LLMUnavailable as exc:
             self._disable(str(exc))
             return None, f"LLM unavailable: {self.unavailable_reason}"
         except _LLMSkip as exc:
             return None, str(exc)
-        return self._parse_text(text, program)
+        candidate, reasoning, self.last_failure, self.last_tac = self._read_reply(text, program)
+        return candidate, reasoning
 
     @staticmethod
-    def _parse_text(text: str, original: TACProgram) -> tuple[TACProgram | None, str]:
+    def _read_reply(text: str, original: TACProgram) -> tuple[TACProgram | None, str, str, str]:
+        """(candidate, reasoning, failure, tac_text). ``failure`` is '' for a usable answer, or
+        why there is none: "no_tac", "unparseable" or "unchanged"."""
         reasoning_match = _REASONING_RE.search(text)
         reasoning = reasoning_match.group(1).strip() if reasoning_match else "(no reasoning given)"
         tac_match = _TAC_RE.search(text)
         if not tac_match:
-            return None, f"no <tac> block in LLM response; reasoning: {reasoning}"
-        candidate = parse_llm_tac(tac_match.group(1))
+            return None, f"no <tac> block in LLM response; reasoning: {reasoning}", "no_tac", ""
+        body = tac_match.group(1).strip()
+        candidate = parse_llm_tac(body)
         if candidate is None:
-            return None, f"could not parse LLM TAC; reasoning: {reasoning}"
+            return None, f"could not parse LLM TAC; reasoning: {reasoning}", "unparseable", body
         if candidate == original:
-            return None, f"LLM returned unchanged TAC; reasoning: {reasoning}"
-        return candidate, reasoning
+            return None, f"LLM returned unchanged TAC; reasoning: {reasoning}", "unchanged", body
+        return candidate, reasoning, "", candidate.to_string()
+
+    @staticmethod
+    def _parse_text(text: str, original: TACProgram) -> tuple[TACProgram | None, str]:
+        return BaseLLMOptimizer._read_reply(text, original)[:2]
 
 
 # ====================================================================== #

@@ -49,6 +49,8 @@ class OptimizationResult:
     optimizer_mode: str = "rule"      # the specialist's routing policy: "rule", "llm" or "hybrid"
     llm_provider: str = ""            # LLM backend the specialist could route to ("" if none)
     llm_model: str = ""
+    llm_repairs: int = 0              # second tries asked of the LLM after a rejected answer
+    llm_repairs_accepted: int = 0     # how many of those second tries were accepted
 
     def format_report(self) -> str:
         """Full per-program report: decision log, result summary and both TAC listings."""
@@ -64,6 +66,8 @@ class OptimizationResult:
             lines.append(f"  Routing:       {self.optimizer_mode} (LLM: {self.llm_provider} {self.llm_model})")
         if self.llm_proposals:
             lines.append(f"  LLM proposals: {self.llm_proposals} ({self.llm_valid} passed verification)")
+        if self.llm_repairs:
+            lines.append(f"  LLM repairs:   {self.llm_repairs} ({self.llm_repairs_accepted} accepted)")
         match_text = "PASS ✓" if self.output_match else "FAIL ✗"
         lines.append(f"  Output match:  {match_text}")
         lines.append("=== Original TAC ===")
@@ -77,12 +81,14 @@ class Orchestrator:
     def __init__(self, use_llm: bool = False, max_iterations: int = 50,
                  llm_model: str | None = None, max_llm_calls: int = 5,
                  llm_provider: str = DEFAULT_PROVIDER, optimizer_mode: str | None = None,
-                 offline: bool = False):
+                 offline: bool = False, max_repairs: int = 1):
         """``optimizer_mode`` is the Optimization Specialist's routing policy ("rule", "llm"
         or "hybrid"). ``use_llm`` is the older switch and means "hybrid". ``offline`` makes
-        the LLM the local Ollama model instead of a cloud one."""
+        the LLM the local Ollama model instead of a cloud one. ``max_repairs`` is how many
+        second tries the LLM gets after one rejected answer (0 turns self-repair off)."""
         self.analyzer = CodeAnalyzer()
-        self.specialist = OptimizationSpecialist(optimizer_mode or DEFAULT_MODE, max_llm_calls=max_llm_calls)
+        self.specialist = OptimizationSpecialist(optimizer_mode or DEFAULT_MODE, max_llm_calls=max_llm_calls,
+                                                 max_repairs=max_repairs)
         if optimizer_mode in ("llm", "hybrid") or (optimizer_mode is None and use_llm):
             self.specialist.llm_optimizer = create_llm_optimizer(llm_provider, llm_model, offline=offline)
         self.verifier = Verifier()
@@ -112,7 +118,8 @@ class Orchestrator:
         llm_outcomes: Counter = Counter()    # the LLM's share of them
         types_applied: list[str] = []
         attempted_opportunities: set[tuple] = set()  # track to avoid infinite loops
-        llm_calls = 0
+        llm_calls = 0                        # every request sent to the LLM, repairs included
+        llm_repairs = repairs_accepted = 0
         proposals: list[dict] = []
         cost_history = [self.cost_evaluator.evaluate(current).weighted_total]
         iteration = 0
@@ -131,7 +138,8 @@ class Orchestrator:
             tried: list[Route] = []
             outcome = None
             while outcome not in ("accepted", "unverifiable"):
-                decision = specialist.route(current, opportunities, llm_calls, tried)
+                # the call budget is for fresh proposals; repairs have their own limit
+                decision = specialist.route(current, opportunities, llm_calls - llm_repairs, tried)
                 if decision.route is None:
                     if not tried and decision.llm_note:
                         logger.log_info(iteration, f"LLM not consulted: {decision.llm_note}")
@@ -149,6 +157,19 @@ class Orchestrator:
                 outcomes[outcome] += 1
                 if proposal.source == "llm":
                     llm_outcomes[outcome] += 1
+                # Self-repair: a rejected LLM answer goes back to the model with the reason
+                # (the verifier's counterexample, or the syntax error) for a second try.
+                repairs_done = 0
+                while specialist.can_repair(proposal, repairs_done):
+                    repairs_done += 1
+                    llm_calls += 1
+                    llm_repairs += 1
+                    logger.log_repair(iteration, proposal.problem)
+                    proposal = specialist.repair(current, proposal)
+                    outcome = self._judge(iteration, current, proposal, logger, proposals)
+                    outcomes[outcome] += 1
+                    llm_outcomes[outcome] += 1
+                    repairs_accepted += outcome == "accepted"
                 if outcome == "accepted":
                     current = proposal.candidate
                     types_applied.append(proposal.type)
@@ -208,6 +229,8 @@ class Orchestrator:
             optimizer_mode=specialist.mode if llm is not None else "rule",
             llm_provider=getattr(llm, "provider", ""),
             llm_model=getattr(llm, "model", ""),
+            llm_repairs=llm_repairs,
+            llm_repairs_accepted=repairs_accepted,
         )
 
     # ------------------------------------------------------------------ #
@@ -220,7 +243,8 @@ class Orchestrator:
         """
         # 2. PROPOSE
         if proposal.source == "llm":
-            logger.log_llm_proposal(iteration, proposal.reasoning, proposal.candidate, tac_before=current)
+            logger.log_llm_proposal(iteration, proposal.reasoning, proposal.candidate, tac_before=current,
+                                    repair=proposal.repair)
             if proposal.candidate is None:
                 return "no_proposal"
         else:
@@ -234,9 +258,15 @@ class Orchestrator:
             return "unverifiable"
         record = {"iteration": iteration, "source": proposal.source, "type": proposal.type,
                   "outcome": "invalid", "cost_before": None, "cost_after": None}
+        if proposal.repair:
+            record["repair"] = True
         proposals.append(record)
         if not ver_result.passed:
             logger.log_reject(iteration, f"Verification failed: {ver_result.reason}")
+            # kept on the proposal so the specialist can tell the LLM exactly what went wrong
+            proposal.failure = "invalid"
+            proposal.problem = f"It changes what the program does: {ver_result.reason}."
+            proposal.rejected_tac = proposal.candidate.to_string()
             return "invalid"
 
         # 4. EVALUATE
