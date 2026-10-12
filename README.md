@@ -123,6 +123,7 @@ py main.py --run-file my.src --offline --optimizer llm   # route to the LLM firs
 | `--llm-model ID` | model for the LLM (defaults: `gemini-3.1-flash-lite`, `openai/gpt-oss-120b`, `qwen2.5-coder:7b`) |
 | `--compare-with DIR` | with `--visualize`: compare against another run (writes `comparison.csv` and chart 7) |
 | `--max-llm-calls N` | LLM proposals allowed per program (default 5) |
+| `--max-repairs N` | self-repair: second tries the LLM gets after a rejected answer (default 1, 0 turns it off); see [self-repair](#llm-self-repair) |
 | `--quiet` | with `--run-all`, print only progress; logs are still saved |
 
 ## Live demo: the terminal front end
@@ -574,6 +575,36 @@ py main.py --run-all --quiet --offline --max-llm-calls 1 --output-dir output_oll
   call on the CPU, stays there for the rest of the run and prints a note.
   `OLLAMA_NUM_GPU=0` forces the CPU from the start. Updating the NVIDIA
   driver is the real fix.
+
+### LLM self-repair
+
+When an LLM answer is rejected, the Optimization Specialist sends it back to
+the model with the reason and asks again:
+
+* **Failed verification:** the model gets the verifier's counterexample, for
+  example "output mismatch on inputs {'x': 20}: original printed [40],
+  candidate printed [2]".
+* **Not valid TAC:** the model gets the syntax error.
+
+The second answer goes through the same verification and cost gates, so a
+repair can never be accepted on trust. Unchanged answers and API errors are
+not repaired. Repairs do not count against `--max-llm-calls`; `--max-repairs`
+limits them (default 1 per rejected answer, 0 turns self-repair off).
+
+```
+  [LLM]     LLM proposal: x is probably 1
+  [VERIFY]  FAIL (output mismatch on inputs {'x': 20}: original printed [40], candidate printed [2])
+  [REJECT]  ✗ Change rejected: Verification failed: output mismatch on inputs {'x': 20}: ...
+  [REPAIR]  Feedback sent to the LLM: It changes what the program does: output mismatch on inputs {'x': 20}: ...
+  [LLM]     LLM repair: multiply by 2 is a shift
+  [VERIFY]  PASS (differential: 286/286 inputs matched, symbolic: equivalent)
+  [COST]    Before: 4.5, After: 2.5 (reduction: 44.4%)
+  [ACCEPT]  ✓ Change accepted
+```
+
+The metrics table reports repairs as "accepted / tried". The result tables
+above were produced before self-repair existed; its effect on a full run has
+not been measured yet.
 
 ### Routing: rule-based or LLM
 

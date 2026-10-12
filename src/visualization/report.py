@@ -58,6 +58,9 @@ def result_to_record(result, category: str) -> dict:
         "cost_history": list(result.cost_history),
         "llm_proposals": result.llm_proposals,
         "llm_valid": result.llm_valid,
+        "llm_calls": result.llm_calls,
+        "llm_repairs": result.llm_repairs,
+        "llm_repairs_accepted": result.llm_repairs_accepted,
         "optimizer_mode": result.optimizer_mode,
         "llm_provider": result.llm_provider,
         "llm_model": result.llm_model,
@@ -140,6 +143,8 @@ def aggregate_metrics(records: list[dict], llm_used: bool | None = None) -> dict
         "llm_proposals": llm_total,
         "llm_valid": llm_valid,
         "llm_validity_rate_pct": _pct(llm_valid, llm_total) if llm_used else None,
+        "llm_repairs": sum(r.get("llm_repairs", 0) for r in records),
+        "llm_repairs_accepted": sum(r.get("llm_repairs_accepted", 0) for r in records),
         "false_positive_count": false_positives,
         "false_positive_rate_pct": _pct(false_positives, n) if n else 0.0,
         "per_category": per_category,
@@ -176,6 +181,8 @@ def format_metrics_table(m: dict) -> str:
         ("LLM validity rate", "n/a (LLM not used)" if not m["llm_used"]
          else "n/a (no LLM proposals)" if m["llm_validity_rate_pct"] is None
          else _fmt(m["llm_validity_rate_pct"]) + " %"),
+        ("LLM self-repairs (accepted / tried)", "n/a" if not m.get("llm_repairs")
+         else f"{m['llm_repairs_accepted']} / {m['llm_repairs']}"),
         ("False positives (output mismatch)", f"{m['false_positive_count']}  ({_fmt(m['false_positive_rate_pct'])} %)"),
     ]
     width = max(len(r[0]) for r in rows) + 2
