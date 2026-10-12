@@ -115,6 +115,13 @@ def run_all(orchestrator: Orchestrator, out_dir: str, quiet: bool, dataset: str 
     files = sorted(glob.glob(os.path.join(folder, "*", pattern)))[::max(every, 1)]
     cache_path = os.path.join(out_dir, "metrics", "records_cache.jsonl")
     cached = _load_cache(cache_path) if resume else {}
+    if resume and not cached:
+        # A run that finished (for example on a sample made with --every) can be extended:
+        # its saved results count as done.
+        try:
+            cached = {r["program_name"]: r for r in load_results(out_dir)}
+        except FileNotFoundError:
+            pass
     if cached:
         print(f"Resuming: {len(cached)} programs are already done in {_display(cache_path)}")
     if not files:
@@ -124,7 +131,9 @@ def run_all(orchestrator: Orchestrator, out_dir: str, quiet: bool, dataset: str 
     start = time.time()
     llm = orchestrator.llm_optimizer
     llm_was_available = llm is not None and llm.available
-    cache = open(cache_path, "a" if cached else "w", encoding="utf-8")
+    cache = open(cache_path, "w", encoding="utf-8")
+    for record in cached.values():          # so the cache alone is enough if this run is interrupted too
+        cache.write(json.dumps(record) + "\n")
     for idx, path in enumerate(files, start=1):
         name = os.path.basename(path)
         if name in cached:
