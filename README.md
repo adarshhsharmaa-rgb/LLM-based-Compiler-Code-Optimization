@@ -23,8 +23,14 @@ cost reduction**. With Google Gemini as an additional proposer it reaches
 | False positives (output mismatch) | **0** | **0** |
 
 The rule-only run is kept in `output_rule_only/`; the Gemini run is in `output/`.
-A third run with a local model (Ollama, offline) is in `output_ollama/`: it
-reaches **83.28 %**, also with zero false positives. See
+Two more runs use the other LLM backends, both also with zero false positives:
+
+| Run | Folder | Average cost reduction | LLM validity rate |
+|---|---|---|---|
+| Rule-based + Groq (`gpt-oss-120b`, then `gpt-oss-20b`) | `output_groq/` | **90.89 %** | 98.11 % |
+| Rule-based + Ollama (`qwen2.5-coder:7b`, offline) | `output_ollama/` | **83.28 %** | 42.93 % |
+
+See [Results with Groq](#results-with-groq-gpt-oss-free-tier) and
 [Results with Ollama](#results-with-ollama-qwen25-coder7b-offline-on-cpu).
 
 ---
@@ -70,7 +76,7 @@ src/
 dataset/      generator.py, programs/<category>/*.src
 demo.py       terminal front end: optimize a C program step by step
 demo_programs/  sample C programs for the demo
-tests/        one test module per component, plus regression tests (332 tests)
+tests/        one test module per component, plus regression tests (336 tests)
 output/       logs/ (per-program .log + .json), metrics/ (CSV + JSON), plots/ (PNG)
 ```
 
@@ -167,7 +173,7 @@ optimized TAC.
 py -m pytest tests/ -v
 ```
 
-332 tests cover every component. The Ollama and Groq tests run against stand-in
+336 tests cover every component. The Ollama and Groq tests run against stand-in
 local servers, so they need no Ollama, API key or network. The verifier tests inject wrong changes
 (bad folds, operand swaps, CSE across non-commutative ops, deleted live
 stores, off-by-one conditions, removed loop increments, deleted trapping
@@ -347,6 +353,44 @@ whole constant loops (for example, "adds −4 twelve times" becomes
 * **Independent re-check.** Every original source program was re-run
   against its final optimized TAC on fresh random inputs (seed and range
   different from the verifier's): 3,776 executions, **0 mismatches**.
+
+### Results with Groq (gpt-oss, free tier)
+
+Run with `py main.py --run-all --quiet --use-llm --llm-provider groq --max-llm-calls 2 --output-dir output_groq`.
+Results are in `output_groq/`.
+
+| Category | Programs | Rule-based only | Rule-based + Groq | Programs improved by Groq |
+|---|---:|---:|---:|---:|
+| arithmetic | 60 | 96.03 % | 96.03 % | 0 |
+| nested | 60 | 98.10 % | 98.31 % | 3 |
+| repeated_expr | 60 | 80.71 % | 80.94 % | 5 |
+| dead_code | 60 | 97.44 % | 97.44 % | 0 |
+| loops | 80 | 65.05 % | **93.43 %** | 73 |
+| conditionals | 80 | 73.91 % | **83.48 %** | 42 |
+| mixed | 100 | 77.91 % | **89.29 %** | 58 |
+| **all** | 500 | 82.49 % | **90.89 %** | 181 (none worse) |
+
+* **Run time and calls.** The full run took 42 minutes and made 359 calls.
+* **Two models.** `openai/gpt-oss-120b` spent its daily free quota after
+  286 calls, and the run moved on to `openai/gpt-oss-20b` by itself for the
+  last 148 programs. `results.json` records which model handled each
+  program.
+* **Proposal outcomes.** Of 318 parseable proposals:
+  * 248 were accepted;
+  * 64 were correct but did not lower the cost;
+  * 6 were **wrong and rejected by the verifier** (all from the larger
+    model, which made most of the proposals: 252 against 66).
+  * A further 39 replies could not be parsed as TAC, and 2 returned the
+    program unchanged.
+* **Validity rate.** 98.11 % of parseable proposals passed verification,
+  the highest of the three LLMs (Gemini 92.35 %, Ollama 42.93 %).
+* **Compared with Gemini.** Almost the same overall result (90.89 %
+  against 91.50 %) and the same pattern: nearly all the gain is in loops,
+  conditionals and mixed programs, where the rules cannot remove a loop or
+  a branch.
+* **Independent re-check.** Every original program was re-run against its
+  final optimized TAC on every combination of small input values plus
+  random ones: 63,260 executions, **0 mismatches**.
 
 ### Results with Ollama (`qwen2.5-coder:7b`, offline, on CPU)
 
@@ -573,24 +617,27 @@ log with its reason:
   proposal is skipped.
 * Free-tier prompts may be used by Google to improve its products.
 
-**Groq free-tier notes** (limits as listed by Groq in October 2026; they
-have not been measured with this project yet):
+**Groq free-tier notes** (measured October 2026):
 * **No SDK.** The optimizer calls Groq's OpenAI-compatible HTTP API with
   the Python standard library, so there is nothing extra to `pip install`.
-* **Quotas are per model:** about 30 requests and 8,000 tokens a minute,
-  and 1,000 requests and 200,000 tokens a day, for `openai/gpt-oss-120b`,
+* **Quotas are per model:** 30 requests and 8,000 tokens a minute, and
+  1,000 requests and about 200,000 tokens a day, for `openai/gpt-oss-120b`,
   `openai/gpt-oss-20b` and `qwen/qwen3.8-27b`. The Limits page of the Groq
   console shows the exact numbers for your account.
-* **Sizing.** The Gemini run above made 383 calls of roughly 350 visible
-  tokens each, about 135,000 in total. These Groq models also spend hidden
-  reasoning tokens, which count, so a full run may need two days or a
-  second model (`--llm-model openai/gpt-oss-20b`).
+* **Sizing.** A call costs about 900 tokens, some 200 of them hidden
+  reasoning, so one model's daily quota does not cover a full run: in the
+  run above it lasted 286 calls.
+* **Model fallback.** When a model's daily quota is spent, the optimizer
+  moves on to the next one and repeats the call, instead of switching off.
+  The order is `gpt-oss-120b`, `gpt-oss-20b`, `qwen3.8-27b`;
+  `GROQ_FALLBACK_MODELS` (comma-separated, may be empty) overrides it.
+  The run prints a note for every switch.
 * Reasoning effort is set to `low` to save quota; the
   `GROQ_REASONING_EFFORT` variable changes it (`low`, `medium`, `high`).
-* Calls are spaced about 5 s apart to stay under the per-minute token limit.
+* Calls are spaced about 7 s apart to stay under the per-minute token limit.
 * A per-minute 429 is waited out for as long as Groq says and retried
-  twice. A per-day 429 means the quota is spent: the LLM switches off and
-  the run finishes rule-based.
+  twice. A per-day 429 triggers the model fallback; only when no model is
+  left does the LLM switch off and the run finish rule-based.
 * A 5xx error is retried three times; if it persists, only that proposal
   is skipped.
 
