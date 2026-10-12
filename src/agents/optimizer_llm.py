@@ -348,7 +348,12 @@ class GroqOptimizer(BaseLLMOptimizer):
         self._retry_wait = retry_wait
         self._url = base_url.rstrip("/") + "/chat/completions"
         self._timeout = timeout
-        self._max_tokens = max_tokens
+        # Some models cap the output tokens per minute far below the default answer size:
+        # GROQ_MAX_TOKENS lowers the cap per answer, GROQ_RATE_LIMIT_RETRIES waits longer.
+        self._max_tokens = int(os.environ.get("GROQ_MAX_TOKENS") or max_tokens)
+        retries = os.environ.get("GROQ_RATE_LIMIT_RETRIES", "")
+        if retries.isdigit():
+            self.MAX_RATE_LIMIT_RETRIES = int(retries)
         self._effort = os.environ.get("GROQ_REASONING_EFFORT", "low")
         self._send_reasoning_options = True
         self.api_calls = 0
