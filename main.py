@@ -151,6 +151,9 @@ def main() -> int:
                         help="Model ID for the LLM (default: "
                              + ", ".join(f"{p}={m}" for p, m in DEFAULT_MODELS.items()) + ")")
     parser.add_argument("--max-llm-calls", type=int, default=5, help="LLM proposals allowed per program")
+    parser.add_argument("--max-repairs", type=int, default=1,
+                        help="Self-repair: second tries the LLM gets after a rejected answer, with the "
+                             "verifier's counterexample as feedback (default 1, 0 turns it off)")
     parser.add_argument("--compare-with", type=str, default=None,
                         help="With --visualize: another output dir (e.g. a rule-only run) to compare against")
     args = parser.parse_args()
@@ -176,7 +179,8 @@ def main() -> int:
             load_key_files(PROJECT_ROOT)      # .gemini_key / .groq_key
         orchestrator = Orchestrator(optimizer_mode=mode, max_iterations=args.max_iterations,
                                     llm_model=args.llm_model, max_llm_calls=args.max_llm_calls,
-                                    llm_provider=args.llm_provider, offline=args.offline)
+                                    llm_provider=args.llm_provider, offline=args.offline,
+                                    max_repairs=args.max_repairs)
         llm = orchestrator.llm_optimizer
         if llm is not None:
             why = f" - {llm.selected_because}" if llm.selected_because else ""

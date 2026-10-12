@@ -241,7 +241,9 @@ def choose_inputs(input_names: list[str], c_names: dict[str, str], given: dict[s
 def describe(entry) -> str:
     text = entry.description
     if entry.source == "llm":
-        return text.replace("LLM proposal: ", "").replace("LLM produced no usable TAC: ", "")
+        for prefix in ("LLM proposal: ", "LLM repair: ", "LLM produced no usable TAC: "):
+            text = text.replace(prefix, "")
+        return text
     return text.split(": ", 1)[1] if ": " in text else text
 
 
@@ -296,9 +298,15 @@ def replay(result, pacer: Pacer, verbose: bool) -> int:
         if e.phase in ("analyze", "route") and verbose:
             flush()
             print(c(f"       {'route to ' if e.phase == 'route' else ''}{e.description}", "grey"))
+        elif e.phase == "repair":
+            flush()
+            print(c("         self-repair: the LLM is told what was wrong and asked again", "magenta"))
+            print(c(f"         {clip(e.reason or '', 66)}", "grey"))
         elif e.phase == "propose":
             flush()
             kind = llm_label(result) if e.source == "llm" else e.opportunity_type
+            if e.description.startswith("LLM repair: "):
+                kind += " repair"
             current = {"it": e.iteration, "kind": kind, "source": e.source, "what": describe(e),
                        "outcome": None, "before": 0.0, "after": 0.0, "reason": None}
         elif current is not None and e.phase == "verify":
@@ -357,6 +365,9 @@ def suggestion_summary(result, llm_enabled: bool, llm_note: str, hidden: int) ->
             text += f"  ({len(llm)} usable suggestion{'s' if len(llm) != 1 else ''}"
             text += f", {unusable} unusable repl{'ies' if unusable != 1 else 'y'})" if unusable else ")"
         print(c(text, "magenta"))
+        if result.llm_repairs:
+            print(c(f"  Self-repair: {result.llm_repairs} second tr{'ies' if result.llm_repairs != 1 else 'y'} "
+                    f"after a rejected answer, {result.llm_repairs_accepted} accepted", "magenta"))
         if not result.llm_calls:
             print(c("  The LLM was not needed: the rules left nothing more to improve.", "grey"))
     else:
