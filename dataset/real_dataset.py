@@ -18,9 +18,9 @@ as many problems as possible, newest submissions first.
     python dataset/real_dataset.py rebuild     # write the same 500 again from the manifest
 
 ``collect`` and ``rebuild`` read Parquet files and need ``pip install pyarrow``. The
-programs land in ``dataset/real_programs`` and the downloads in ``dataset/real_cache``;
-both stay on this machine (they are in .gitignore). ``dataset/real_manifest.json`` lists
-which submissions were chosen, without their source code.
+programs land in ``dataset/real_programs`` (committed, each file names its submission
+and the dataset's licence) and the downloads in ``dataset/real_cache`` (git-ignored).
+``dataset/real_manifest.json`` lists which submissions were chosen.
 """
 from __future__ import annotations
 

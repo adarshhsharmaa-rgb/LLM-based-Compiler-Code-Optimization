@@ -5,8 +5,5 @@ __pycache__/
 *.pyc
 .pytest_cache/
 
-# Real-program dataset: downloaded data stays on this machine (see dataset/real_dataset.py)
-dataset/real_programs/
+# Real-program dataset: the downloaded shards and candidate pool stay local (see dataset/real_dataset.py)
 dataset/real_cache/
-# Decision logs of the real programs contain those programs as TAC; they stay local too
-output_real_*/logs/

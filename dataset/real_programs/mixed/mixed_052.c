@@ -1,0 +1,31 @@
+// category: mixed  (real program 052)
+// Codeforces submission 4091236, problem 324/C1, GNU C++, 2013-07-17
+// https://codeforces.com/contest/324/submission/4091236
+// from the dataset open-r1/codeforces-submissions (CC-BY-4.0)
+#include<stdio.h>
+#include<math.h>
+int main()
+{
+int n,m,max=0,cnt=0,a;
+scanf("%d",&n);
+m=n;
+  while(n>0)
+  {
+   while(m>=1)
+   {
+    a=m%10;
+    m=m/10;
+    //max=a;
+      if(max<=a)
+      {
+       max=a;
+      }
+   } 
+  n=n-max;
+  m=n;
+  max=0;
+  cnt++;
+  }
+printf("%d",cnt);
+return 0;
+}
