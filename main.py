@@ -4,6 +4,7 @@ from __future__ import annotations
 import argparse
 import glob
 import importlib.util
+import json
 import os
 import sys
 import time
@@ -91,9 +92,31 @@ def process_file(path: str, orchestrator: Orchestrator, out_dir: str, echo: bool
     return result_to_record(result, infer_category(name, path))
 
 
-def run_all(orchestrator: Orchestrator, out_dir: str, quiet: bool, dataset: str = "generated") -> list[dict]:
+def _load_cache(path: str) -> dict[str, dict]:
+    """Results a previous, interrupted run already saved (a half-written last line is ignored)."""
+    done: dict[str, dict] = {}
+    if os.path.exists(path):
+        with open(path, encoding="utf-8") as fh:
+            for line in fh:
+                try:
+                    record = json.loads(line)
+                except ValueError:
+                    continue
+                done[record["program_name"]] = record
+    return done
+
+
+def run_all(orchestrator: Orchestrator, out_dir: str, quiet: bool, dataset: str = "generated",
+            every: int = 1, resume: bool = False) -> list[dict]:
+    """Optimize the whole dataset. Every finished program is appended to a cache file at
+    once, so a run that is interrupted (hours in, with an LLM) can be continued with
+    ``--resume`` instead of starting again. The cache is removed when the run completes."""
     folder, pattern, hint = DATASETS[dataset]
-    files = sorted(glob.glob(os.path.join(folder, "*", pattern)))
+    files = sorted(glob.glob(os.path.join(folder, "*", pattern)))[::max(every, 1)]
+    cache_path = os.path.join(out_dir, "metrics", "records_cache.jsonl")
+    cached = _load_cache(cache_path) if resume else {}
+    if cached:
+        print(f"Resuming: {len(cached)} programs are already done in {_display(cache_path)}")
     if not files:
         print(f"No {pattern[1:]} files found under {folder}. {hint}")
         return []
@@ -101,14 +124,24 @@ def run_all(orchestrator: Orchestrator, out_dir: str, quiet: bool, dataset: str 
     start = time.time()
     llm = orchestrator.llm_optimizer
     llm_was_available = llm is not None and llm.available
+    cache = open(cache_path, "a" if cached else "w", encoding="utf-8")
     for idx, path in enumerate(files, start=1):
-        print(f"Processing [{idx}/{len(files)}]: {os.path.basename(path)}", flush=True)
+        name = os.path.basename(path)
+        if name in cached:
+            records.append(cached[name])
+            continue
+        print(f"Processing [{idx}/{len(files)}]: {name}", flush=True)
         record = process_file(path, orchestrator, out_dir, echo=not quiet)
         if record is not None:
             records.append(record)
+            cache.write(json.dumps(record) + "\n")
+            cache.flush()
+            os.fsync(cache.fileno())
         if llm_was_available and not llm.available:
             print(f"  ! LLM switched off after {idx} programs: {llm.unavailable_reason}", flush=True)
             llm_was_available = False
+    cache.close()
+    os.remove(cache_path)           # the caller writes the complete results next
     print(f"\nProcessed {len(records)} programs in {time.time() - start:.1f}s")
     return records
 
@@ -128,6 +161,12 @@ def main() -> int:
     parser.add_argument("--generate-dataset", action="store_true", help="Generate the 500-program dataset")
     parser.add_argument("--run-all", action="store_true", help="Run optimization on all dataset programs")
     parser.add_argument("--run-file", type=str, help="Run optimization on a single .src or .c file")
+    parser.add_argument("--resume", action="store_true",
+                        help="With --run-all: continue an interrupted run, skipping the programs whose "
+                             "results are already in <output-dir>/metrics/records_cache.jsonl")
+    parser.add_argument("--every", type=int, default=1, metavar="K",
+                        help="With --run-all: optimize only every K-th program, a sample spread evenly over "
+                             "the categories (for slow runs such as a local model on the CPU)")
     parser.add_argument("--dataset", choices=sorted(DATASETS), default="generated",
                         help="Which programs --run-all optimizes: the generated 500, or the 500 real "
                              "Codeforces submissions built by dataset/real_dataset.py")
@@ -203,7 +242,7 @@ def main() -> int:
             print(f"Decision log saved to {_display(os.path.join(out_dir, 'logs'))}")
 
         if args.run_all:
-            records = run_all(orchestrator, out_dir, args.quiet, args.dataset)
+            records = run_all(orchestrator, out_dir, args.quiet, args.dataset, args.every, args.resume)
             if records:
                 report_metrics(records, out_dir, llm_used=use_llm)
             if llm is not None and not llm.available:
