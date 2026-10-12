@@ -29,6 +29,10 @@ from ..tac.interpreter import (
     eval_unary,
 )
 from ..tac.program import TACProgram
+from .smt_verifier import SmtResult, smt_equivalent
+
+# How a passed check was reached when it holds for every input, not only the tested ones.
+PROOF_METHODS = ("identical", "both", "smt")
 
 
 @dataclass
@@ -227,9 +231,12 @@ class Verifier:
     num_mixed: int = 10
     max_small_scope: int = 300
     max_pairwise: int = 400
+    smt_timeout_ms: int = 3000
     interpreter: TACInterpreter = field(default_factory=TACInterpreter)
 
-    def verify(self, original: TACProgram, candidate: TACProgram) -> VerificationResult:
+    def verify(self, original: TACProgram, candidate: TACProgram, prove: bool = False) -> VerificationResult:
+        """``prove`` adds a third stage for programs with branches but no loops: the SMT
+        solver is asked whether any input at all tells the two programs apart."""
         # Run differential testing first (fast)
         diff_result = self._differential_test(original, candidate)
         if not diff_result.passed:
@@ -242,14 +249,50 @@ class Verifier:
 
         n = diff_result.details["tested"]
         if sym_result.details.get("skipped"):
+            details = {"differential": diff_result.details, "symbolic": sym_result.details}
+            note = ""
+            if prove:
+                smt, outcomes = self._smt_verify(original, candidate)
+                details["smt"] = {"status": smt.status, "reason": smt.reason, "paths": smt.paths}
+                if smt.status == "refuted":
+                    orig, cand = outcomes
+                    return VerificationResult(
+                        False, "smt",
+                        f"output mismatch on inputs {smt.counterexample} (found by the SMT solver): "
+                        f"original {orig.describe()}, candidate {cand.describe()}",
+                        {**details, "inputs": smt.counterexample, "original": orig.describe(),
+                         "candidate": cand.describe()})
+                if smt.status == "proved":
+                    return VerificationResult(
+                        passed=True, method="smt",
+                        reason=f"differential: {n}/{n} inputs matched, SMT: proved equivalent for all inputs "
+                               f"({smt.paths} paths)",
+                        details=details)
+                if smt.status == "unknown":
+                    note = f", SMT: no answer ({smt.reason})"
             return VerificationResult(
                 passed=True, method="differential",
-                reason=f"differential: {n}/{n} inputs matched, symbolic: skipped (control flow)",
-                details={"differential": diff_result.details, "symbolic": sym_result.details})
+                reason=f"differential: {n}/{n} inputs matched, symbolic: skipped (control flow)" + note,
+                details=details)
         return VerificationResult(
             passed=True, method="both",
             reason=f"differential: {n}/{n} inputs matched, symbolic: equivalent",
             details={"differential": diff_result.details, "symbolic": sym_result.details})
+
+    def _smt_verify(self, original: TACProgram, candidate: TACProgram):
+        """(SMT result, the two outcomes on its counterexample if it found one)."""
+        result = smt_equivalent(original, candidate, self.smt_timeout_ms)
+        if result.status != "refuted":
+            return result, None
+        # The interpreter is the ground truth, not the formula: replay the counterexample.
+        names = original.get_input_variables() | candidate.get_input_variables()
+        inputs = {**{name: 0 for name in names}, **result.counterexample}
+        orig, cand = self._run(original, inputs), self._run(candidate, inputs)
+        if orig == cand:
+            return SmtResult("unknown", "its counterexample did not replay in the interpreter",
+                             paths=result.paths), None
+        result.counterexample = inputs
+        return result, (orig, cand)
 
     # ------------------------------------------------------------------ #
     def input_sets(self, variables: list[str], constants: set[int] | None = None) -> list[dict[str, int]]:
