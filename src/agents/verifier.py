@@ -232,6 +232,8 @@ class Verifier:
     max_small_scope: int = 300
     max_pairwise: int = 400
     smt_timeout_ms: int = 3000
+    wide_max_steps: int = 20_000      # step budget for one run on a wide-range input
+    wide_timeouts_allowed: int = 3    # after this many runs that are too long, the wide inputs stop
     interpreter: TACInterpreter = field(default_factory=TACInterpreter)
 
     def verify(self, original: TACProgram, candidate: TACProgram, prove: bool = False) -> VerificationResult:
@@ -368,9 +370,31 @@ class Verifier:
                         found.add(int(value))
         return found
 
-    def _run(self, program: TACProgram, inputs: dict[str, int]) -> _Outcome:
+    WIDE_SCALES = (10 ** 3, 10 ** 4, 10 ** 6, 10 ** 9)
+
+    def wide_sets(self, variables: list[str]) -> list[dict[str, int]]:
+        """Inputs far outside the usual +-100: 60 sets for programs that read input.
+
+        A loop such as ``for (x = 10; x <= n; x *= 10)`` runs once for every value the other
+        sets contain, so a change that is only right in the first iteration passes them all.
+        These sets take every input up to a thousand, ten thousand, a million and a billion
+        (positive, since sizes are, and signed), and to powers of ten and their neighbours,
+        where digit loops change behaviour.
+        """
+        if not variables:
+            return []
+        rng = random.Random(self.seed + 1)
+        sets = []
+        for scale in self.WIDE_SCALES:
+            sets.extend({v: rng.randint(1, scale) for v in variables} for _ in range(8))
+        for scale in (10 ** 3, 10 ** 6):
+            sets.extend({v: rng.randint(-scale, scale) for v in variables} for _ in range(8))
+        sets.extend({v: 10 ** rng.randint(1, 9) + rng.choice((-1, 0, 1)) for v in variables} for _ in range(12))
+        return sets
+
+    def _run(self, program: TACProgram, inputs: dict[str, int], max_steps: int | None = None) -> _Outcome:
         try:
-            out = self.interpreter.execute(program, inputs, max_steps=self.max_steps)
+            out = self.interpreter.execute(program, inputs, max_steps=max_steps or self.max_steps)
             return _Outcome(tuple(out))
         except ExecutionTimeout as exc:
             return _Outcome(tuple(exc.outputs), "ExecutionTimeout", timed_out=True)
@@ -398,9 +422,29 @@ class Verifier:
                     f"candidate {cand.describe()}",
                     {"inputs": inputs, "test_index": idx, "tested": idx + 1,
                      "original": orig.describe(), "candidate": cand.describe()})
-        return VerificationResult(True, "differential", f"{len(sets)}/{len(sets)} inputs matched",
-                                  {"tested": len(sets), "input_variables": variables,
-                                   "distinct_executions": len(cache)})
+        # Wide-range inputs. A run that is too long for its (smaller) step budget says nothing
+        # either way, so it is skipped; it never makes the pair "inconclusive".
+        wide = too_long = 0
+        for inputs in self.wide_sets(variables):
+            orig = self._run(original, inputs, self.wide_max_steps)
+            cand = self._run(candidate, inputs, self.wide_max_steps)
+            if orig.timed_out or cand.timed_out:
+                too_long += 1
+                if too_long >= self.wide_timeouts_allowed:
+                    break
+                continue
+            wide += 1
+            if orig != cand:
+                return VerificationResult(
+                    False, "differential",
+                    f"output mismatch on inputs {inputs}: original {orig.describe()}, "
+                    f"candidate {cand.describe()}",
+                    {"inputs": inputs, "test_index": len(sets) + wide, "tested": len(sets) + wide,
+                     "original": orig.describe(), "candidate": cand.describe()})
+        total = len(sets) + wide
+        return VerificationResult(True, "differential", f"{total}/{total} inputs matched",
+                                  {"tested": total, "input_variables": variables, "wide_inputs": wide,
+                                   "distinct_executions": len(cache) + wide})
 
     def _symbolic_verify(self, original: TACProgram, candidate: TACProgram) -> VerificationResult:
         if original.has_control_flow() or candidate.has_control_flow():

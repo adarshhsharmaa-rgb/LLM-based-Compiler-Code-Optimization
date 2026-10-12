@@ -162,3 +162,30 @@ def test_a_failed_final_check_keeps_the_original_program(monkeypatch):
     result = orchestrator.optimize(program, "p")
     assert result.reverted and result.output_match and result.optimized_tac == program
     assert result.cost_reduction_pct == 0 and result.accepted_count > 0
+
+
+# ---------------------------------------------------------------- wide-range inputs
+DIGIT_LOOP = ('long long p, d, ans; scanf("%lld%lld", &p, &d); ans = p; '
+              'for (long long x = 10; x <= p; x *= 10) {{ long long a = p / x, b = p % x; '
+              'if (b < {limit}) a--; if (p - d <= a * x + x - 1) ans = a * x + x - 1; }} printf("%lld", ans);')
+
+
+def test_a_change_that_is_only_right_for_small_inputs_is_rejected():
+    """Found by re-checking a Groq run: 'x - 1' was replaced by 9, which holds only while x is 10.
+
+    The loop runs a second time only for p >= 100, beyond what the other input sets reach."""
+    original = c_program(DIGIT_LOOP.format(limit="x - 1"), strict=True)
+    wrong = c_program(DIGIT_LOOP.format(limit="9"), strict=True)
+    verifier = Verifier()
+    result = verifier.verify(original, wrong)
+    assert not result.passed and "output mismatch" in result.reason
+    assert max(abs(v) for v in result.details["inputs"].values()) >= 100
+    assert verifier.verify(original, original.copy()).details["differential"]["wide_inputs"] > 0
+
+
+def test_wide_inputs_never_make_a_long_running_pair_inconclusive():
+    program = c_program('int n; scanf("%d", &n); int s = 0; for (int i = 0; i < n; i++) s += i; printf("%d", s);')
+    verifier = Verifier()
+    assert len(verifier.wide_sets(["in_n"])) == 60 and verifier.wide_sets([]) == []
+    result = verifier.verify(program, program.copy())       # n up to a billion: far too long to run
+    assert result.passed and result.details["differential"]["wide_inputs"] < 60
