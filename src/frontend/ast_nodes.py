@@ -63,6 +63,11 @@ class PrintStmt(Statement):
     value: Expression
 
 
+@dataclass
+class ExitStmt(Statement):
+    """Stop the program here (C's ``return`` from main, or ``exit``)."""
+
+
 # --------------------------------------------------------------- expressions
 @dataclass
 class BinaryExpr(Expression):
