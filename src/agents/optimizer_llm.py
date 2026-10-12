@@ -500,6 +500,8 @@ class OllamaOptimizer(BaseLLMOptimizer):
     If Ollama's GPU runner crashes while loading the model (an NVIDIA driver too
     old for its CUDA build does this), the call is repeated on the CPU and the
     rest of the run stays there. ``OLLAMA_NUM_GPU=0`` forces the CPU from the start.
+    On the CPU the model uses every core; ``OLLAMA_NUM_THREAD=4`` limits it, which is
+    slower but keeps a laptop cool.
     """
 
     provider = "ollama"
@@ -550,6 +552,9 @@ class OllamaOptimizer(BaseLLMOptimizer):
         options = {"temperature": 0.2, "num_predict": self._max_tokens, "num_ctx": 4096}
         if self._num_gpu is not None:
             options["num_gpu"] = self._num_gpu       # layers on the GPU; 0 means CPU only
+        threads = os.environ.get("OLLAMA_NUM_THREAD", "")
+        if threads.isdigit() and int(threads) > 0:
+            options["num_thread"] = int(threads)     # fewer CPU threads: slower, cooler
         body = {"model": self._model, "stream": False, "options": options,
                 "messages": [{"role": "user", "content": prompt}]}
         try:

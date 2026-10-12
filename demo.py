@@ -31,6 +31,7 @@ if PROJECT_ROOT not in sys.path:
     sys.path.insert(0, PROJECT_ROOT)
 
 from src.agents.cost_evaluator import CostEvaluator  # noqa: E402
+from src.agents.smt_verifier import z3_available  # noqa: E402
 from src.agents.optimization_specialist import MODE_SUMMARIES, MODES  # noqa: E402
 from src.agents.optimizer_llm import KEY_FILES, PROVIDERS, load_key_files, ollama_running  # noqa: E402
 from src.agents.orchestrator import Orchestrator  # noqa: E402
@@ -521,6 +522,8 @@ def run_demo(source: str, name: str, args, pacer: Pacer, mode: str) -> int:
     if result.output_match:
         print("  equivalence: " + (c("proved for all inputs", "green") if result.proved
                                    else "tested on the verifier's inputs"))
+        if not result.proved and not z3_available():
+            print(c("    (pip install z3-solver to have programs without loops proved by the SMT solver)", "grey"))
     verdict = c("PASS", "green", "bold") if result.output_match else c("FAIL", "red", "bold")
     print(f"  verifier, final check against the original: {verdict}")
     print(c(f"    {clip(result.final_check_reason, 70)}", "grey"))
