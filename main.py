@@ -147,11 +147,13 @@ def run_all(orchestrator: Orchestrator, out_dir: str, quiet: bool, dataset: str 
             records.append(cached[name])
             continue
         print(f"Processing [{idx}/{len(files)}]: {name}", flush=True)
+        skipped_before = getattr(llm, "rate_limit_skips", 0)
         record = process_file(path, orchestrator, out_dir, echo=not quiet)
-        if require_llm and not llm.available:
-            # The LLM gave out during this program, so its result is not an LLM result: drop it.
-            print(f"  ! LLM unavailable: {llm.unavailable_reason}. Stopped before {name}; "
-                  "continue later with --resume.", flush=True)
+        if require_llm and (not llm.available or getattr(llm, "rate_limit_skips", 0) > skipped_before):
+            # The LLM gave out during this program (quota spent, or a rate limit that would not
+            # clear), so its result is not an LLM result: drop it.
+            why = llm.unavailable_reason if not llm.available else "its rate limit did not clear"
+            print(f"  ! LLM unavailable: {why}. Stopped before {name}; continue later with --resume.", flush=True)
             stopped = True
             break
         if record is not None:

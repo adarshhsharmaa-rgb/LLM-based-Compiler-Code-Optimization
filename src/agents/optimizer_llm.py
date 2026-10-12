@@ -326,6 +326,7 @@ class GroqOptimizer(BaseLLMOptimizer):
     """
 
     provider = "groq"
+    rate_limit_skips = 0     # calls given up because the per-minute limit did not clear
     MAX_RATE_LIMIT_RETRIES = 2
     MAX_OVERLOAD_RETRIES = 3
     MAX_RETRY_AFTER = 90.0     # a longer wait than this is the daily quota, not the per-minute one
@@ -419,6 +420,7 @@ class GroqOptimizer(BaseLLMOptimizer):
                     if rate_limited <= self.MAX_RATE_LIMIT_RETRIES:
                         time.sleep(wait)
                         continue
+                    self.rate_limit_skips += 1
                     raise _LLMSkip("Groq still rate-limited (429) after "
                                    f"{self.MAX_RATE_LIMIT_RETRIES} retries") from exc
                 if exc.code >= 500 or exc.code == 498:
