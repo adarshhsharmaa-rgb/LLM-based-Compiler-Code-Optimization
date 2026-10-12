@@ -107,7 +107,7 @@ def _load_cache(path: str) -> dict[str, dict]:
 
 
 def run_all(orchestrator: Orchestrator, out_dir: str, quiet: bool, dataset: str = "generated",
-            every: int = 1, resume: bool = False, require_llm: bool = False) -> list[dict]:
+            every: int = 1, resume: bool = False, require_llm: bool = False, part: str = "") -> list[dict]:
     """Optimize the whole dataset. Every finished program is appended to a cache file at
     once, so a run that is interrupted (hours in, with an LLM) can be continued with
     ``--resume`` instead of starting again. The cache is removed when the run completes.
@@ -116,6 +116,9 @@ def run_all(orchestrator: Orchestrator, out_dir: str, quiet: bool, dataset: str 
     spent), instead of finishing the remaining programs with the rules alone."""
     folder, pattern, hint = DATASETS[dataset]
     files = sorted(glob.glob(os.path.join(folder, "*", pattern)))[::max(every, 1)]
+    if part:                                    # "2/5": the second of five interleaved slices
+        index, count = (int(x) for x in part.split("/"))
+        files = files[index - 1::count]
     cache_path = os.path.join(out_dir, "metrics", "records_cache.jsonl")
     cached = _load_cache(cache_path) if resume else {}
     if resume and not cached:
@@ -192,6 +195,9 @@ def main() -> int:
     parser.add_argument("--resume", action="store_true",
                         help="With --run-all: continue an interrupted run, skipping the programs whose "
                              "results are already in <output-dir>/metrics/records_cache.jsonl")
+    parser.add_argument("--part", type=str, default="", metavar="I/N",
+                        help="With --run-all: only the I-th of N interleaved slices of the dataset, so that N "
+                             "runs with different output folders can work side by side")
     parser.add_argument("--require-llm", action="store_true",
                         help="With --run-all and an LLM: stop when the LLM becomes unavailable (quota spent) "
                              "instead of finishing with the rules alone; continue later with --resume")
@@ -274,7 +280,7 @@ def main() -> int:
 
         if args.run_all:
             records = run_all(orchestrator, out_dir, args.quiet, args.dataset, args.every, args.resume,
-                              args.require_llm)
+                              args.require_llm, args.part)
             if records:
                 report_metrics(records, out_dir, llm_used=use_llm)
             if llm is not None and not llm.available:
