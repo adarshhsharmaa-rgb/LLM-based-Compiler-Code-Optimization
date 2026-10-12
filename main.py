@@ -107,10 +107,13 @@ def _load_cache(path: str) -> dict[str, dict]:
 
 
 def run_all(orchestrator: Orchestrator, out_dir: str, quiet: bool, dataset: str = "generated",
-            every: int = 1, resume: bool = False) -> list[dict]:
+            every: int = 1, resume: bool = False, require_llm: bool = False) -> list[dict]:
     """Optimize the whole dataset. Every finished program is appended to a cache file at
     once, so a run that is interrupted (hours in, with an LLM) can be continued with
-    ``--resume`` instead of starting again. The cache is removed when the run completes."""
+    ``--resume`` instead of starting again. The cache is removed when the run completes.
+
+    ``require_llm`` stops the run as soon as the LLM becomes unavailable (a daily quota is
+    spent), instead of finishing the remaining programs with the rules alone."""
     folder, pattern, hint = DATASETS[dataset]
     files = sorted(glob.glob(os.path.join(folder, "*", pattern)))[::max(every, 1)]
     cache_path = os.path.join(out_dir, "metrics", "records_cache.jsonl")
@@ -134,13 +137,23 @@ def run_all(orchestrator: Orchestrator, out_dir: str, quiet: bool, dataset: str 
     cache = open(cache_path, "w", encoding="utf-8")
     for record in cached.values():          # so the cache alone is enough if this run is interrupted too
         cache.write(json.dumps(record) + "\n")
-    for idx, path in enumerate(files, start=1):
+    stopped = require_llm and not llm_was_available
+    if stopped:
+        reason = getattr(llm, "unavailable_reason", "") or "no LLM is attached"
+        print(f"The LLM is not available ({reason}), so nothing was run (--require-llm).")
+    for idx, path in enumerate(files if not stopped else [], start=1):
         name = os.path.basename(path)
         if name in cached:
             records.append(cached[name])
             continue
         print(f"Processing [{idx}/{len(files)}]: {name}", flush=True)
         record = process_file(path, orchestrator, out_dir, echo=not quiet)
+        if require_llm and not llm.available:
+            # The LLM gave out during this program, so its result is not an LLM result: drop it.
+            print(f"  ! LLM unavailable: {llm.unavailable_reason}. Stopped before {name}; "
+                  "continue later with --resume.", flush=True)
+            stopped = True
+            break
         if record is not None:
             records.append(record)
             cache.write(json.dumps(record) + "\n")
@@ -150,7 +163,11 @@ def run_all(orchestrator: Orchestrator, out_dir: str, quiet: bool, dataset: str 
             print(f"  ! LLM switched off after {idx} programs: {llm.unavailable_reason}", flush=True)
             llm_was_available = False
     cache.close()
-    os.remove(cache_path)           # the caller writes the complete results next
+    if stopped:
+        seen = {r["program_name"] for r in records}
+        records += [r for name, r in cached.items() if name not in seen]   # done earlier, further down the list
+    else:
+        os.remove(cache_path)       # the caller writes the complete results next
     print(f"\nProcessed {len(records)} programs in {time.time() - start:.1f}s")
     return records
 
@@ -173,6 +190,9 @@ def main() -> int:
     parser.add_argument("--resume", action="store_true",
                         help="With --run-all: continue an interrupted run, skipping the programs whose "
                              "results are already in <output-dir>/metrics/records_cache.jsonl")
+    parser.add_argument("--require-llm", action="store_true",
+                        help="With --run-all and an LLM: stop when the LLM becomes unavailable (quota spent) "
+                             "instead of finishing with the rules alone; continue later with --resume")
     parser.add_argument("--every", type=int, default=1, metavar="K",
                         help="With --run-all: optimize only every K-th program, a sample spread evenly over "
                              "the categories (for slow runs such as a local model on the CPU)")
@@ -251,7 +271,8 @@ def main() -> int:
             print(f"Decision log saved to {_display(os.path.join(out_dir, 'logs'))}")
 
         if args.run_all:
-            records = run_all(orchestrator, out_dir, args.quiet, args.dataset, args.every, args.resume)
+            records = run_all(orchestrator, out_dir, args.quiet, args.dataset, args.every, args.resume,
+                              args.require_llm)
             if records:
                 report_metrics(records, out_dir, llm_used=use_llm)
             if llm is not None and not llm.available:
