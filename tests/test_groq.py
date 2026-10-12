@@ -72,11 +72,13 @@ def groq(monkeypatch):
     """groq(replies, **options) -> (optimizer, server), with a key set and no waiting."""
     monkeypatch.setenv("GROQ_API_KEY", "gsk_test_key")
     monkeypatch.delenv("GROQ_REASONING_EFFORT", raising=False)
+    monkeypatch.delenv("GROQ_FALLBACK_MODELS", raising=False)
     started = []
 
     def start(replies=(), **options):
         server = _FakeGroq(replies)
         started.append(server)
+        options.setdefault("fallback_models", ())        # no fallback unless a test asks for one
         return GroqOptimizer(base_url=server.url, min_interval=0, retry_wait=0, **options), server
 
     yield start
@@ -185,6 +187,42 @@ def test_groq_daily_quota_switches_off_at_once(groq):
     cand, reason = opt.propose(P(PROG))
     assert cand is None and not opt.available and "daily quota" in reason
     assert len(server.bodies) == 1
+
+
+def test_groq_daily_quota_moves_on_to_the_next_model(groq):
+    # Each model has its own daily quota, so a spent one is replaced, not the end of the run.
+    opt, server = groq([err(429, PER_DAY, retry_after=5), ok(GOOD_REPLY), ok(GOOD_REPLY)],
+                       fallback_models=("openai/gpt-oss-20b", "qwen/qwen3.8-27b"))
+    assert opt.propose(P(PROG))[0].to_string() == "t0 = 8\nprint t0"      # same proposal, next model
+    assert opt.available and opt.model == "openai/gpt-oss-20b" and opt.label == "groq openai/gpt-oss-20b"
+    assert opt.model_switches == [("openai/gpt-oss-120b", "openai/gpt-oss-20b", 1)]
+    assert [b["model"] for b in server.bodies] == ["openai/gpt-oss-120b", "openai/gpt-oss-20b"]
+    opt.propose(P(PROG))
+    assert server.bodies[2]["model"] == "openai/gpt-oss-20b"               # and it stays there
+
+
+def test_groq_switches_off_when_every_model_is_spent(groq):
+    opt, server = groq([err(429, PER_DAY, retry_after=5)] * 2, fallback_models=("openai/gpt-oss-20b",))
+    cand, reason = opt.propose(P(PROG))
+    assert cand is None and not opt.available and "daily quota" in reason
+    assert len(server.bodies) == 2 and len(opt.model_switches) == 1
+
+
+def test_groq_unavailable_model_moves_on_to_the_next_one(groq):
+    opt, _ = groq([err(404, "The model `nope` does not exist", "model_not_found"), ok(GOOD_REPLY)],
+                  model="nope", fallback_models=("openai/gpt-oss-20b",))
+    assert opt.propose(P(PROG))[0] is not None and opt.model == "openai/gpt-oss-20b"
+
+
+def test_groq_fallback_models_default_and_environment(monkeypatch):
+    monkeypatch.setenv("GROQ_API_KEY", "gsk_test_key")
+    monkeypatch.delenv("GROQ_FALLBACK_MODELS", raising=False)
+    assert GroqOptimizer()._fallback_models == ["openai/gpt-oss-20b", "qwen/qwen3.8-27b"]
+    assert GroqOptimizer(model="openai/gpt-oss-20b")._fallback_models == ["qwen/qwen3.8-27b"]
+    monkeypatch.setenv("GROQ_FALLBACK_MODELS", "a/one, b/two")
+    assert GroqOptimizer()._fallback_models == ["a/one", "b/two"]
+    monkeypatch.setenv("GROQ_FALLBACK_MODELS", "")
+    assert GroqOptimizer()._fallback_models == []
 
 
 def test_groq_long_retry_after_counts_as_the_daily_quota(groq):

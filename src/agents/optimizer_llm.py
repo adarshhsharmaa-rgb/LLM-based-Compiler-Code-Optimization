@@ -257,9 +257,13 @@ class GroqOptimizer(BaseLLMOptimizer):
     (October 2026; the Limits page of the Groq console has the exact numbers).
     Calls are spaced ``min_interval`` seconds apart to stay under the
     per-minute token limit. A per-minute 429 is waited out for as long as Groq
-    says and retried twice; a per-day 429 means the quota is spent and the
-    optimizer switches off. 5xx errors are retried three times; if they
+    says and retried twice. 5xx errors are retried three times; if they
     persist only that proposal is skipped.
+
+    A per-day 429 means the model's daily quota is spent. Each model has its
+    own quota, so the optimizer then moves on to the next fallback model
+    (``GROQ_FALLBACK_MODELS``, comma-separated) and repeats the call; it only
+    switches off when no model is left. ``model_switches`` records each move.
 
     The default models reason before answering, and those hidden tokens count
     against the daily quota, so reasoning effort is kept low
@@ -272,11 +276,18 @@ class GroqOptimizer(BaseLLMOptimizer):
     MAX_RETRY_AFTER = 90.0     # a longer wait than this is the daily quota, not the per-minute one
     # Groq's front door rejects the standard library's default User-Agent with a bare 403.
     USER_AGENT = "tac-optimization-agent/1.0"
+    FALLBACK_MODELS = ("openai/gpt-oss-20b", "qwen/qwen3.8-27b")
 
-    def __init__(self, model: str = DEFAULT_MODELS["groq"], min_interval: float = 5.0,
+    def __init__(self, model: str = DEFAULT_MODELS["groq"], min_interval: float = 7.0,
                  retry_wait: float = 20.0, base_url: str = GROQ_BASE_URL, timeout: float = 90.0,
-                 max_tokens: int = 4000):
+                 max_tokens: int = 4000, fallback_models: tuple[str, ...] | None = None):
         super().__init__(model)
+        if fallback_models is None:
+            named = os.environ.get("GROQ_FALLBACK_MODELS")
+            fallback_models = self.FALLBACK_MODELS if named is None else tuple(
+                name.strip() for name in named.split(",") if name.strip())
+        self._fallback_models = [name for name in fallback_models if name != model]
+        self.model_switches: list[tuple[str, str, int]] = []    # (from, to, calls made before the move)
         self._min_interval = min_interval
         self._retry_wait = retry_wait
         self._url = base_url.rstrip("/") + "/chat/completions"
@@ -288,6 +299,15 @@ class GroqOptimizer(BaseLLMOptimizer):
         self._key = os.environ.get("GROQ_API_KEY", "").strip()
         if not self._key:
             self._disable("no Groq API key - set GROQ_API_KEY or put the key in a .groq_key file")
+
+    def _next_model(self) -> bool:
+        """Move to the next fallback model. False if there is none left."""
+        if not self._fallback_models:
+            return False
+        previous, self._model = self._model, self._fallback_models.pop(0)
+        self.model_switches.append((previous, self._model, self.api_calls))
+        self._send_reasoning_options = True
+        return True
 
     def _reasoning_options(self) -> dict:
         if not self._send_reasoning_options:
@@ -337,6 +357,9 @@ class GroqOptimizer(BaseLLMOptimizer):
                     rate_limited += 1
                     wait = self._retry_after(exc, rate_limited)
                     if "per day" in message or wait > self.MAX_RETRY_AFTER:
+                        if self._next_model():
+                            rate_limited = 0
+                            continue
                         raise _LLMUnavailable(f"Groq daily quota used up (429): {message}") from exc
                     if rate_limited <= self.MAX_RATE_LIMIT_RETRIES:
                         time.sleep(wait)
@@ -353,7 +376,10 @@ class GroqOptimizer(BaseLLMOptimizer):
                 if exc.code in (401, 403):
                     raise _LLMUnavailable(f"Groq rejected the API key ({exc.code})") from exc
                 if exc.code == 404 or code in ("model_not_found", "model_decommissioned"):
-                    raise _LLMUnavailable(f"Groq model {self._model!r} is not available: {message}") from exc
+                    missing = self._model
+                    if self._next_model():
+                        continue
+                    raise _LLMUnavailable(f"Groq model {missing!r} is not available: {message}") from exc
                 if exc.code == 400 and "reasoning" in message and self._send_reasoning_options:
                     self._send_reasoning_options = False    # this model takes no reasoning options
                     continue
