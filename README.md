@@ -111,6 +111,7 @@ py main.py --visualize --output-dir output        # the 6 charts, from saved res
 py main.py --run-all --use-llm                    # add the LLM proposer (Gemini or Groq; Ollama if offline)
 py main.py --run-file my.src --offline            # LLM = local Ollama model, no internet needed
 py main.py --run-file my.src --offline --optimizer llm   # route to the LLM first, the rules second
+py main.py --run-all --dataset real --output-dir output_real_rule_only   # the 500 real C programs instead
 ```
 
 | Flag | Meaning |
@@ -124,6 +125,7 @@ py main.py --run-file my.src --offline --optimizer llm   # route to the LLM firs
 | `--compare-with DIR` | with `--visualize`: compare against another run (writes `comparison.csv` and chart 7) |
 | `--max-llm-calls N` | LLM proposals allowed per program (default 5) |
 | `--quiet` | with `--run-all`, print only progress; logs are still saved |
+| `--dataset NAME` | with `--run-all`: `generated` (default) or `real`; see [real programs](#real-programs-the-codeforces-dataset) |
 
 ## Live demo: the terminal front end
 
@@ -153,9 +155,10 @@ The demo accepts a subset of C (`src/frontend/c_frontend.py`):
 
 * **Supported:** `#include`, `int main()`, `int` variables with C block
   scoping, `if / else if / else`, `while`, `for`, `+= -= *= /= %= ++ --`,
-  `printf("%d", ...)` and `scanf("%d", &x)`.
-* **Not supported:** arrays, pointers, other functions, `float`/`char`,
-  `break`/`continue`. These stop with a message such as
+  `printf("%d", ...)` and `scanf("%d", &x)`, `return` anywhere in `main`,
+  character literals, `bool`, `long long` and integer `typedef`s.
+* **Not supported:** arrays, pointers, other functions, `float`/`char`
+  variables, `break`/`continue`. These stop with a message such as
   `C error at line 3: arrays are not supported`.
 * **`scanf` variables** become program inputs, which the verifier tests with
   many values.
@@ -167,13 +170,64 @@ The front end was checked against real `gcc`: random C programs were compiled
 with gcc and run, and their output had to match both the unoptimized and the
 optimized TAC.
 
+## Real programs: the Codeforces dataset
+
+The generated dataset is written to contain what the optimizer looks for. To
+see how the system does on code people actually wrote, a second dataset holds
+**500 real programs**: accepted submissions to Codeforces problems, taken from
+[`open-r1/codeforces-submissions`](https://huggingface.co/datasets/open-r1/codeforces-submissions)
+on Hugging Face (2025, CC-BY-4.0, 12.6 million submissions).
+
+```bash
+pip install pyarrow                             # only the two download steps need it
+py dataset/real_dataset.py collect              # download 6 files (about 150 MB each), keep what is usable
+py dataset/real_dataset.py select               # choose the 500 -> dataset/real_programs/
+py dataset/real_dataset.py rebuild              # or: write the same 500 again from the manifest
+py main.py --run-all --dataset real --quiet --output-dir output_real_rule_only
+```
+
+* **What is kept.** A submission is usable when the judge accepted it, the C
+  front end compiles it in strict mode, it prints something, and it finishes
+  within 20,000 steps on every input set the verifier would try. Of 469,491
+  accepted C and C++ submissions that print with `printf` or `puts`, 9,489
+  were usable (2.0 %), from
+  234 problems. The rest mostly use arrays, other functions, floating point,
+  macros, or read input inside a loop.
+* **C and C-style C++.** 86 of the 500 were submitted as C. The other 414
+  were submitted to a C++ compiler but are written in C (`scanf`/`printf`,
+  no C++ features); the front end skips `using namespace std;` and refuses
+  anything else from C++.
+* **The same proportions as the generator.** 60 arithmetic, 60 nested, 60
+  repeated_expr, 60 dead_code, 80 loops, 80 conditionals, 100 mixed. A
+  program with a stored value that is never read is `dead_code`; one with
+  the same arithmetic expression written twice is `repeated_expr`; the rest
+  go by control flow, and straight-line programs by how deep their
+  arithmetic is (`category_of` in `dataset/real_dataset.py`).
+* **Spread over problems.** Each category is filled one program per problem
+  per round, newest submission first, and programs that compile to the same
+  TAC count once. The 500 come from 207 problems. Straight-line solutions
+  are rare on Codeforces, so `arithmetic` draws on only 16 problems and
+  `nested` on 25.
+* **Strict mode.** For these programs the text a program prints counts as
+  output: `puts("YES")` becomes `print 1000000`, one code per distinct text,
+  so an optimization that changed which message is printed would fail
+  verification. `a && b` is refused when `b` divides, because TAC evaluates
+  both sides and C would not.
+* **Limits of the model.** Integers are unbounded (no 32-bit wrap-around),
+  and inputs are tested over the verifier's value ranges, which include
+  values a problem's statement rules out (negative or zero sizes).
+* **Where the files are.** The programs (`dataset/real_programs/`) and the
+  downloaded data (`dataset/real_cache/`) stay on the machine and are not in
+  the repository. `dataset/real_manifest.json` lists the 500 submission ids,
+  so `rebuild` recreates exactly the same set.
+
 ## Running the tests
 
 ```bash
 py -m pytest tests/ -v
 ```
 
-336 tests cover every component. The Ollama and Groq tests run against stand-in
+361 tests cover every component. The Ollama and Groq tests run against stand-in
 local servers, so they need no Ollama, API key or network. The verifier tests inject wrong changes
 (bad folds, operand swaps, CSE across non-commutative ops, deleted live
 stores, off-by-one conditions, removed loop increments, deleted trapping
@@ -434,6 +488,46 @@ with no internet connection needed. Results are in `output_ollama/`.
 * **GPU.** This run used the CPU because Ollama's GPU runner crashed on
   the laptop's NVIDIA driver (546.18); see *Offline mode* below. With a
   working GPU the same run should be several times faster.
+
+### Results on the real programs (rule-based only)
+
+Run with `py main.py --run-all --dataset real --quiet --max-iterations 200 --output-dir output_real_rule_only`
+on the 500 Codeforces submissions described under
+[real programs](#real-programs-the-codeforces-dataset). Metrics and plots are in
+`output_real_rule_only/`.
+
+| Category | Programs | Generated dataset | Real programs |
+|---|---:|---:|---:|
+| arithmetic | 60 | 96.03 % | 63.26 % |
+| nested | 60 | 98.10 % | 51.62 % |
+| repeated_expr | 60 | 80.71 % | 47.08 % |
+| dead_code | 60 | 97.44 % | 56.12 % |
+| loops | 80 | 65.05 % | 49.40 % |
+| conditionals | 80 | 73.91 % | 53.12 % |
+| mixed | 100 | 77.91 % | 48.75 % |
+| **all** | 500 | 82.49 % | **52.32 %** |
+
+* **Overall.** Average cost reduction 52.32 %, median 51.88 %; 495 of the
+  500 programs improve by more than 30 %.
+* **Why it is lower than on the generated set.** 491 of the 500 read their
+  values with `scanf`, so nothing folds down to a constant. Most of what the
+  rules remove is the redundancy of the naive TAC translation: 6,457
+  accepted copy propagations and 1,757 dead-code removals, against 143
+  common subexpressions and 41 constant folds.
+* **Proposals.** 10,546 proposals, all of which passed verification; 8,450
+  were accepted and 2,096 were rejected for giving no cost gain.
+* **Zero false positives.** Every optimized program matches its original.
+  An independent re-check ran each pair on inputs the verifier does not use
+  (another seed, wider and positive-only ranges, all combinations of small
+  values): 107,834 executions, **0 mismatches**. 2,335 of those runs were
+  cut off by the step limit; what they had printed up to then also matched.
+* **Iteration cap.** Real programs are longer, so this run allows 200
+  iterations per program. With the default 50, 33 programs stop early and
+  the average is 51.61 %.
+* **Not done yet.** The LLM runs (Groq, Ollama) on these programs.
+* **What is in the repository.** The metrics and plots. The decision logs
+  contain the programs themselves as TAC and stay on the machine, like the
+  programs.
 
 ## Visualizations (`output/plots/`)
 
