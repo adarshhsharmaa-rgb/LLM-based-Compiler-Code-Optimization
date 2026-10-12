@@ -113,7 +113,9 @@ def eval_unary(op: str, a: int) -> int:
 
 class TACInterpreter:
     def execute(self, program: TACProgram, inputs: dict[str, int] | None = None,
-                max_steps: int = 10000) -> list[int]:
+                max_steps: int = 10000, counts: list[int] | None = None) -> list[int]:
+        """Run the program and return what it printed. If ``counts`` is given (one slot
+        per instruction), it receives how often each instruction was executed."""
         instrs = program.instructions
         env: dict[str, int] = dict(inputs or {})
         outputs: list[int] = []
@@ -146,6 +148,8 @@ class TACInterpreter:
                 raise ExecutionTimeout(f"exceeded {max_steps} steps", outputs)
             ins = instrs[pc]
             next_pc = pc + 1
+            if counts is not None:
+                counts[pc] += 1
             try:
                 match ins.op:
                     case TACOp.ASSIGN:

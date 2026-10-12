@@ -77,4 +77,4 @@ def test_each_rule_transformation_lowers_cost():
 def test_to_dict():
     d = cost("print 1").to_dict()
     assert set(d) == {"instruction_count", "arithmetic_ops", "temp_vars", "memory_ops",
-                      "branch_ops", "weighted_total"}
+                      "branch_ops", "weighted_total", "exec_time"}
