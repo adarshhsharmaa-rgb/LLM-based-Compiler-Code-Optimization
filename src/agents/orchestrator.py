@@ -17,7 +17,7 @@ from .optimization_specialist import (
     is_provably_minimal,
 )
 from .optimizer_llm import DEFAULT_PROVIDER, create_llm_optimizer
-from .verifier import Verifier
+from .verifier import PROOF_METHODS, Verifier
 
 
 @dataclass
@@ -49,6 +49,11 @@ class OptimizationResult:
     optimizer_mode: str = "rule"      # the specialist's routing policy: "rule", "llm" or "hybrid"
     llm_provider: str = ""            # LLM backend the specialist could route to ("" if none)
     llm_model: str = ""
+    cost_model: str = "static"        # what "cheaper" meant in this run: "static" or "time"
+    time_reduction_pct: float = 0.0   # execution time saved, measured on the profile inputs
+    proved: bool = False              # the final program equals the original for all inputs, not only the tested ones
+    final_check_method: str = ""      # "identical", "both" (symbolic), "smt" or "differential"
+    reverted: bool = False            # the end-to-end check failed, so the original program was kept
     llm_repairs: int = 0              # second tries asked of the LLM after a rejected answer
     llm_repairs_accepted: int = 0     # how many of those second tries were accepted
 
@@ -58,6 +63,8 @@ class OptimizationResult:
         lines.append(f"  Original cost: {self.original_cost.weighted_total:.1f}")
         lines.append(f"  Final cost:    {self.final_cost.weighted_total:.1f}")
         lines.append(f"  Reduction:     {self.cost_reduction_pct:.1f}%")
+        lines.append(f"  Exec. time:    {self.original_cost.exec_time:.1f} → {self.final_cost.exec_time:.1f} cycles "
+                     f"({self.time_reduction_pct:.1f}% less)")
         lines.append(f"  Iterations:    {self.iterations}")
         lines.append(f"  Accepted:      {self.accepted_count}")
         lines.append(f"  Rejected:      {self.rejected_count}")
@@ -70,6 +77,9 @@ class OptimizationResult:
             lines.append(f"  LLM repairs:   {self.llm_repairs} ({self.llm_repairs_accepted} accepted)")
         match_text = "PASS ✓" if self.output_match else "FAIL ✗"
         lines.append(f"  Output match:  {match_text}")
+        if self.output_match:
+            how = "proved for all inputs" if self.proved else "tested on the verifier's inputs"
+            lines.append(f"  Equivalence:   {how}" + (" (reverted to the original)" if self.reverted else ""))
         lines.append("=== Original TAC ===")
         lines.append(format_tac(self.original_tac, prefix="  "))
         lines.append("=== Optimized TAC ===")
@@ -81,7 +91,7 @@ class Orchestrator:
     def __init__(self, use_llm: bool = False, max_iterations: int = 50,
                  llm_model: str | None = None, max_llm_calls: int = 5,
                  llm_provider: str = DEFAULT_PROVIDER, optimizer_mode: str | None = None,
-                 offline: bool = False, max_repairs: int = 1):
+                 offline: bool = False, max_repairs: int = 1, cost_model: str = "static"):
         """``optimizer_mode`` is the Optimization Specialist's routing policy ("rule", "llm"
         or "hybrid"). ``use_llm`` is the older switch and means "hybrid". ``offline`` makes
         the LLM the local Ollama model instead of a cloud one. ``max_repairs`` is how many
@@ -92,7 +102,7 @@ class Orchestrator:
         if optimizer_mode in ("llm", "hybrid") or (optimizer_mode is None and use_llm):
             self.specialist.llm_optimizer = create_llm_optimizer(llm_provider, llm_model, offline=offline)
         self.verifier = Verifier()
-        self.cost_evaluator = CostEvaluator()
+        self.cost_evaluator = CostEvaluator(cost_model)
         self.max_iterations = max_iterations
 
     # The LLM proposer lives in the specialist; this keeps ``orchestrator.llm_optimizer`` working.
@@ -198,7 +208,14 @@ class Orchestrator:
                 logger.log_info(iteration, f"Stopped: reached max_iterations={self.max_iterations}")
 
         # Final verification
-        final_match, final_reason = self._final_output_check(program, current)
+        final_match, final_reason, final_method = self._final_output_check(program, current)
+        reverted = False
+        if not final_match:
+            # Every step passed on its own but the whole chain did not: deliver the original.
+            logger.log_info(iteration, f"Final check failed ({final_reason}); the original program is kept")
+            current, reverted = program.copy(), True
+            final_match, final_method = True, "identical"
+            final_reason = "reverted to the original program: " + final_reason
 
         orig_cost = self.cost_evaluator.evaluate(program)
         fin_cost = self.cost_evaluator.evaluate(current)
@@ -223,6 +240,11 @@ class Orchestrator:
             proposals=proposals,
             cost_history=cost_history,
             final_check_reason=final_reason,
+            final_check_method=final_method,
+            proved=final_match and final_method in PROOF_METHODS,
+            reverted=reverted,
+            cost_model=self.cost_evaluator.model,
+            time_reduction_pct=self.cost_evaluator.time_reduction_percentage(orig_cost, fin_cost),
             hit_iteration_cap=hit_cap,
             llm_calls=llm_calls,
             stopped_reason=stopped_reason,
@@ -251,7 +273,8 @@ class Orchestrator:
             logger.log_proposal(iteration, proposal.opportunity, proposal.candidate, tac_before=current)
 
         # 3. VERIFY
-        ver_result = self.verifier.verify(current, proposal.candidate)
+        # An LLM answer is also put to the SMT solver; rule steps are proved as a whole at the end.
+        ver_result = self.verifier.verify(current, proposal.candidate, prove=proposal.source == "llm")
         logger.log_verification(iteration, ver_result)
         if (ver_result.details or {}).get("inconclusive"):
             logger.log_reject(iteration, "Could not be verified (program runs too long)")
@@ -285,9 +308,12 @@ class Orchestrator:
         logger.log_accept(iteration, f"Cost reduced: {old_cost.weighted_total} → {new_cost.weighted_total}")
         return "accepted"
 
-    def _final_output_check(self, original: TACProgram, optimized: TACProgram) -> tuple[bool, str]:
-        """End-to-end check of the final program against the untouched original."""
+    def _final_output_check(self, original: TACProgram, optimized: TACProgram) -> tuple[bool, str, str]:
+        """End-to-end check of the final program against the untouched original.
+
+        Returns (passed, reason, method). The SMT solver is asked here too, so a loop-free
+        program ends up proved, not only tested."""
         if optimized == original:
-            return True, "no changes were made, so the program is unchanged"
-        result = self.verifier.verify(original, optimized)
-        return result.passed, result.reason
+            return True, "no changes were made, so the program is unchanged", "identical"
+        result = self.verifier.verify(original, optimized, prove=True)
+        return result.passed, result.reason, result.method

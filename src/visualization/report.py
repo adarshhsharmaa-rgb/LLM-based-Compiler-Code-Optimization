@@ -27,7 +27,7 @@ TYPE_LABELS = {
 }
 
 PER_PROGRAM_COLUMNS = ["program_name", "category", "original_cost", "final_cost", "reduction_pct",
-                       "iterations", "accepted", "rejected", "invalid", "output_match"]
+                       "iterations", "accepted", "rejected", "invalid", "output_match", "time_reduction_pct", "proved"]
 
 
 def infer_category(name: str, path: str | None = None) -> str:
@@ -65,6 +65,13 @@ def result_to_record(result, category: str) -> dict:
         "llm_provider": result.llm_provider,
         "llm_model": result.llm_model,
         "hit_iteration_cap": result.hit_iteration_cap,
+        "cost_model": result.cost_model,
+        "original_time": result.original_cost.exec_time,
+        "final_time": result.final_cost.exec_time,
+        "time_reduction_pct": round(result.time_reduction_pct, 4),
+        "proved": result.proved,
+        "final_check_method": result.final_check_method,
+        "reverted": result.reverted,
         "original_cost_breakdown": result.original_cost.to_dict(),
         "final_cost_breakdown": result.final_cost.to_dict(),
     }
@@ -80,6 +87,7 @@ def aggregate_metrics(records: list[dict], llm_used: bool | None = None) -> dict
     total = len(proposals)
     verified = outcomes["accepted"] + outcomes["rejected"]
     reductions = [r["reduction_pct"] for r in records]
+    times = [r["time_reduction_pct"] for r in records if "time_reduction_pct" in r]   # older runs lack it
     iterations = [r["iterations"] for r in records]
     llm_total = sum(r["llm_proposals"] for r in records)
     llm_valid = sum(r["llm_valid"] for r in records)
@@ -100,6 +108,8 @@ def aggregate_metrics(records: list[dict], llm_used: bool | None = None) -> dict
         per_category[cat] = {
             "programs": len(rs),
             "avg_reduction_pct": round(statistics.mean(r["reduction_pct"] for r in rs), 2),
+            "avg_time_reduction_pct": round(statistics.mean(r.get("time_reduction_pct", 0.0) for r in rs), 2),
+            "programs_proved": sum(1 for r in rs if r.get("proved")),
             "avg_iterations": round(statistics.mean(r["iterations"] for r in rs), 2),
             "accepted": sum(r["accepted"] for r in rs),
         }
@@ -132,6 +142,12 @@ def aggregate_metrics(records: list[dict], llm_used: bool | None = None) -> dict
         "min_cost_reduction_pct": round(min(reductions), 2) if reductions else 0.0,
         "max_cost_reduction_pct": round(max(reductions), 2) if reductions else 0.0,
         "programs_with_reduction_over_30pct": sum(1 for x in reductions if x > 30),
+        "cost_model": records[0].get("cost_model", "static") if records else "static",
+        "avg_time_reduction_pct": round(statistics.mean(times), 2) if times else None,
+        "median_time_reduction_pct": round(statistics.median(times), 2) if times else None,
+        "programs_proved_equivalent": sum(1 for r in records if r.get("proved")),
+        "programs_proved_by_smt": sum(1 for r in records if r.get("final_check_method") == "smt"),
+        "programs_reverted": sum(1 for r in records if r.get("reverted")),
         "steps_to_convergence_mean": round(statistics.mean(iterations), 2) if iterations else 0.0,
         "steps_to_convergence_median": statistics.median(iterations) if iterations else 0,
         "steps_to_convergence_min": min(iterations) if iterations else 0,
@@ -161,6 +177,10 @@ def _fmt(value) -> str:
     return str(value)
 
 
+def _pct_text(value) -> str:
+    return "n/a" if value is None else f"{value:.2f} %"
+
+
 def format_metrics_table(m: dict) -> str:
     rows = [
         ("Programs processed", _fmt(m["total_programs"])),
@@ -174,6 +194,12 @@ def format_metrics_table(m: dict) -> str:
         ("Average cost reduction", _fmt(m["avg_cost_reduction_pct"]) + " %"),
         ("Median cost reduction", _fmt(m["median_cost_reduction_pct"]) + " %"),
         ("Programs with >30% reduction", f"{m['programs_with_reduction_over_30pct']} / {m['total_programs']}"),
+        ("Cost model", m.get("cost_model", "static")),
+        ("Average execution-time reduction", _pct_text(m.get("avg_time_reduction_pct"))),
+        ("Median execution-time reduction", _pct_text(m.get("median_time_reduction_pct"))),
+        ("Proved equivalent for all inputs", f"{m.get('programs_proved_equivalent', 0)} / {m['total_programs']}"
+         f"  ({m.get('programs_proved_by_smt', 0)} by SMT)"),
+        ("Reverted by the final check", _fmt(m.get("programs_reverted", 0))),
         ("Steps to convergence (mean)", _fmt(m["steps_to_convergence_mean"])),
         ("Steps to convergence (median)", _fmt(m["steps_to_convergence_median"])),
         ("Steps to convergence (min/max)", f"{m['steps_to_convergence_min']} / {m['steps_to_convergence_max']}"),
@@ -193,9 +219,10 @@ def format_metrics_table(m: dict) -> str:
     out.append(bar)
 
     out.append("")
-    out.append(f"  {'Category':<15}{'Programs':>9}{'Avg red.%':>11}{'Avg iters':>11}")
+    out.append(f"  {'Category':<15}{'Programs':>9}{'Avg red.%':>11}{'Avg iters':>11}{'Time red.%':>12}{'Proved':>8}")
     for cat, c in m["per_category"].items():
-        out.append(f"  {cat:<15}{c['programs']:>9}{c['avg_reduction_pct']:>11.2f}{c['avg_iterations']:>11.2f}")
+        out.append(f"  {cat:<15}{c['programs']:>9}{c['avg_reduction_pct']:>11.2f}{c['avg_iterations']:>11.2f}"
+                   f"{c.get('avg_time_reduction_pct', 0.0):>12.2f}{c.get('programs_proved', 0):>8}")
     if m.get("by_source"):
         out.append("")
         out.append(f"  {'Suggestions by source':<22}{'Suggested':>10}{'Verified':>10}{'Accepted':>10}"

@@ -143,6 +143,9 @@ def main() -> int:
     parser.add_argument("--visualize", action="store_true", help="Generate all 6 visualization charts")
     parser.add_argument("--quiet", action="store_true",
                         help="With --run-all: print only progress, not every decision log (logs are still saved)")
+    parser.add_argument("--cost-model", choices=["static", "time"], default="static",
+                        help="What counts as cheaper: static = weighted instruction counts (default); "
+                             "time = measured execution time first, static cost second")
     parser.add_argument("--max-iterations", type=int, default=50, help="Agent iteration cap per program")
     parser.add_argument("--llm-provider", choices=["auto", *sorted(PROVIDERS)], default="auto",
                         help="LLM backend: gemini (Google), groq (Groq), ollama (local model), or "
@@ -177,7 +180,7 @@ def main() -> int:
         use_llm = mode != "rule"
         if use_llm and not args.offline:
             load_key_files(PROJECT_ROOT)      # .gemini_key / .groq_key
-        orchestrator = Orchestrator(optimizer_mode=mode, max_iterations=args.max_iterations,
+        orchestrator = Orchestrator(optimizer_mode=mode, max_iterations=args.max_iterations, cost_model=args.cost_model,
                                     llm_model=args.llm_model, max_llm_calls=args.max_llm_calls,
                                     llm_provider=args.llm_provider, offline=args.offline,
                                     max_repairs=args.max_repairs)

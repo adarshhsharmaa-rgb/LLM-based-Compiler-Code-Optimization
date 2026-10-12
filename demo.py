@@ -407,11 +407,11 @@ def make_orchestrator(mode: str, args) -> tuple[Orchestrator, bool, str]:
     ``mode`` is the Optimization Specialist's routing policy: "rule", "llm" or "hybrid".
     """
     if mode == "rule":
-        return (Orchestrator(max_iterations=args.max_iterations), False,
+        return (Orchestrator(max_iterations=args.max_iterations, cost_model=args.cost_model), False,
                 "not used (add --use-llm, or --offline for a local Ollama model)")
     if not args.offline:
         load_key_files(PROJECT_ROOT)      # .gemini_key / .groq_key
-    orchestrator = Orchestrator(optimizer_mode=mode, max_iterations=args.max_iterations,
+    orchestrator = Orchestrator(optimizer_mode=mode, max_iterations=args.max_iterations, cost_model=args.cost_model,
                                 llm_provider=args.llm_provider, llm_model=args.llm_model,
                                 offline=args.offline, max_llm_calls=3)
     llm = orchestrator.llm_optimizer
@@ -454,7 +454,8 @@ def run_demo(source: str, name: str, args, pacer: Pacer, mode: str) -> int:
     print()
     print(f"  {c(str(cost0.instruction_count), 'bold')} instructions, {cost0.arithmetic_ops} arithmetic, "
           f"{cost0.temp_vars} temporaries, {cost0.memory_ops} copies, {cost0.branch_ops} branches")
-    print("  weighted cost = " + c(f"{cost0.weighted_total:.1f}", "bold", "yellow"))
+    print("  weighted cost = " + c(f"{cost0.weighted_total:.1f}", "bold", "yellow")
+          + f"    execution time = {cost0.exec_time:.1f} cycles (average over the profile inputs)")
     if input_names:
         shown = ", ".join(c_names.get(n, n) for n in input_names)
         print(c(f"  inputs (scanf): {shown} - the verifier will test many different values", "cyan"))
@@ -515,6 +516,11 @@ def run_demo(source: str, name: str, args, pacer: Pacer, mode: str) -> int:
     print(f"  optimized: {after}")
     same = before == after
     print("  " + (c("identical output", "green", "bold") if same else c("OUTPUT DIFFERS", "red", "bold")))
+    print(f"  execution time: {result.original_cost.exec_time:.1f} → {result.final_cost.exec_time:.1f} cycles "
+          f"({result.time_reduction_pct:.1f}% less)")
+    if result.output_match:
+        print("  equivalence: " + (c("proved for all inputs", "green") if result.proved
+                                   else "tested on the verifier's inputs"))
     verdict = c("PASS", "green", "bold") if result.output_match else c("FAIL", "red", "bold")
     print(f"  verifier, final check against the original: {verdict}")
     print(c(f"    {clip(result.final_check_reason, 70)}", "grey"))
@@ -552,6 +558,8 @@ def main() -> int:
                     help="auto = gemini or groq when online and a key is set, otherwise ollama")
     ap.add_argument("--llm-model", default=None, help="model ID for the LLM")
     ap.add_argument("--max-iterations", type=int, default=200, help="agent iteration cap (default 200)")
+    ap.add_argument("--cost-model", choices=["static", "time"], default="static",
+                    help="what counts as cheaper: static cost (default), or measured execution time first")
     ap.add_argument("--delay", type=float, default=0.12, help="seconds between decisions")
     ap.add_argument("--no-color", action="store_true")
     args = ap.parse_args()
