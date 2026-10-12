@@ -188,6 +188,9 @@ def main() -> int:
             if llm is not None and not llm.available:
                 print(f"Note: LLM optimizer was disabled during the run ({llm.unavailable_reason}).")
 
+        for previous, current, calls in getattr(llm, "model_switches", []):
+            print(f"Note: Groq model {previous} became unusable after {calls} calls (daily quota spent "
+                  f"or model not available); the run continued with {current}.")
         if getattr(llm, "cpu_fallback", False):
             print("Note: Ollama's GPU runner crashed, so the model ran on the CPU (slower). "
                   "Updating the NVIDIA driver usually fixes this.")
