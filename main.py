@@ -16,6 +16,7 @@ from src.agents.optimization_specialist import MODE_SUMMARIES, MODES  # noqa: E4
 from src.agents.optimizer_llm import DEFAULT_MODELS, PROVIDERS, load_key_files  # noqa: E402
 from src.agents.orchestrator import Orchestrator  # noqa: E402
 from src.frontend import LexerError, ParseError, compile_source  # noqa: E402
+from src.frontend.c_frontend import CFrontendError, compile_c  # noqa: E402
 from src.visualization.report import (  # noqa: E402
     aggregate_metrics,
     format_metrics_table,
@@ -27,6 +28,12 @@ from src.visualization.report import (  # noqa: E402
 )
 
 DATASET_DIR = os.path.join(PROJECT_ROOT, "dataset", "programs")
+REAL_DATASET_DIR = os.path.join(PROJECT_ROOT, "dataset", "real_programs")
+DATASETS = {
+    # name: (folder, file pattern, what to do when it is empty)
+    "generated": (DATASET_DIR, "*.src", "Run with --generate-dataset first."),
+    "real": (REAL_DATASET_DIR, "*.c", "Build it with dataset/real_dataset.py (collect, then select)."),
+}
 
 
 def _configure_console() -> None:
@@ -64,8 +71,11 @@ def process_file(path: str, orchestrator: Orchestrator, out_dir: str, echo: bool
     with open(path, encoding="utf-8") as fh:
         source = fh.read()
     try:
-        tac = compile_source(source)
-    except (LexerError, ParseError) as exc:
+        if name.endswith(".c"):
+            tac, _ = compile_c(source, strict=True)     # a C program: strict mode keeps its printed text
+        else:
+            tac = compile_source(source)
+    except (LexerError, ParseError, CFrontendError) as exc:
         print(f"  ! {name}: {exc}")
         return None
     result = orchestrator.optimize(tac, name)
@@ -81,10 +91,11 @@ def process_file(path: str, orchestrator: Orchestrator, out_dir: str, echo: bool
     return result_to_record(result, infer_category(name, path))
 
 
-def run_all(orchestrator: Orchestrator, out_dir: str, quiet: bool) -> list[dict]:
-    files = sorted(glob.glob(os.path.join(DATASET_DIR, "*", "*.src")))
+def run_all(orchestrator: Orchestrator, out_dir: str, quiet: bool, dataset: str = "generated") -> list[dict]:
+    folder, pattern, hint = DATASETS[dataset]
+    files = sorted(glob.glob(os.path.join(folder, "*", pattern)))
     if not files:
-        print(f"No .src files found under {DATASET_DIR}. Run with --generate-dataset first.")
+        print(f"No {pattern[1:]} files found under {folder}. {hint}")
         return []
     records = []
     start = time.time()
@@ -116,7 +127,10 @@ def main() -> int:
     parser = argparse.ArgumentParser(description="Automated Compiler Code Optimization Agent")
     parser.add_argument("--generate-dataset", action="store_true", help="Generate the 500-program dataset")
     parser.add_argument("--run-all", action="store_true", help="Run optimization on all dataset programs")
-    parser.add_argument("--run-file", type=str, help="Run optimization on a single .src file")
+    parser.add_argument("--run-file", type=str, help="Run optimization on a single .src or .c file")
+    parser.add_argument("--dataset", choices=sorted(DATASETS), default="generated",
+                        help="Which programs --run-all optimizes: the generated 500, or the 500 real "
+                             "Codeforces submissions built by dataset/real_dataset.py")
     parser.add_argument("--optimizer", choices=MODES, default=None,
                         help="How the Optimization Specialist routes each step: "
                              + "; ".join(f"{m} = {MODE_SUMMARIES[m]}" for m in MODES)
@@ -182,7 +196,7 @@ def main() -> int:
             print(f"Decision log saved to {_display(os.path.join(out_dir, 'logs'))}")
 
         if args.run_all:
-            records = run_all(orchestrator, out_dir, args.quiet)
+            records = run_all(orchestrator, out_dir, args.quiet, args.dataset)
             if records:
                 report_metrics(records, out_dir, llm_used=use_llm)
             if llm is not None and not llm.available:

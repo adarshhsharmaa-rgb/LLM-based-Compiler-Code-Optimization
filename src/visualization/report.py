@@ -35,7 +35,7 @@ def infer_category(name: str, path: str | None = None) -> str:
         parent = os.path.basename(os.path.dirname(os.path.abspath(path)))
         if parent in CATEGORIES:
             return parent
-    stem = re.sub(r"_\d+(\.src)?$", "", os.path.basename(name))
+    stem = re.sub(r"_\d+(\.src|\.c)?$", "", os.path.basename(name))
     return stem if stem in CATEGORIES else "uncategorized"
 
 
