@@ -1,0 +1,237 @@
+=== Program: dead_code_031.c ===
+--- Iteration 1 ---
+  [ANALYZE] Found 24 opportunities: DEAD_CODEx9 (priority=80), COPY_PROPAGATIONx15 (priority=50)
+  [ROUTE]   Rule-based optimizer: highest-priority opportunity is DEAD_CODE (priority 80)
+  [PROPOSE] Applying DEAD_CODE at instruction 1: a = t0 → (removed)
+  [VERIFY]  PASS (differential: 373/373 inputs matched, symbolic: skipped (control flow))
+  [COST]    Before: 97.0, After: 94.5 (reduction: 2.6%); time 1393.9 → 1392.9 cycles
+  [ACCEPT]  ✓ Change accepted
+--- Iteration 2 ---
+  [ANALYZE] Found 23 opportunities: DEAD_CODEx9 (priority=80), COPY_PROPAGATIONx14 (priority=50)
+  [ROUTE]   Rule-based optimizer: highest-priority opportunity is DEAD_CODE (priority 80)
+  [PROPOSE] Applying DEAD_CODE at instruction 0: t0 = 0 → (removed)
+  [VERIFY]  PASS (differential: 373/373 inputs matched, symbolic: skipped (control flow))
+  [COST]    Before: 94.5, After: 91.5 (reduction: 3.2%); time 1392.9 → 1391.9 cycles
+  [ACCEPT]  ✓ Change accepted
+--- Iteration 3 ---
+  [ANALYZE] Found 22 opportunities: DEAD_CODEx8 (priority=80), COPY_PROPAGATIONx14 (priority=50)
+  [ROUTE]   Rule-based optimizer: highest-priority opportunity is DEAD_CODE (priority 80)
+  [PROPOSE] Applying DEAD_CODE at instruction 1: b = t1 → (removed)
+  [VERIFY]  PASS (differential: 373/373 inputs matched, symbolic: skipped (control flow))
+  [COST]    Before: 91.5, After: 89.0 (reduction: 2.7%); time 1391.9 → 1390.9 cycles
+  [ACCEPT]  ✓ Change accepted
+--- Iteration 4 ---
+  [ANALYZE] Found 21 opportunities: DEAD_CODEx8 (priority=80), COPY_PROPAGATIONx13 (priority=50)
+  [ROUTE]   Rule-based optimizer: highest-priority opportunity is DEAD_CODE (priority 80)
+  [PROPOSE] Applying DEAD_CODE at instruction 0: t1 = 0 → (removed)
+  [VERIFY]  PASS (differential: 373/373 inputs matched, symbolic: skipped (control flow))
+  [COST]    Before: 89.0, After: 86.0 (reduction: 3.4%); time 1390.9 → 1389.9 cycles
+  [ACCEPT]  ✓ Change accepted
+--- Iteration 5 ---
+  [ANALYZE] Found 20 opportunities: DEAD_CODEx7 (priority=80), COPY_PROPAGATIONx13 (priority=50)
+  [ROUTE]   Rule-based optimizer: highest-priority opportunity is DEAD_CODE (priority 80)
+  [PROPOSE] Applying DEAD_CODE at instruction 0: c = 0 → (removed)
+  [VERIFY]  PASS (differential: 373/373 inputs matched, symbolic: skipped (control flow))
+  [COST]    Before: 86.0, After: 83.5 (reduction: 2.9%); time 1389.9 → 1388.9 cycles
+  [ACCEPT]  ✓ Change accepted
+--- Iteration 6 ---
+  [ANALYZE] Found 19 opportunities: DEAD_CODEx6 (priority=80), COPY_PROPAGATIONx13 (priority=50)
+  [ROUTE]   Rule-based optimizer: highest-priority opportunity is DEAD_CODE (priority 80)
+  [PROPOSE] Applying DEAD_CODE at instruction 0: d = 0 → (removed)
+  [VERIFY]  PASS (differential: 373/373 inputs matched, symbolic: skipped (control flow))
+  [COST]    Before: 83.5, After: 81.0 (reduction: 3.0%); time 1388.9 → 1387.9 cycles
+  [ACCEPT]  ✓ Change accepted
+--- Iteration 7 ---
+  [ANALYZE] Found 18 opportunities: DEAD_CODEx5 (priority=80), COPY_PROPAGATIONx13 (priority=50)
+  [ROUTE]   Rule-based optimizer: highest-priority opportunity is DEAD_CODE (priority 80)
+  [PROPOSE] Applying DEAD_CODE at instruction 0: i = 0 → (removed)
+  [VERIFY]  PASS (differential: 373/373 inputs matched, symbolic: skipped (control flow))
+  [COST]    Before: 81.0, After: 78.5 (reduction: 3.1%); time 1387.9 → 1386.9 cycles
+  [ACCEPT]  ✓ Change accepted
+--- Iteration 8 ---
+  [ANALYZE] Found 17 opportunities: DEAD_CODEx4 (priority=80), COPY_PROPAGATIONx13 (priority=50)
+  [ROUTE]   Rule-based optimizer: highest-priority opportunity is DEAD_CODE (priority 80)
+  [PROPOSE] Applying DEAD_CODE at instruction 0: j = 0 → (removed)
+  [VERIFY]  PASS (differential: 373/373 inputs matched, symbolic: skipped (control flow))
+  [COST]    Before: 78.5, After: 76.0 (reduction: 3.2%); time 1386.9 → 1385.9 cycles
+  [ACCEPT]  ✓ Change accepted
+--- Iteration 9 ---
+  [ANALYZE] Found 16 opportunities: DEAD_CODEx3 (priority=80), COPY_PROPAGATIONx13 (priority=50)
+  [ROUTE]   Rule-based optimizer: highest-priority opportunity is DEAD_CODE (priority 80)
+  [PROPOSE] Applying DEAD_CODE at instruction 0: n = 0 → (removed)
+  [VERIFY]  PASS (differential: 373/373 inputs matched, symbolic: skipped (control flow))
+  [COST]    Before: 76.0, After: 73.5 (reduction: 3.3%); time 1385.9 → 1384.9 cycles
+  [ACCEPT]  ✓ Change accepted
+--- Iteration 10 ---
+  [ANALYZE] Found 15 opportunities: DEAD_CODEx2 (priority=80), COPY_PROPAGATIONx13 (priority=50)
+  [ROUTE]   Rule-based optimizer: highest-priority opportunity is DEAD_CODE (priority 80)
+  [PROPOSE] Applying DEAD_CODE at instruction 0: m = 0 → (removed)
+  [VERIFY]  PASS (differential: 373/373 inputs matched, symbolic: skipped (control flow))
+  [COST]    Before: 73.5, After: 71.0 (reduction: 3.4%); time 1384.9 → 1383.9 cycles
+  [ACCEPT]  ✓ Change accepted
+--- Iteration 11 ---
+  [ANALYZE] Found 14 opportunities: DEAD_CODE (priority=80), COPY_PROPAGATIONx13 (priority=50)
+  [ROUTE]   Rule-based optimizer: highest-priority opportunity is DEAD_CODE (priority 80)
+  [PROPOSE] Applying DEAD_CODE at instruction 1: ck = t2 → (removed)
+  [VERIFY]  PASS (differential: 373/373 inputs matched, symbolic: skipped (control flow))
+  [COST]    Before: 71.0, After: 68.5 (reduction: 3.5%); time 1383.9 → 1382.9 cycles
+  [ACCEPT]  ✓ Change accepted
+--- Iteration 12 ---
+  [ANALYZE] Found 13 opportunities: DEAD_CODE (priority=80), COPY_PROPAGATIONx12 (priority=50)
+  [ROUTE]   Rule-based optimizer: highest-priority opportunity is DEAD_CODE (priority 80)
+  [PROPOSE] Applying DEAD_CODE at instruction 0: t2 = 0 → (removed)
+  [VERIFY]  PASS (differential: 373/373 inputs matched, symbolic: skipped (control flow))
+  [COST]    Before: 68.5, After: 65.5 (reduction: 4.4%); time 1382.9 → 1381.9 cycles
+  [ACCEPT]  ✓ Change accepted
+--- Iteration 13 ---
+  [ANALYZE] Found 12 opportunities: COPY_PROPAGATIONx12 (priority=50)
+  [ROUTE]   Rule-based optimizer: highest-priority opportunity is COPY_PROPAGATION (priority 50)
+  [PROPOSE] Applying COPY_PROPAGATION at instruction 1: a = in_a → uses of a -> in_a at instr 5
+  [VERIFY]  PASS (differential: 373/373 inputs matched, symbolic: skipped (control flow))
+  [COST]    Before: 65.5, After: 63.0 (reduction: 3.8%); time 1381.9 → 1380.9 cycles
+  [ACCEPT]  ✓ Change accepted
+--- Iteration 14 ---
+  [ANALYZE] Found 11 opportunities: COPY_PROPAGATIONx11 (priority=50)
+  [ROUTE]   Rule-based optimizer: highest-priority opportunity is COPY_PROPAGATION (priority 50)
+  [PROPOSE] Applying COPY_PROPAGATION at instruction 1: t3 = 1 → uses of t3 -> 1 at instr 2
+  [VERIFY]  PASS (differential: 373/373 inputs matched, symbolic: skipped (control flow))
+  [COST]    Before: 63.0, After: 60.0 (reduction: 4.8%); time 1380.9 → 1379.9 cycles
+  [ACCEPT]  ✓ Change accepted
+--- Iteration 15 ---
+  [ANALYZE] Found 10 opportunities: COPY_PROPAGATIONx10 (priority=50)
+  [ROUTE]   Rule-based optimizer: highest-priority opportunity is COPY_PROPAGATION (priority 50)
+  [PROPOSE] Applying COPY_PROPAGATION at instruction 5: t5 = 10 → uses of t5 -> 10 at instr 6
+  [VERIFY]  PASS (differential: 373/373 inputs matched, symbolic: skipped (control flow))
+  [COST]    Before: 60.0, After: 57.0 (reduction: 5.0%); time 1379.9 → 1353.0 cycles
+  [ACCEPT]  ✓ Change accepted
+--- Iteration 16 ---
+  [ANALYZE] Found 9 opportunities: COPY_PROPAGATIONx9 (priority=50)
+  [ROUTE]   Rule-based optimizer: highest-priority opportunity is COPY_PROPAGATION (priority 50)
+  [PROPOSE] Applying COPY_PROPAGATION at instruction 6: t6 = n % 10; b = t6 → b = n % 10
+  [VERIFY]  PASS (differential: 373/373 inputs matched, symbolic: skipped (control flow))
+  [COST]    Before: 57.0, After: 54.0 (reduction: 5.3%); time 1353.0 → 1326.1 cycles
+  [ACCEPT]  ✓ Change accepted
+--- Iteration 17 ---
+  [ANALYZE] Found 7 opportunities: COPY_PROPAGATIONx7 (priority=50)
+  [ROUTE]   Rule-based optimizer: highest-priority opportunity is COPY_PROPAGATION (priority 50)
+  [PROPOSE] Applying COPY_PROPAGATION at instruction 6: t7 = 0 → uses of t7 -> 0 at instr 7
+  [VERIFY]  PASS (differential: 373/373 inputs matched, symbolic: skipped (control flow))
+  [COST]    Before: 54.0, After: 51.0 (reduction: 5.6%); time 1326.1 → 1299.2 cycles
+  [ACCEPT]  ✓ Change accepted
+--- Iteration 18 ---
+  [ANALYZE] Found 6 opportunities: COPY_PROPAGATIONx6 (priority=50)
+  [ROUTE]   Rule-based optimizer: highest-priority opportunity is COPY_PROPAGATION (priority 50)
+  [PROPOSE] Applying COPY_PROPAGATION at instruction 8: t9 = 10 → uses of t9 -> 10 at instr 9
+  [VERIFY]  PASS (differential: 373/373 inputs matched, symbolic: skipped (control flow))
+  [COST]    Before: 51.0, After: 48.0 (reduction: 5.9%); time 1299.2 → 1278.9 cycles
+  [ACCEPT]  ✓ Change accepted
+--- Iteration 19 ---
+  [ANALYZE] Found 5 opportunities: COPY_PROPAGATIONx5 (priority=50)
+  [ROUTE]   Rule-based optimizer: highest-priority opportunity is COPY_PROPAGATION (priority 50)
+  [PROPOSE] Applying COPY_PROPAGATION at instruction 9: t10 = n / 10; n = t10 → n = n / 10
+  [VERIFY]  PASS (differential: 373/373 inputs matched, symbolic: skipped (control flow))
+  [COST]    Before: 48.0, After: 45.0 (reduction: 6.2%); time 1278.9 → 1258.7 cycles
+  [ACCEPT]  ✓ Change accepted
+--- Iteration 20 ---
+  [ANALYZE] Found 4 opportunities: COPY_PROPAGATIONx4 (priority=50)
+  [ROUTE]   Rule-based optimizer: highest-priority opportunity is COPY_PROPAGATION (priority 50)
+  [PROPOSE] Applying COPY_PROPAGATION at instruction 11: t11 = 1 → uses of t11 -> 1 at instr 12
+  [VERIFY]  PASS (differential: 373/373 inputs matched, symbolic: skipped (control flow))
+  [COST]    Before: 45.0, After: 42.0 (reduction: 6.7%); time 1258.7 → 1252.0 cycles
+  [ACCEPT]  ✓ Change accepted
+--- Iteration 21 ---
+  [ANALYZE] Found 3 opportunities: COPY_PROPAGATIONx3 (priority=50)
+  [ROUTE]   Rule-based optimizer: highest-priority opportunity is COPY_PROPAGATION (priority 50)
+  [PROPOSE] Applying COPY_PROPAGATION at instruction 12: t12 = n - 1; n = t12 → n = n - 1
+  [VERIFY]  PASS (differential: 373/373 inputs matched, symbolic: skipped (control flow))
+  [COST]    Before: 42.0, After: 39.0 (reduction: 7.1%); time 1252.0 → 1245.3 cycles
+  [ACCEPT]  ✓ Change accepted
+--- Iteration 22 ---
+  [ANALYZE] Found 2 opportunities: COPY_PROPAGATIONx2 (priority=50)
+  [ROUTE]   Rule-based optimizer: highest-priority opportunity is COPY_PROPAGATION (priority 50)
+  [PROPOSE] Applying COPY_PROPAGATION at instruction 13: t13 = 1 → uses of t13 -> 1 at instr 14
+  [VERIFY]  PASS (differential: 373/373 inputs matched, symbolic: skipped (control flow))
+  [COST]    Before: 39.0, After: 36.0 (reduction: 7.7%); time 1245.3 → 1218.4 cycles
+  [ACCEPT]  ✓ Change accepted
+--- Iteration 23 ---
+  [ANALYZE] Found 1 opportunity: COPY_PROPAGATION (priority=50)
+  [ROUTE]   Rule-based optimizer: highest-priority opportunity is COPY_PROPAGATION (priority 50)
+  [PROPOSE] Applying COPY_PROPAGATION at instruction 14: t14 = i + 1; i = t14 → i = i + 1
+  [VERIFY]  PASS (differential: 373/373 inputs matched, symbolic: skipped (control flow))
+  [COST]    Before: 36.0, After: 33.0 (reduction: 8.3%); time 1218.4 → 1191.5 cycles
+  [ACCEPT]  ✓ Change accepted
+--- Iteration 24 ---
+  [ANALYZE] No more opportunities found.
+  [ROUTE]   LLM optimizer (ollama qwen2.5-coder:7b): the rules have nothing left to try
+  [LLM]     LLM produced no usable TAC: LLM returned unchanged TAC; reasoning: Dead code elimination
+=== RESULT ===
+  Original cost: 97.0
+  Final cost:    33.0
+  Reduction:     66.0%
+  Exec. time:    1393.9 → 1191.5 cycles (14.5% less)
+  Iterations:    24
+  Accepted:      23
+  Rejected:      0
+  Invalid:       0
+  Routing:       hybrid (LLM: ollama qwen2.5-coder:7b)
+  Output match:  PASS ✓
+  Equivalence:   tested on the verifier's inputs
+=== Original TAC ===
+   0 |     t0 = 0
+   1 |     a = t0
+   2 |     t1 = 0
+   3 |     b = t1
+   4 |     c = 0
+   5 |     d = 0
+   6 |     i = 0
+   7 |     j = 0
+   8 |     n = 0
+   9 |     m = 0
+  10 |     t2 = 0
+  11 |     ck = t2
+  12 |     n = in_n
+  13 |     a = in_a
+  14 |     t3 = 1
+  15 |     i = t3
+  16 | L0:
+  17 |     t4 = i <= a
+  18 |     ifFalse t4 goto L1
+  19 |     t5 = 10
+  20 |     t6 = n % t5
+  21 |     b = t6
+  22 |     t7 = 0
+  23 |     t8 = b == t7
+  24 |     ifFalse t8 goto L2
+  25 |     t9 = 10
+  26 |     t10 = n / t9
+  27 |     n = t10
+  28 |     goto L3
+  29 | L2:
+  30 |     t11 = 1
+  31 |     t12 = n - t11
+  32 |     n = t12
+  33 | L3:
+  34 |     t13 = 1
+  35 |     t14 = i + t13
+  36 |     i = t14
+  37 |     goto L0
+  38 | L1:
+  39 |     print n
+=== Optimized TAC ===
+   0 |     n = in_n
+   1 |     i = 1
+   2 | L0:
+   3 |     t4 = i <= in_a
+   4 |     ifFalse t4 goto L1
+   5 |     b = n % 10
+   6 |     t8 = b == 0
+   7 |     ifFalse t8 goto L2
+   8 |     n = n / 10
+   9 |     goto L3
+  10 | L2:
+  11 |     n = n - 1
+  12 | L3:
+  13 |     i = i + 1
+  14 |     goto L0
+  15 | L1:
+  16 |     print n

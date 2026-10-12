@@ -1,0 +1,183 @@
+=== Program: mixed_044.c ===
+--- Iteration 1 ---
+  [ANALYZE] Found 18 opportunities: DEAD_CODEx4 (priority=80), COPY_PROPAGATIONx14 (priority=50)
+  [PROPOSE] Applying DEAD_CODE at instruction 0: h1 = 0 → (removed)
+  [VERIFY]  PASS (differential: 481/481 inputs matched, symbolic: skipped (control flow))
+  [COST]    Before: 89.0, After: 86.5 (reduction: 2.8%); time 28.0 → 27.0 cycles
+  [ACCEPT]  ✓ Change accepted
+--- Iteration 2 ---
+  [ANALYZE] Found 17 opportunities: DEAD_CODEx3 (priority=80), COPY_PROPAGATIONx14 (priority=50)
+  [PROPOSE] Applying DEAD_CODE at instruction 0: h2 = 0 → (removed)
+  [VERIFY]  PASS (differential: 481/481 inputs matched, symbolic: skipped (control flow))
+  [COST]    Before: 86.5, After: 84.0 (reduction: 2.9%); time 27.0 → 26.0 cycles
+  [ACCEPT]  ✓ Change accepted
+--- Iteration 3 ---
+  [ANALYZE] Found 16 opportunities: DEAD_CODEx2 (priority=80), COPY_PROPAGATIONx14 (priority=50)
+  [PROPOSE] Applying DEAD_CODE at instruction 0: a = 0 → (removed)
+  [VERIFY]  PASS (differential: 481/481 inputs matched, symbolic: skipped (control flow))
+  [COST]    Before: 84.0, After: 81.5 (reduction: 3.0%); time 26.0 → 25.0 cycles
+  [ACCEPT]  ✓ Change accepted
+--- Iteration 4 ---
+  [ANALYZE] Found 15 opportunities: DEAD_CODE (priority=80), COPY_PROPAGATIONx14 (priority=50)
+  [PROPOSE] Applying DEAD_CODE at instruction 0: b = 0 → (removed)
+  [VERIFY]  PASS (differential: 481/481 inputs matched, symbolic: skipped (control flow))
+  [COST]    Before: 81.5, After: 79.0 (reduction: 3.1%); time 25.0 → 24.0 cycles
+  [ACCEPT]  ✓ Change accepted
+--- Iteration 5 ---
+  [ANALYZE] Found 14 opportunities: COPY_PROPAGATIONx14 (priority=50)
+  [PROPOSE] Applying COPY_PROPAGATION at instruction 0: t0 = 0 → uses of t0 -> 0 at instr 1
+  [VERIFY]  PASS (differential: 481/481 inputs matched, symbolic: skipped (control flow))
+  [COST]    Before: 79.0, After: 76.0 (reduction: 3.8%); time 24.0 → 23.0 cycles
+  [ACCEPT]  ✓ Change accepted
+--- Iteration 6 ---
+  [ANALYZE] Found 13 opportunities: COPY_PROPAGATIONx13 (priority=50)
+  [PROPOSE] Applying COPY_PROPAGATION at instruction 1: h1 = in_h1 → uses of h1 -> in_h1 at instr 7
+  [VERIFY]  PASS (differential: 481/481 inputs matched, symbolic: skipped (control flow))
+  [COST]    Before: 76.0, After: 73.5 (reduction: 3.3%); time 23.0 → 22.0 cycles
+  [ACCEPT]  ✓ Change accepted
+--- Iteration 7 ---
+  [ANALYZE] Found 12 opportunities: COPY_PROPAGATIONx12 (priority=50)
+  [PROPOSE] Applying COPY_PROPAGATION at instruction 1: h2 = in_h2 → uses of h2 -> in_h2 at instr 9, 18
+  [VERIFY]  PASS (differential: 481/481 inputs matched, symbolic: skipped (control flow))
+  [COST]    Before: 73.5, After: 71.0 (reduction: 3.4%); time 22.0 → 21.0 cycles
+  [ACCEPT]  ✓ Change accepted
+--- Iteration 8 ---
+  [ANALYZE] Found 11 opportunities: COPY_PROPAGATIONx11 (priority=50)
+  [PROPOSE] Applying COPY_PROPAGATION at instruction 1: a = in_a → uses of a -> in_a at instr 4, 7, 23
+  [VERIFY]  PASS (differential: 481/481 inputs matched, symbolic: skipped (control flow))
+  [COST]    Before: 71.0, After: 68.5 (reduction: 3.5%); time 21.0 → 20.0 cycles
+  [ACCEPT]  ✓ Change accepted
+--- Iteration 9 ---
+  [ANALYZE] Found 10 opportunities: COPY_PROPAGATIONx10 (priority=50)
+  [PROPOSE] Applying COPY_PROPAGATION at instruction 1: b = in_b → uses of b -> in_b at instr 6, 22
+  [VERIFY]  PASS (differential: 481/481 inputs matched, symbolic: skipped (control flow))
+  [COST]    Before: 68.5, After: 66.0 (reduction: 3.6%); time 20.0 → 19.0 cycles
+  [ACCEPT]  ✓ Change accepted
+--- Iteration 10 ---
+  [ANALYZE] Found 9 opportunities: COPY_PROPAGATIONx9 (priority=50)
+  [PROPOSE] Applying COPY_PROPAGATION at instruction 1: t1 = 8 → uses of t1 -> 8 at instr 2
+  [VERIFY]  PASS (differential: 481/481 inputs matched, symbolic: skipped (control flow))
+  [COST]    Before: 66.0, After: 63.0 (reduction: 4.5%); time 19.0 → 18.0 cycles
+  [ACCEPT]  ✓ Change accepted
+--- Iteration 11 ---
+  [ANALYZE] Found 9 opportunities: STRENGTH_REDUCTION (priority=60), COPY_PROPAGATIONx8 (priority=50)
+  [PROPOSE] Applying STRENGTH_REDUCTION at instruction 1: t2 = 8 * in_a → t2 = in_a << 3
+  [VERIFY]  PASS (differential: 567/567 inputs matched, symbolic: skipped (control flow))
+  [COST]    Before: 63.0, After: 61.0 (reduction: 3.2%); time 18.0 → 16.0 cycles
+  [ACCEPT]  ✓ Change accepted
+--- Iteration 12 ---
+  [ANALYZE] Found 8 opportunities: COPY_PROPAGATIONx8 (priority=50)
+  [PROPOSE] Applying COPY_PROPAGATION at instruction 3: t3 = in_h1 + t2; h1 = t3 → h1 = in_h1 + t2
+  [VERIFY]  PASS (differential: 444/444 inputs matched, symbolic: skipped (control flow))
+  [COST]    Before: 61.0, After: 58.0 (reduction: 4.9%); time 16.0 → 15.0 cycles
+  [ACCEPT]  ✓ Change accepted
+--- Iteration 13 ---
+  [ANALYZE] Found 6 opportunities: COPY_PROPAGATIONx6 (priority=50)
+  [PROPOSE] Applying COPY_PROPAGATION at instruction 7: t7 = 1 → uses of t7 -> 1 at instr 8
+  [VERIFY]  PASS (differential: 444/444 inputs matched, symbolic: skipped (control flow))
+  [COST]    Before: 58.0, After: 55.0 (reduction: 5.2%); time 15.0 → 14.8 cycles
+  [ACCEPT]  ✓ Change accepted
+--- Iteration 14 ---
+  [ANALYZE] Found 6 opportunities: CONSTANT_FOLD (priority=100), COPY_PROPAGATIONx5 (priority=50)
+  [PROPOSE] Applying CONSTANT_FOLD at instruction 7: t8 = -1 → t8 = -1 (forwarded into uses of t8)
+  [VERIFY]  PASS (differential: 481/481 inputs matched, symbolic: skipped (control flow))
+  [COST]    Before: 55.0, After: 53.5 (reduction: 2.7%); time 14.8 → 14.6 cycles
+  [ACCEPT]  ✓ Change accepted
+--- Iteration 15 ---
+  [ANALYZE] Found 4 opportunities: COPY_PROPAGATIONx4 (priority=50)
+  [PROPOSE] Applying COPY_PROPAGATION at instruction 13: t10 = 1 → uses of t10 -> 1 at instr 14
+  [VERIFY]  PASS (differential: 481/481 inputs matched, symbolic: skipped (control flow))
+  [COST]    Before: 53.5, After: 50.5 (reduction: 5.6%); time 14.6 → 14.4 cycles
+  [ACCEPT]  ✓ Change accepted
+--- Iteration 16 ---
+  [ANALYZE] Found 3 opportunities: COPY_PROPAGATIONx3 (priority=50)
+  [PROPOSE] Applying COPY_PROPAGATION at instruction 14: t11 = day + 1; day = t11 → day = day + 1
+  [VERIFY]  PASS (differential: 481/481 inputs matched, symbolic: skipped (control flow))
+  [COST]    Before: 50.5, After: 47.5 (reduction: 5.9%); time 14.4 → 14.2 cycles
+  [ACCEPT]  ✓ Change accepted
+--- Iteration 17 ---
+  [ANALYZE] Found 2 opportunities: COPY_PROPAGATIONx2 (priority=50)
+  [PROPOSE] Applying COPY_PROPAGATION at instruction 14: t12 = 12 → uses of t12 -> 12 at instr 16
+  [VERIFY]  PASS (differential: 481/481 inputs matched, symbolic: skipped (control flow))
+  [COST]    Before: 47.5, After: 44.5 (reduction: 6.3%); time 14.2 → 14.0 cycles
+  [ACCEPT]  ✓ Change accepted
+--- Iteration 18 ---
+  [ANALYZE] Found 1 opportunity: COPY_PROPAGATION (priority=50)
+  [PROPOSE] Applying COPY_PROPAGATION at instruction 17: t15 = h1 + t14; h1 = t15 → h1 = h1 + t14
+  [VERIFY]  PASS (differential: 481/481 inputs matched, symbolic: skipped (control flow))
+  [COST]    Before: 44.5, After: 41.5 (reduction: 6.7%); time 14.0 → 13.8 cycles
+  [ACCEPT]  ✓ Change accepted
+--- Iteration 19 ---
+  [ANALYZE] No more opportunities found.
+=== RESULT ===
+  Original cost: 89.0
+  Final cost:    41.5
+  Reduction:     53.4%
+  Exec. time:    28.0 → 13.8 cycles (50.9% less)
+  Iterations:    19
+  Accepted:      18
+  Rejected:      0
+  Invalid:       0
+  Output match:  PASS ✓
+  Equivalence:   tested on the verifier's inputs
+=== Original TAC ===
+   0 |     h1 = 0
+   1 |     h2 = 0
+   2 |     a = 0
+   3 |     b = 0
+   4 |     t0 = 0
+   5 |     day = t0
+   6 |     h1 = in_h1
+   7 |     h2 = in_h2
+   8 |     a = in_a
+   9 |     b = in_b
+  10 |     t1 = 8
+  11 |     t2 = t1 * a
+  12 |     t3 = h1 + t2
+  13 |     h1 = t3
+  14 |     t4 = b >= a
+  15 |     t5 = h1 < h2
+  16 |     t6 = t4 && t5
+  17 |     ifFalse t6 goto L0
+  18 |     t7 = 1
+  19 |     t8 = -t7
+  20 |     day = t8
+  21 |     goto L1
+  22 | L0:
+  23 | L2:
+  24 |     t9 = h1 < h2
+  25 |     ifFalse t9 goto L3
+  26 |     t10 = 1
+  27 |     t11 = day + t10
+  28 |     day = t11
+  29 |     t12 = 12
+  30 |     t13 = a - b
+  31 |     t14 = t12 * t13
+  32 |     t15 = h1 + t14
+  33 |     h1 = t15
+  34 |     goto L2
+  35 | L3:
+  36 | L1:
+  37 |     print day
+=== Optimized TAC ===
+   0 |     day = 0
+   1 |     t2 = in_a << 3
+   2 |     h1 = in_h1 + t2
+   3 |     t4 = in_b >= in_a
+   4 |     t5 = h1 < in_h2
+   5 |     t6 = t4 && t5
+   6 |     ifFalse t6 goto L0
+   7 |     day = -1
+   8 |     goto L1
+   9 | L0:
+  10 | L2:
+  11 |     t9 = h1 < in_h2
+  12 |     ifFalse t9 goto L3
+  13 |     day = day + 1
+  14 |     t13 = in_a - in_b
+  15 |     t14 = 12 * t13
+  16 |     h1 = h1 + t14
+  17 |     goto L2
+  18 | L3:
+  19 | L1:
+  20 |     print day
