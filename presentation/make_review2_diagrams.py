@@ -129,10 +129,10 @@ cost --> out : every decision
 @enduml'''
 
 
-def render(source: str, filename: str) -> None:
+def render(source: str, filename: str, folder: str = HERE) -> None:
     encoded = base64.urlsafe_b64encode(zlib.compress(source.encode("utf-8"), 9)).decode("ascii")
     request = urllib.request.Request(f"https://kroki.io/plantuml/png/{encoded}", headers={"User-Agent": "Mozilla/5.0"})
-    path = os.path.join(HERE, filename)
+    path = os.path.join(folder, filename)
     with urllib.request.urlopen(request, timeout=60) as response, open(path, "wb") as fh:
         fh.write(response.read())
     print("saved", path)
