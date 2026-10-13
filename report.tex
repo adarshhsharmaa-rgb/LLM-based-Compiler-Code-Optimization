@@ -85,6 +85,7 @@
 
 % a reference in APA form: hanging indent, as in the template
 \newcommand{\apa}[1]{\par\hangindent=1.27cm\hangafter=1 #1\par}
+\newcommand{\refgroup}[1]{\par\vspace{0.35cm}\noindent\textbf{#1}\par\vspace{0.1cm}}
 
 % ============================================================
 \begin{document}
@@ -143,11 +144,7 @@
 \vspace{0.5cm}
 
 \setstretch{1.15}
-Standard compilers apply a fixed chain of optimization passes, rarely confirming whether a specific transformation actually improved the code. We built a fully automated, multi-agent system that optimizes Three-Address Code (TAC) step by step. Instead of a static pipeline, an orchestrator loop analyzes the code and ranks the available opportunities, and an Optimization Specialist routes each step either to a rule-based engine or to a large language model (LLM). Three LLMs are supported behind one interface: Google Gemini and Groq in the cloud, and a local model served by Ollama that works with no internet connection.
-
-To guarantee correctness, every proposed change must pass a strict dual-verification gate: differential testing on up to several hundred input sets, and symbolic polynomial equivalence for straight-line code. If a candidate passes, a static cost model evaluates the benefit, and the change is accepted only if the program becomes strictly cheaper.
-
-Tested on a dataset of 500 programs spanning seven structural categories, the rule-based agent alone achieved an 82.5\% average cost reduction. Adding an LLM raised this to 91.5\% with Gemini, 90.9\% with Groq and 83.3\% with the local model, largely by rewriting loops and conditionals that the rules cannot remove. The verifier blocked every incorrect LLM suggestion (26 from Gemini, 6 from Groq and 113 from the local model), so all four runs finished with a zero false-positive rate. The result shows that language models can be integrated safely into compiler optimization, in the cloud or on a laptop, when every suggestion is verified before it is trusted.
+Standard compilers apply a fixed chain of optimization passes, rarely confirming if a specific transformation actually improved the code's efficiency. We built a fully automated, multi-agent system to optimize Three-Address Code (TAC) dynamically. Instead of a static pipeline, an orchestrator loop analyzes the code, ranks available opportunities, and proposes transformations using either a rule-based engine or a Google Gemini LLM fallback. Two more LLMs are supported behind the same interface: Groq in the cloud, and a local model served by Ollama that works with no internet connection. To guarantee correctness, every proposed change must pass a strict dual-verification gate: differential testing across 25+ input sets and symbolic polynomial equivalence for straight-line logic. If a candidate passes, a static cost model evaluates the precise performance benefit before accepting it. Tested on a dataset of 500 programs spanning seven structural categories, the rule-based agent alone achieved an 82.5\% cost reduction. Integrating Gemini pushed this to 91.5\%, largely by successfully rewriting complex loops and conditionals that standard rules missed. Groq reached 90.9\% and the local model 83.3\%. The dual-verification system successfully blocked all 26 of Gemini's incorrect suggestions, proving that language models can be safely integrated into compiler optimization when constrained by formal equivalence checks, resulting in a zero false-positive rate. It also blocked all 6 incorrect suggestions from Groq and all 113 from the local model, so every run finished with zero false positives.
 
 \setstretch{1.5}
 \newpage
@@ -1057,34 +1054,42 @@ A few observations stand out from the numbers:
 \vspace{0.3cm}
 
 \setstretch{1.15}
-\apa{Aho, A. V., Lam, M. S., Sethi, R., \& Ullman, J. D. (2006). \textit{Compilers: Principles, Techniques, and Tools} (2nd ed.). Pearson.}
+\refgroup{Journals and Preprints:}
 
 \apa{Chen, M., Tworek, J., Jun, H., Yuan, Q., Pinto, H. P., Kaplan, J., \ldots\ \& Zaremba, W. (2021). Evaluating large language models trained on code. \textit{arXiv preprint arXiv:2107.03374}.}
 
-\apa{Cummins, C., Wasti, B., Guo, J., Cui, B., Ansel, J., Gomez, S., \ldots\ \& Leather, H. (2022). CompilerGym: Robust, performant compiler optimization environments for AI research. \textit{Proceedings of the IEEE/ACM International Symposium on Code Generation and Optimization (CGO)}, 92--105.}
-
 \apa{Cummins, C., Seeker, V., Grubisic, D., Roziere, B., Gehring, J., Synnaeve, G., \& Leather, H. (2024). Meta Large Language Model Compiler: Foundation models of compiler optimization. \textit{arXiv preprint arXiv:2407.02524}.}
 
-\apa{Groq. (2026). \textit{GroqCloud API documentation}. https://console.groq.com/docs}
+\apa{Rozi\`ere, B., Gehring, J., Gloeckle, F., Sootla, S., Gat, I., Tan, X. E., \ldots\ \& Synnaeve, G. (2023). Code Llama: Open foundation models for code. \textit{arXiv preprint arXiv:2308.12950}.}
+
+\apa{Wu, Q., Bansal, G., Zhang, J., Wu, Y., Li, B., Zhu, E., \ldots\ \& Wang, C. (2023). AutoGen: Enabling next-gen LLM applications via multi-agent conversation. \textit{arXiv preprint arXiv:2308.08155}.}
+
+\refgroup{Conferences:}
+
+\apa{Cummins, C., Wasti, B., Guo, J., Cui, B., Ansel, J., Gomez, S., \ldots\ \& Leather, H. (2022). CompilerGym: Robust, performant compiler optimization environments for AI research. \textit{Proceedings of the IEEE/ACM International Symposium on Code Generation and Optimization (CGO)}, 92--105.}
 
 \apa{Lattner, C., \& Adve, V. (2004). LLVM: A compilation framework for lifelong program analysis \& transformation. \textit{Proceedings of the IEEE/ACM International Symposium on Code Generation and Optimization (CGO)}, 75--86.}
 
 \apa{Massalin, H. (1987). Superoptimizer: A look at the smallest program. \textit{Proceedings of the 2nd International Conference on Architectural Support for Programming Languages and Operating Systems (ASPLOS)}, 122--126.}
 
-\apa{Muchnick, S. S. (1997). \textit{Advanced Compiler Design and Implementation}. Morgan Kaufmann.}
-
 \apa{Necula, G. C. (2000). Translation validation for an optimizing compiler. \textit{Proceedings of the ACM SIGPLAN Conference on Programming Language Design and Implementation (PLDI)}, 83--94.}
-
-\apa{Ollama. (2026). \textit{Ollama: Run large language models locally}. https://ollama.com}
 
 \apa{Phothilimthana, P. M., Thakur, A., Bodik, R., \& Dhurjati, D. (2016). Scaling up superoptimization. \textit{Proceedings of the 21st International Conference on Architectural Support for Programming Languages and Operating Systems (ASPLOS)}, 297--310.}
 
 \apa{Pnueli, A., Siegel, M., \& Singerman, E. (1998). Translation validation. \textit{Proceedings of the International Conference on Tools and Algorithms for the Construction and Analysis of Systems (TACAS)}, 151--166.}
 
-\apa{Rozi\`ere, B., Gehring, J., Gloeckle, F., Sootla, S., Gat, I., Tan, X. E., \ldots\ \& Synnaeve, G. (2023). Code Llama: Open foundation models for code. \textit{arXiv preprint arXiv:2308.12950}.}
+\refgroup{Books:}
+
+\apa{Aho, A. V., Lam, M. S., Sethi, R., \& Ullman, J. D. (2006). \textit{Compilers: Principles, Techniques, and Tools} (2nd ed.). Pearson.}
+
+\apa{Muchnick, S. S. (1997). \textit{Advanced Compiler Design and Implementation}. Morgan Kaufmann.}
 
 \apa{Stallman, R. M., \& the GCC Developer Community. (2023). \textit{Using the GNU Compiler Collection (GCC 13)}. Free Software Foundation.}
 
-\apa{Wu, Q., Bansal, G., Zhang, J., Wu, Y., Li, B., Zhu, E., \ldots\ \& Wang, C. (2023). AutoGen: Enabling next-gen LLM applications via multi-agent conversation. \textit{arXiv preprint arXiv:2308.08155}.}
+\refgroup{Web links:}
+
+\apa{Groq. (2026). \textit{GroqCloud API documentation}. https://console.groq.com/docs}
+
+\apa{Ollama. (2026). \textit{Ollama: Run large language models locally}. https://ollama.com}
 
 \end{document}

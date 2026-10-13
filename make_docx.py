@@ -43,26 +43,30 @@ def norm(text: str) -> str:
     return re.sub(r"[^a-z0-9]", "", REFERENCE.sub(r"\1", text).lower())
 
 
-def earlier_text(path: str) -> tuple[str, str]:
-    """(running text without page numbers, everything) of the earlier report, normalised."""
+def earlier_text(path: str) -> tuple[str, str, str]:
+    """The earlier report: (running text without page numbers, everything), both normalised, and the raw text."""
     if path.lower().endswith(".docx"):
         doc = Document(path)
         parts = [p.text for p in doc.paragraphs]
         parts += [c.text for t in doc.tables for row in t.rows for c in row.cells]
-        return norm(" ".join(parts)), norm(" ".join(parts))
+        return norm(" ".join(parts)), norm(" ".join(parts)), " ".join(parts)
     with open(path, encoding="utf-8") as fh:
         lines = fh.read().splitlines()
     lines = [line for line in lines if not line.startswith("=== PAGE")]
     flow = [line for line in lines if not re.fullmatch(r"\s*\d{1,3}\s*", line)]     # page and listing line numbers
-    return norm(" ".join(flow)), norm(" ".join(lines))
+    return norm(" ".join(flow)), norm(" ".join(lines)), " ".join(lines)
 
 
-BASE_FLOW, BASE_ALL = earlier_text(EARLIER)
+BASE_FLOW, BASE_ALL, BASE_RAW = earlier_text(EARLIER)
 
 
 def is_old(text: str) -> bool:
     key = norm(text)
-    return not key or key in BASE_FLOW or key in BASE_ALL
+    if not key:
+        return True
+    if len(key) < 12:           # a short piece must stand by itself there, not inside a longer word
+        return re.search(r"(?<!\w)" + re.escape(text.strip()) + r"(?!\w)", BASE_RAW, re.IGNORECASE) is not None
+    return key in BASE_FLOW or key in BASE_ALL
 
 
 def sentences(text: str):
@@ -102,16 +106,25 @@ def highlight(paragraph, spans) -> None:
         pos = end
         if not length:
             continue
-        hits = [(max(a, start), min(b, end)) for a, b in spans if a < end and b > start]
+        hits = sorted((max(a, start) - start, min(b, end) - start) for a, b in spans if a < end and b > start)
         if not hits:
             continue
-        a, b = min(h[0] for h in hits) - start, max(h[1] for h in hits) - start
-        if len(texts) != 1 or (a == 0 and b == length):
+        if len(texts) != 1 or hits == [(0, length)]:
             Run(r, paragraph).font.highlight_color = WD_COLOR_INDEX.YELLOW
             continue
-        # split the run into before / marked / after
+        # split the run at every boundary: unmarked and marked pieces in turn
         text = texts[0].text
-        pieces = [(text[:a], False), (text[a:b], True), (text[b:], False)]
+        merged = []
+        for a, b in hits:
+            if merged and not text[merged[-1][1]:a].strip():      # only white space between two marked pieces
+                merged[-1] = (merged[-1][0], b)
+            else:
+                merged.append((a, b))
+        pieces, at = [], 0
+        for a, b in merged:
+            pieces += [(text[at:a], False), (text[a:b], True)]
+            at = b
+        pieces.append((text[at:], False))
         anchor = r
         first = True
         for piece, marked in pieces:
@@ -411,9 +424,17 @@ for i, p in enumerate(paragraphs):
             mono = run.style is not None and run.style.name == "Verbatim Char"
             set_font(run, 11 if mono else 12, name="Consolas" if mono else FONT)
         if i > references_at:
-            fmt.left_indent, fmt.first_line_indent = Inches(0.5), Inches(-0.5)
             fmt.line_spacing = 1.15
-            p.alignment = WD_ALIGN_PARAGRAPH.JUSTIFY
+            if text.endswith(":") and len(text) < 40:           # a group heading: Journals, Conferences, ...
+                p.alignment = WD_ALIGN_PARAGRAPH.LEFT
+                fmt.space_before, fmt.space_after, fmt.keep_with_next = Pt(10), Pt(4), True
+                for run in p.runs:
+                    set_font(run, 12, bold=True)
+                marked += mark_new(p, whole=True)
+                continue
+            fmt.left_indent, fmt.first_line_indent = Inches(0.5), Inches(-0.5)
+            # a long address cannot be broken, and justifying the line before it stretches the words apart
+            p.alignment = WD_ALIGN_PARAGRAPH.LEFT if "http" in text else WD_ALIGN_PARAGRAPH.JUSTIFY
             marked += mark_new(p, whole=True)
             continue
         fmt.line_spacing = 1.15 if abstract_at < i < toc_at else 1.5

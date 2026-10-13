@@ -136,32 +136,21 @@ def build() -> str:
             shutil.copyfile(os.path.join(ROOT, source), os.path.join(figures, name))
     doc.swap("report_figures/architecture.png", "report_figures/architecture_review3.png")
 
-    # ------------------------------------------------------------------ abstract (one page, under 300 words)
-    def part(name, run):
-        count = run["m"]["total_programs"]
-        note = "" if count == 500 else f" (on {count} programs)"
-        return f"{p(run['m']['avg_cost_reduction_pct'], 1)} with {name}{note}"
-
-    parts = [part(name, run) for name, run in llm_runs]
-    listed = parts[0] if len(parts) == 1 else ", ".join(parts[:-1]) + " and " + parts[-1]
-    doc.between("Standard compilers apply a fixed chain of optimization passes, rarely confirming", "\\setstretch{1.5}\n\\newpage", (
-        "Standard compilers apply a fixed chain of optimization passes, rarely confirming whether a specific "
-        "transformation actually improved the code. We built a fully automated, multi-agent system that optimizes "
-        "Three-Address Code (TAC) step by step. An orchestrator loop analyzes the code and ranks the available "
-        "opportunities, and an Optimization Specialist routes each step either to a rule-based engine or to a large "
-        "language model (LLM): Google Gemini or Groq in the cloud, or a local model served by Ollama. A rejected "
-        "LLM answer is sent back once with the reason (self-repair).\n\n"
-        "Every proposed change must pass a verification gate: differential testing on several hundred input sets, "
-        "symbolic polynomial equivalence for straight-line code, and, for programs with branches but no loops, a "
-        "proof by the Z3 SMT solver. A change is accepted only if it makes the program cheaper, where cost is "
-        "either a static count or the measured execution time.\n\n"
-        "On 500 generated programs in seven categories the rules alone achieved an 82.5\\% average cost reduction, "
-        "and 91.5\\% with Gemini. On 500 real programs (accepted Codeforces submissions from "
-        f"{manifest['problems']} problems) the rules reduce the static cost by {p(rm['avg_cost_reduction_pct'], 1)} "
-        f"and the execution time by {p(rm['avg_time_reduction_pct'], 1)}, and {rm['programs_proved_equivalent']} of "
-        "the optimized programs are proved equivalent to their originals for every input. Adding an LLM gave "
-        + listed + ". An independent re-check found one wrong change that had passed every test; wide-range inputs "
-        "now reject it, and the final results contain no incorrect change.\n\n"))
+    # ------------------------------------------------------------------ abstract: the earlier one, with additions
+    # (the template allows 200 to 300 words on one page)
+    listed = [f"{p(run['m']['avg_cost_reduction_pct'], 1)} ({name})" for name, run in llm_runs]
+    listed = listed[0] if len(listed) == 1 else ", ".join(listed[:-1]) + " and " + listed[-1]
+    doc.after("a local model served by Ollama that works with no internet connection.",
+              " A rejected LLM answer is sent back once with the reason.")
+    doc.after("and symbolic polynomial equivalence for straight-line logic.",
+              " Loop-free programs with branches are also proved equivalent by the Z3 SMT solver.")
+    doc.after("so every run finished with zero false positives.", (
+        f" On 500 real Codeforces programs the rules cut the static cost by {p(rm['avg_cost_reduction_pct'], 1)} "
+        f"and the execution time by {p(rm['avg_time_reduction_pct'], 1)}, and an LLM raised the cost reduction to "
+        + listed + f". {rm['programs_proved_equivalent']} of them are proved equivalent for every input."))
+    a = doc.text.index("Standard compilers apply a fixed chain of optimization passes")
+    words = len(doc.text[a:doc.text.index("\\setstretch{1.5}\n\\newpage", a)].split())
+    assert words <= 300, f"the abstract has {words} words"
 
     # ------------------------------------------------------------------ scope, objectives, plan, software
     doc.swap("  \\item A two-stage verifier combining differential testing (random, edge, boundary, small-scope and "
@@ -496,12 +485,12 @@ def build() -> str:
         "\\end{itemize}\n"))
 
     # ------------------------------------------------------------------ references (APA, alphabetical)
-    doc.before("\\apa{Groq. (2026).", (
+    doc.before("\\apa{Lattner, C.,", (
         "\\apa{de Moura, L., \\& Bj{\\o}rner, N. (2008). Z3: An efficient SMT solver. \\textit{Proceedings of the "
         "International Conference on Tools and Algorithms for the Construction and Analysis of Systems (TACAS)}, "
         "337--340.}\n\n"))
-    doc.before("\\apa{Phothilimthana, P. M.,", (
-        "\\apa{open-r1. (2025). \\textit{codeforces-submissions} [Data set]. Hugging Face. "
+    doc.before("\\end{document}", (
+        "\n\\apa{open-r1. (2025). \\textit{codeforces-submissions} [Data set]. Hugging Face. "
         "https://huggingface.co/datasets/open-r1/codeforces-submissions}\n\n"))
 
     path = os.path.join(ROOT, "report3.tex")
