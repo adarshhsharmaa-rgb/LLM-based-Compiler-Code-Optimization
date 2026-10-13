@@ -50,35 +50,38 @@ OUTPUT = os.path.join(ROOT, "project_ppt_24bce2972_review3.pptx")
 REVIEW1_DECK = "project_ppt_24bce2972 (1).pptx"
 PENDING = "run in progress"
 TOTAL_TESTS = 397
-RECHECK_TOTAL = "258,912"       # executions in the independent re-check of the runs on real programs
+RECHECK_TOTAL = "539,170"       # executions in the independent re-check of the runs on real programs
 CATEGORIES = r2.CATEGORIES
 
 # The architecture slide: what each agent does now.
 AGENTS = [
     ("1  Code Analysis Specialist", "code_analyzer.py", "the current TAC program",
-     ["Builds the control-flow graph",
-      "Liveness and available-copies dataflow analyses",
+     ["Control-flow graph builder",
+      "Liveness analysis",
+      "Available-copies analysis",
       "Six detectors: constant fold, algebraic, dead code, CSE, strength reduction, copy propagation",
-      "Leaves out opportunities already turned down"],
-     "opportunities ranked by priority, 100 down to 50"),
+      "Priority ranker"],
+     "opportunities ranked by priority"),
     ("2  Optimization Specialist", "optimization_specialist.py", "the program and its opportunities",
-     ["Routes the step by mode: rule, hybrid or llm",
-      "Option A: a rule applies the top opportunity",
-      "Option B: an LLM (Gemini, Groq or Ollama) answers one shared prompt",
-      "Self-repair: a rejected answer goes back once, with the reason"],
-     "one candidate program with its reasoning"),
+     ["Router: rule, hybrid or llm mode",
+      "Rule-based optimizer",
+      "LLM optimizer: Gemini, Groq, Ollama",
+      "Prompt builder and TAC reply parser",
+      "Self-repair loop"],
+     "one candidate program"),
     ("3  Verification Module", "verifier.py, smt_verifier.py", "current program + candidate",
-     ["Differential testing: random, edge, boundary, small-scope, pairwise and wide-range inputs",
-      "Symbolic check for straight-line code",
-      "SMT solver (Z3) proves programs without loops for all inputs",
-      "A counterexample is replayed before it is believed"],
-     "PASS (tested or proved) or FAIL, with the reason"),
+     ["Input-set generator (six kinds of input sets)",
+      "Reference TAC interpreter",
+      "Differential tester",
+      "Symbolic polynomial checker",
+      "SMT prover (Z3)"],
+     "PASS (tested or proved) or FAIL"),
     ("4  Cost Evaluator", "cost_evaluator.py", "program + verified candidate",
-     ["Static cost: instructions, arithmetic, temporaries, copies, branches",
-      "Execution time: runs the program on 25 inputs, adds a latency per executed instruction",
-      "Cost model static, or time first",
-      "A change counts only if the cost strictly drops"],
-     "ACCEPT, or REJECT for no cost gain"),
+     ["Static counters and weight table",
+      "Execution profiler: 25 fixed inputs",
+      "Latency table per instruction",
+      "Comparator: static or time cost model"],
+     "cheaper, or no cost gain"),
 ]
 
 CODE_REPAIR = '''
@@ -276,7 +279,8 @@ def build() -> str:
         r2.Deck.save = real_save
     deck = held["deck"]
     replace_everywhere(deck, "336", str(TOTAL_TESTS))
-    replace_everywhere(deck, "runs the loop for up to 50 iterations", "runs the loop for up to 50 iterations (200 for real programs)")
+    replace_everywhere(deck, "loop controller (up to 50 iterations)", "loop controller (up to 50 iterations, 200 for real programs)")
+    replace_everywhere(deck, "decision logger, final checker", "decision logger, final checker with revert, resume cache")
     tail = {"Project Status", "Conclusion"}
     references = deck.order[-1]
     deck.order = [s for s in deck.order[:-1] if title_of(s) not in tail]
@@ -288,7 +292,7 @@ def build() -> str:
     ollama = load("output_real_ollama")
     # the LLM runs that exist, in a fixed order (a run needs its provider's key or a local model)
     llm_runs = [entry for entry in (("Gemini", gemini, "a1", "gemini-3.1-flash-lite, Google cloud"),
-                                    ("Groq", groq, "a4", "gpt-oss models, Groq cloud"),
+                                    ("Groq", groq, "a4", "gpt-oss and qwen models, Groq cloud"),
                                     ("Ollama", ollama, "a2", "qwen2.5-coder:7b, this laptop")) if entry[1]]
     generated = load("output_rule_only")
     with open(os.path.join(ROOT, "dataset", "real_manifest.json"), encoding="utf-8") as fh:
@@ -302,6 +306,16 @@ def build() -> str:
     def improved(run):
         return sum(1 for name, rec in run["by_name"].items()
                    if rec["reduction_pct"] > rule["by_name"][name]["reduction_pct"] + 0.01) if run and rule else 0
+
+    def consulted(run):
+        """Programs on which the LLM was actually asked (its quota had not run out yet)."""
+        return sum(1 for rec in run["by_name"].values() if rec.get("llm_calls", 0) > 0)
+
+    def quota_note():
+        short = [f"{name}'s free daily quota ended after {consulted(run)} programs; its other "
+                 f"{run['m']['total_programs'] - consulted(run)} were optimized by the rules alone."
+                 for name, run, _, _ in llm_runs if consulted(run) < 0.9 * run["m"]["total_programs"]]
+        return " ".join(short)
 
     def llm_calls(run):
         return sum(rec.get("llm_calls", 0) for rec in run["by_name"].values())
@@ -362,7 +376,7 @@ def build() -> str:
     width = (5.88 - 0.12 * (len(llm_runs) - 1)) / max(len(llm_runs), 1)
     for i, (name, run, colour, _) in enumerate(llm_runs):
         stat_card(s, x + i * (width + 0.12), TOP + 1.0, width, 2.05, repairs(run),
-                  f"repairs accepted with {name} on the real sample", colour=colour, big_size=24 if len(llm_runs) > 2 else 30)
+                  f"repairs accepted with {name}", colour=colour, big_size=24 if len(llm_runs) > 2 else 30)
     card(s, x, TOP + 3.3, 5.88, 2.05)
     text(s, x + 0.25, TOP + 3.45, 5.38, 1.8, [
         [("What it fixes. ", {"bold": True, "color": "a1"}),
@@ -508,6 +522,7 @@ def build() -> str:
 
     rows = [["Metric"] + [name for name, _ in columns]]
     rows.append(row("Programs", lambda r: num(r["m"]["total_programs"])))
+    rows.append(row("Programs the LLM was consulted on", lambda r: num(consulted(r)), llm_only=True))
     rows.append(row("Average cost reduction", lambda r: pct(r["m"]["avg_cost_reduction_pct"]), bold=True, color="a1"))
     rows.append(row("Rules alone on the same programs", lambda r: pct(same_programs(r))))
     rows.append(row("Average execution-time reduction", lambda r: pct(r["m"]["avg_time_reduction_pct"])))
@@ -522,9 +537,10 @@ def build() -> str:
     rows.append(row("False positives", lambda r: str(r["m"]["false_positive_count"]), bold=True, color="a2"))
     first = 3.38 if len(columns) > 4 else 3.93
     table(s, LM, TOP, [first] + [(CW - first) / len(columns)] * len(columns), rows, size=12.5 if len(columns) > 4 else 13,
-          row_h=0.395)
-    text(s, LM, TOP + 4.9, CW, 0.45, "The LLM runs cover a sample of 100 programs, every fifth one, with 2 fresh "
-         "calls per program plus 1 repair per rejected answer. The rule-based runs cover all 500.", size=12)
+          row_h=0.365)
+    text(s, LM, TOP + 4.9, CW, 0.45,
+         "LLM budget per program: 2 fresh proposals for every fifth program and 1 for the others, plus 1 repair per "
+         "rejected answer (this keeps the cloud runs inside their free daily quotas). " + quota_note(), size=12)
 
     # ------------------------------------------------------------------ results: by category
     s = deck.new("Real Programs: Cost Reduction by Category")
@@ -533,17 +549,21 @@ def build() -> str:
         series.append(("Generated dataset, rules", [generated["m"]["per_category"][k]["avg_reduction_pct"] for k, _ in CATEGORIES], HEX["a5"]))
     if rule:
         series.append(("Real programs, rules", [rule["m"]["per_category"][k]["avg_reduction_pct"] for k, _ in CATEGORIES], HEX["a1"]))
-    for name, run, colour in ((f"Real sample, rules + {name}", run, HEX[colour if colour != "a1" else "a3"])
+    for name, run, colour in ((f"Real programs, rules + {name}", run, HEX[colour if colour != "a1" else "a3"])
                               for name, run, colour, _ in llm_runs):
         if run:
-            series.append((name, [run["m"]["per_category"].get(k, {}).get("avg_reduction_pct", 0) for k, _ in CATEGORIES], colour))
+            # a category the run has not finished is left out (no bar) instead of drawn from a few programs
+            done = {k: sum(1 for r in run["by_name"].values() if r["category"] == k) for k, _ in CATEGORIES}
+            full = {k: rule["m"]["per_category"][k]["programs"] for k, _ in CATEGORIES}
+            series.append((name, [run["m"]["per_category"][k]["avg_reduction_pct"] if done[k] == full[k] else None
+                                  for k, _ in CATEGORIES], colour))
     column_chart(s, LM, TOP, 8.85, 5.3, [label for _, label in CATEGORIES], series)
     r2.what_it_shows(s, [
         "Generated programs fold to constants; real ones read their input, so less can be removed.",
         f"Real programs, rules: {pct(rule['m']['avg_cost_reduction_pct']) if rule else PENDING} on average.",
         *([f"{llm_runs[0][0]} with self-repair improves {improved(llm_runs[0][1])} of the "
-           f"{llm_runs[0][1]['m']['total_programs']} sample programs: real loops depend on the input, so few can "
-           "be folded away."] if llm_runs else []),
+           f"{llm_runs[0][1]['m']['total_programs']} real programs: real loops depend on the input, so few can be "
+           "folded away."] if llm_runs else []),
     ])
 
     # ------------------------------------------------------------------ results: static vs time
@@ -610,7 +630,8 @@ def build() -> str:
         m = run["m"]
         base = same_programs(run)
         lines = [
-            ["Programs in the sample", num(m["total_programs"])],
+            ["Programs", num(m["total_programs"])],
+            ["LLM consulted on", num(consulted(run))],
             ["Rules alone on them", pct(base)],
             ["With the LLM", (pct(m["avg_cost_reduction_pct"]), {"bold": True, "color": colour})],
             ["Programs improved", f"{improved(run)}"],
@@ -622,7 +643,7 @@ def build() -> str:
             ["False positives", (str(m["false_positive_count"]), {"bold": True, "color": "a2"})],
         ]
         table(s, x + 0.22, TOP + 1.1, [(cw - 0.44) * 0.65, (cw - 0.44) * 0.35], lines, size=13 if wide else 12,
-              row_h=0.44, header=False)
+              row_h=0.4, header=False)
 
     # ------------------------------------------------------------------ the wrong change the re-check found
     s = deck.new("Validation: A Wrong Change the Tests Missed")
@@ -672,12 +693,12 @@ def build() -> str:
                                                         "5,100 random programs fuzzed, 800 mutation tests",
                                                         "500 generated programs, 4 full runs",
                                                         "500 real programs, rule runs under 2 cost models",
-                                                        "LLM runs on a 100-program real sample",
+                                                        "LLM runs with self-repair on the real programs",
                                                         "Static cost and execution time reported"]),
               ("route", "a4", "Limits and next steps", ["Arrays and functions in the front end",
                                                        "SMT for loops (bounded unrolling)",
                                                        "32-bit overflow is not modelled",
-                                                       "LLM runs on all 500 real programs (resumable)",
+                                                       "A larger LLM budget per real program",
                                                        "Rule passes for loops and branches"])]
     for i, (name, colour, heading, items) in enumerate(status):
         x = LM + i * 4.127
@@ -698,7 +719,7 @@ def build() -> str:
          "less execution time on the real programs under the time cost model", "a6"),
         (f"{proved} / 500" if rule else "pending", "real programs proved equivalent for every input, not only tested", "a6"),
         (avg(max((r for _, r, _, _ in llm_runs), key=lambda r: r["m"]["avg_cost_reduction_pct"], default=None)),
-         "best LLM configuration on the real sample, with self-repair"
+         "best LLM configuration on the real programs, with self-repair"
          + (f" ({pct(same_programs(llm_runs[0][1]), 1)} with rules alone)" if llm_runs else ""), "a6"),
         ("1 → 0", "wrong change that passed the tests on real programs: caught by the re-check, now rejected",
          CODE_GREEN),

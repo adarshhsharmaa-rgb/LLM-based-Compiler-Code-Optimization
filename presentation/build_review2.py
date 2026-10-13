@@ -787,84 +787,105 @@ def diagram(name: str) -> str:
 
 AGENTS = [
     ("1  Code Analysis Specialist", "code_analyzer.py", "the current TAC program",
-     ["Builds the control-flow graph",
-      "Liveness and available-copies dataflow analyses",
+     ["Control-flow graph builder",
+      "Liveness analysis",
+      "Available-copies analysis",
       "Six detectors: constant fold, algebraic, dead code, CSE, strength reduction, copy propagation",
-      "Leaves out opportunities already turned down"],
-     "opportunities ranked by priority, 100 down to 50"),
+      "Priority ranker"],
+     "opportunities ranked by priority"),
     ("2  Optimization Specialist", "optimization_specialist.py", "the program and its opportunities",
-     ["Routes the step by mode: rule, hybrid or llm",
-      "Option A: the rule-based optimizer applies the top opportunity to a copy",
-      "Option B: an LLM (Gemini, Groq or Ollama) answers one shared prompt",
-      "The reply is parsed back into TAC; unusable replies are dropped"],
-     "one candidate program with its reasoning"),
+     ["Router: rule, hybrid or llm mode",
+      "Rule-based optimizer (optimizer_rule.py)",
+      "LLM optimizer (optimizer_llm.py)",
+      "LLM backends: Gemini, Groq, Ollama",
+      "Prompt builder and TAC reply parser"],
+     "one candidate program"),
     ("3  Verification Module", "verifier.py", "current program + candidate",
-     ["Runs both on random, edge, boundary, small-scope and pairwise inputs",
-      "Compares printed output and failure mode",
-      "Symbolic check for straight-line code",
-      "Both timing out: cannot be verified, so rejected"],
+     ["Input-set generator: random, edge, boundary, small-scope, pairwise",
+      "Reference TAC interpreter",
+      "Differential tester",
+      "Symbolic polynomial checker"],
      "PASS or FAIL, with the reason"),
     ("4  Cost Evaluator", "cost_evaluator.py", "program + verified candidate",
-     ["Counts instructions, arithmetic ops, temporaries, copies and branches",
-      "Weights them 1.0, 2.0, 0.5, 1.5 and 1.0",
-      "Compares the two weighted totals",
-      "A change counts only if the cost strictly drops"],
-     "ACCEPT, or REJECT for no cost gain"),
+     ["Counters: instructions, arithmetic ops, temporaries, copies, branches",
+      "Weight table: 1.0, 2.0, 0.5, 1.5, 1.0",
+      "Weighted-cost calculator",
+      "Improvement comparator"],
+     "cheaper, or no cost gain"),
 ]
+OUTPUTS = ["Optimized TAC", "Decision log", "Metrics", "7 charts"]
 
 
 def architecture_slide(deck):
-    """The whole system on one slide, with what happens inside every agent."""
+    """The whole system on one slide: the components of every agent, and where a run ends."""
     s = deck.new("System Architecture")
     # front end: source to TAC
     stages = [("Source program", False), ("Lexer", True), ("Parser", True), ("AST", True),
               ("TAC Generator", True), ("TAC program", False)]
-    bw, gap, y0, bh = 1.85, 0.206, 1.3, 0.46
+    bw, gap, y0, bh = 1.85, 0.206, 1.25, 0.42
     for i, (label, process) in enumerate(stages):
         x = LM + i * (bw + gap)
         box(s, x, y0, bw, bh, label, fill="bg2" if process else "bg1", line="a1" if process else "a5", bold=process)
         if i:
             hline(s, x - gap, y0 + bh / 2, x, y0 + bh / 2, color="a5", width=1.25, arrow=True)
     # the TAC program enters the loop at the first agent
-    top, left = 2.06, LM
-    hline(s, 11.8, y0 + bh, 11.8, 1.91, color="a5", width=1.25)
-    hline(s, 11.8, 1.91, 2.2, 1.91, color="a5", width=1.25)
-    hline(s, 2.2, 1.91, 2.2, 2.72, color="a5", width=1.25, arrow=True)
-    # the orchestrator frames the four agents
-    frame = card(s, left, top, CW, 4.68, fill="a1", alpha=5, line="a1", line_w=1.25, radius=0.1)
+    top, left = 1.93, LM
+    aw, agap, ay, ah = 2.72, 0.25, 2.5, 2.7
+    hline(s, 11.8, y0 + bh, 11.8, 1.8, color="a5", width=1.25)
+    hline(s, 11.8, 1.8, 2.2, 1.8, color="a5", width=1.25)
+    hline(s, 2.2, 1.8, 2.2, ay, color="a5", width=1.25, arrow=True)
+    # the orchestrator frames the four agents and the decision
+    dy, dh = ay + ah + 0.16, 0.56
+    frame = card(s, left, top, CW, dy + dh + 0.12 - top, fill="a1", alpha=5, line="a1", line_w=1.25, radius=0.1)
     dash = OxmlElement("a:prstDash")
     dash.set("val", "dash")
     frame.line._get_or_add_ln().append(dash)
-    text(s, left + 2.0, top + 0.1, CW - 2.25, 0.5, [[
+    text(s, left + 2.0, top + 0.08, CW - 2.25, 0.45, [[
         ("Orchestrator ", {"bold": True, "color": "a1"}), ("(orchestrator.py)  ", {"font": "Consolas", "size": 10.5, "color": "a1"}),
-        "runs the loop for up to 50 iterations, remembers what was already tried, logs every decision "
-        "and re-verifies the final program against the original"]], size=12, color="tx1")
-    aw, agap, ay, ah = 2.72, 0.25, 2.72, 2.98
-    for i, (name, source, given, steps, result) in enumerate(AGENTS):
+        ("Components: ", {"bold": True}),
+        "loop controller (up to 50 iterations), memory of the opportunities already tried, decision logger, "
+        "final checker"]], size=12, color="tx1")
+    for i, (name, source, given, parts, result) in enumerate(AGENTS):
         x = left + 0.25 + i * (aw + agap)
         card(s, x, ay, aw, ah, fill="bg1", line="a1", line_w=1.25, radius=0.07)
-        text(s, x + 0.13, ay + 0.09, aw - 0.26, 0.27, name, size=13, color="tx1", bold=True)
-        text(s, x + 0.13, ay + 0.36, aw - 0.26, 0.2, source, size=10, color="a1", font="Consolas")
-        text(s, x + 0.13, ay + 0.6, aw - 0.26, 0.22, [[("In: ", {"bold": True, "color": "a5"}), given]], size=10.5, color="tx2")
-        text(s, x + 0.13, ay + 0.98, aw - 0.26, 1.5, steps, size=10.5, color="tx1", after=2, bullets=True)
-        text(s, x + 0.13, ay + ah - 0.42, aw - 0.26, 0.38, [[("Out: ", {"bold": True, "color": "a2"}), result]],
+        text(s, x + 0.13, ay + 0.08, aw - 0.26, 0.27, name, size=13, color="tx1", bold=True)
+        text(s, x + 0.13, ay + 0.34, aw - 0.26, 0.2, source, size=10, color="a1", font="Consolas")
+        text(s, x + 0.13, ay + 0.57, aw - 0.26, 0.22, [[("In: ", {"bold": True, "color": "a5"}), given]], size=10.5, color="tx2")
+        text(s, x + 0.13, ay + 0.82, aw - 0.26, 0.2, "Components", size=10.5, color="a1", bold=True)
+        text(s, x + 0.13, ay + 1.04, aw - 0.26, 1.1, parts, size=10.5, color="tx1", after=1.5, bullets=True)
+        text(s, x + 0.13, ay + ah - 0.3, aw - 0.26, 0.26, [[("Out: ", {"bold": True, "color": "a2"}), result]],
              size=10.5, color="tx1", anchor="b")
         if i:
             hline(s, x - agap, ay + ah / 2, x, ay + ah / 2, color="a5", width=1.5, arrow=True)
-    # decision and outputs
-    dy = ay + ah + 0.18
-    card(s, left + 0.25, dy, CW - 0.5, 0.74, fill="a2", alpha=10)
-    text(s, left + 0.45, dy, CW - 0.9, 0.74, [
+    # decision: both outcomes send the loop back to the first agent
+    card(s, left + 0.25, dy, CW - 0.5, dh, fill="a2", alpha=10)
+    text(s, left + 0.45, dy, CW - 0.9, dh, [
         [("5  Decision.  ", {"bold": True, "color": "a2"}), ("ACCEPT: ", {"bold": True}),
-         "the candidate becomes the current program and the loop analyzes it again.  ",
-         ("REJECT: ", {"bold": True}), "the next opportunity is tried, or the same step goes to the other proposer.  ",
-         ("When nothing is left: ", {"bold": True}),
-         "final check against the original, then the outputs: optimized TAC, decision log, metrics and 7 charts."]],
+         "the candidate becomes the current program.  ",
+         ("REJECT: ", {"bold": True}), "the next opportunity is tried, or the same step goes to the other proposer.  "
+         "Either way the loop returns to the Code Analysis Specialist."]],
          size=11, color="tx1", anchor="ctr")
-    # from the cost evaluator down to the decision, and back up to the analyzer
     last_x = left + 0.25 + 3 * (aw + agap) + aw / 2
+    first_x = left + 0.25 + aw / 2
     hline(s, last_x, ay + ah, last_x, dy, color="a2", width=1.5, arrow=True)
-    hline(s, left + 0.25 + aw / 2, dy, left + 0.25 + aw / 2, ay + ah, color="a2", width=1.5, arrow=True)
+    hline(s, first_x, dy, first_x, ay + ah, color="a2", width=1.5, arrow=True)
+    # the way out: nothing left to try -> final check -> outputs -> end
+    oy, oh = dy + dh + 0.34, 0.5
+    check_w = 3.25
+    exit_x = left + 0.25 + check_w / 2
+    hline(s, exit_x, dy + dh, exit_x, oy, color="a4", width=1.5, arrow=True)
+    text(s, exit_x + 0.1, dy + dh + 0.11, 3.2, 0.2, "when nothing is left to try", size=10, color="a4", bold=True)
+    box(s, left + 0.25, oy, check_w, oh, "Final check: optimized vs. original", fill="bg1", line="a4", size=11.5)
+    ox = left + 0.25 + check_w + 0.35
+    hline(s, ox - 0.35, oy + oh / 2, ox, oy + oh / 2, color="a4", width=1.5, arrow=True)
+    end_w = 0.95
+    out_w = (left + CW - 0.25 - end_w - 0.3 - ox - 0.15 * (len(OUTPUTS) - 1)) / len(OUTPUTS)
+    for i, label in enumerate(OUTPUTS):
+        box(s, ox + i * (out_w + 0.15), oy, out_w, oh, label, fill="bg1", line="a5", size=11.5, bold=False)
+    ex = left + CW - 0.25 - end_w
+    hline(s, ex - 0.3, oy + oh / 2, ex, oy + oh / 2, color="a5", width=1.5, arrow=True)
+    box(s, ex, oy, end_w, oh, "End", fill="tx1", line="tx1", size=12, color="bg1", radius=0.25)
+    text(s, ox, oy - 0.21, 4.0, 0.2, "Outputs of the run", size=10, color="a5", bold=True)
     return s
 
 
