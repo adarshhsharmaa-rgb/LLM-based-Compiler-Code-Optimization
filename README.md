@@ -543,15 +543,15 @@ with no internet connection needed. Results are in `output_ollama/`.
 All runs use the 500 Codeforces submissions described under
 [real programs](#real-programs-the-codeforces-dataset) and allow 200 iterations per
 program. Results are in `output_real_rule_only/`, `output_real_rule_time/`,
-`output_real_groq/` and `output_real_ollama/`. The Gemini command needs a key in
-`.gemini_key` and has not been run yet; its column appears once it has.
+`output_real_gemini/`, `output_real_groq/` and `output_real_ollama/` (one folder per LLM run that
+has been made).
 
 ```bash
 py main.py --run-all --dataset real --quiet --resume --max-iterations 200 --output-dir output_real_rule_only
 py main.py --run-all --dataset real --quiet --resume --max-iterations 200 --cost-model time --output-dir output_real_rule_time
-py main.py --run-all --dataset real --every 5 --quiet --resume --use-llm --llm-provider gemini --max-llm-calls 2 --max-iterations 200 --output-dir output_real_gemini
-py main.py --run-all --dataset real --every 5 --quiet --resume --use-llm --llm-provider groq --max-llm-calls 2 --max-iterations 200 --output-dir output_real_groq
-py main.py --run-all --dataset real --every 5 --quiet --resume --offline --max-llm-calls 2 --max-iterations 200 --output-dir output_real_ollama
+# an LLM run, in two steps (here Groq; use --llm-provider gemini, or --offline for Ollama):
+py main.py --run-all --dataset real --every 5 --quiet --resume --require-llm --use-llm --llm-provider groq --max-llm-calls 2 --max-iterations 200 --output-dir output_real_groq
+py main.py --run-all --dataset real --quiet --resume --require-llm --use-llm --llm-provider groq --max-llm-calls 1 --max-iterations 200 --output-dir output_real_groq
 ```
 
 **Rules only, all 500 programs (static cost model)**
@@ -586,7 +586,7 @@ py main.py --run-all --dataset real --every 5 --quiet --resume --offline --max-l
 * **The fix.** The verifier now adds 60 wide-range input sets (values up to a
   thousand, ten thousand, a million and a billion, signed values, powers of ten
   and their neighbours). The wrong change is now rejected with a counterexample,
-  the program was optimized again, and the re-check of all runs (258,912
+  the program was optimized again, and the re-check of all runs (539,170
   executions) finds **0 mismatches**. The four generated-dataset runs were
   re-checked on the same inputs: about 72,000 executions each, 0 mismatches.
 
@@ -601,26 +601,29 @@ py main.py --run-all --dataset real --every 5 --quiet --resume --offline --max-l
 | Strength reductions rejected (no gain) | 1,185 | 0 |
 | False positives | 0 | 0 |
 
-**LLM proposers with self-repair (a sample of 100 programs: every fifth one)**
+**LLM proposers with self-repair**
 
-| Metric | Rules + Groq | Rules + Ollama |
-|---|---:|---:|
-| Programs in the sample | 100 | 100 |
-| Rules alone on these programs | 51.73 % | 51.73 % |
-| Rules + LLM | **52.85 %** | **51.85 %** |
-| Programs improved by the LLM | 30 | 2 |
-| LLM calls | 226 | 170 |
-| LLM proposals accepted / no gain / wrong | 63 / 32 / 27 | 8 / 6 / 40 |
-| LLM validity rate | 77.87 % | 25.93 % |
-| Self-repairs accepted / tried | 19 / 82 | 1 / 45 |
-| False positives | 0 | 0 |
+| Metric | Rules + Gemini | Rules + Groq | Rules + Ollama |
+|---|---:|---:|---:|
+| Programs | 500 | 500 | 500 |
+| Programs the LLM was consulted on | 500 | 402 | 500 |
+| Rules alone on these programs | 52.32 % | 52.32 % | 52.32 % |
+| Rules + LLM | **53.60 %** | **52.86 %** | **52.42 %** |
+| Programs improved by the LLM | 113 | 81 | 9 |
+| LLM calls | 735 | 701 | 687 |
+| LLM proposals accepted / no gain / wrong | 196 / 84 / 171 | 154 / 60 / 153 | 24 / 19 / 161 |
+| LLM validity rate | 62.08 % | 58.31 % | 21.08 % |
+| Self-repairs accepted / tried | 30 / 213 | 43 / 255 | 7 / 162 |
+| False positives | 0 | 0 | 0 |
 
-* Each program gets 2 fresh LLM proposals and 1 repair per rejected answer.
-* Gemini uses `gemini-3.1-flash-lite` and Groq its `gpt-oss` models; Ollama runs
-  `qwen2.5-coder:7b` on the laptop, mostly on the GPU. A column appears for every
-  run that has been made (the Gemini run needs a key in `.gemini_key`).
-* Both runs are resumable: the same command without `--every 5` extends them to
-  all 500 programs.
+* LLM budget per program: 2 fresh proposals for every fifth program and 1 for the
+  others, plus 1 repair per rejected answer. This keeps the cloud runs inside their
+  free daily quotas.
+* Gemini uses `gemini-3.1-flash-lite` and Groq its `gpt-oss` and `qwen` models; Ollama runs
+  `qwen2.5-coder:7b` on the laptop, mostly on the GPU.
+* When a free daily quota ends, the rest of a run is optimized by the rules alone
+  (the row *Programs the LLM was consulted on* shows how far the LLM got).
+  `--require-llm` stops the run at that point instead, and `--resume` continues it.
 
 ## Visualizations (`output/plots/`)
 
