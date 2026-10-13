@@ -78,7 +78,11 @@
   [ACCEPT]  ✓ Change accepted
 --- Iteration 12 ---
   [ANALYZE] No more opportunities found.
-  [INFO]    LLM not consulted: unavailable (Groq daily quota used up (429): Rate limit reached for model `qwen/qwen3.8-27b` in organization `org_01m4qvej6keqr80jzd0yda90dw` service tier `on_demand` on tokens per day (TPD): Limit 200000, Used 199999, Requested 818. Please try )
+  [ROUTE]   LLM optimizer (groq openai/gpt-oss-120b): the rules have nothing left to try
+  [LLM]     LLM proposal: Strength reduction: replace the left‑shift by a multiplication with the constant 4, preserving semantics.
+  [VERIFY]  PASS (differential: 357/357 inputs matched, symbolic: equivalent)
+  [COST]    Before: 51.5, After: 53.5 (reduction: -3.9%); time 66.0 → 68.0 cycles
+  [REJECT]  ✗ Change rejected: No cost improvement
 === RESULT ===
   Original cost: 82.5
   Final cost:    51.5
@@ -86,9 +90,10 @@
   Exec. time:    78.0 → 66.0 cycles (15.4% less)
   Iterations:    12
   Accepted:      11
-  Rejected:      0
+  Rejected:      1
   Invalid:       0
-  Routing:       hybrid (LLM: groq qwen/qwen3.8-27b)
+  Routing:       hybrid (LLM: groq openai/gpt-oss-120b)
+  LLM proposals: 1 (1 passed verification)
   Output match:  PASS ✓
   Equivalence:   proved for all inputs
 === Original TAC ===

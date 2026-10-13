@@ -134,7 +134,12 @@
   [ACCEPT]  ✓ Change accepted
 --- Iteration 20 ---
   [ANALYZE] No more opportunities found.
-  [INFO]    LLM not consulted: unavailable (Groq daily quota used up (429): Rate limit reached for model `qwen/qwen3.8-27b` in organization `org_01m4qvej6keqr80jzd0yda90dw` service tier `on_demand` on tokens per day (TPD): Limit 200000, Used 199999, Requested 818. Please try )
+  [ROUTE]   LLM optimizer (groq openai/gpt-oss-120b): the rules have nothing left to try
+  [LLM]     LLM produced no usable TAC: could not parse LLM TAC; reasoning: Eliminated temporary t6 by substituting its definition into the computation of x (algebraic simplification).
+  [REPAIR]  Feedback sent to the LLM: It is not valid TAC: TAC line 8: unrecognised instruction: 'x = (t4 + 1) * in_d'. Use only the instruction forms listed below; one instruction has at most one operator.
+  [LLM]     LLM repair: Replaced the sequence t6 = t4 + 1; x = t6 * in_d with equivalent two‑step computation using a single multiplication and an addition, eliminating the temporary t6.
+  [VERIFY]  FAIL (output mismatch on inputs {'in_d': 20, 'in_l': -54, 'in_m': 86, 'in_n': 48}: original printed [-20], candidate printed [-39])
+  [REJECT]  ✗ Change rejected: Verification failed: output mismatch on inputs {'in_d': 20, 'in_l': -54, 'in_m': 86, 'in_n': 48}: original printed [-20], candidate printed [-39]
 === RESULT ===
   Original cost: 99.5
   Final cost:    51.5
@@ -143,8 +148,10 @@
   Iterations:    20
   Accepted:      19
   Rejected:      0
-  Invalid:       0
-  Routing:       hybrid (LLM: groq qwen/qwen3.8-27b)
+  Invalid:       1
+  Routing:       hybrid (LLM: groq openai/gpt-oss-120b)
+  LLM proposals: 1 (0 passed verification)
+  LLM repairs:   1 (0 accepted)
   Output match:  PASS ✓
   Equivalence:   tested on the verifier's inputs
 === Original TAC ===

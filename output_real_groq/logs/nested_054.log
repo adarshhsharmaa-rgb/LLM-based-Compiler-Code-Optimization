@@ -36,17 +36,28 @@
   [ACCEPT]  ✓ Change accepted
 --- Iteration 6 ---
   [ANALYZE] No more opportunities found.
-  [INFO]    LLM not consulted: unavailable (Groq daily quota used up (429): Rate limit reached for model `qwen/qwen3.8-27b` in organization `org_01m4qvej6keqr80jzd0yda90dw` service tier `on_demand` on tokens per day (TPD): Limit 200000, Used 199999, Requested 818. Please try )
+  [ROUTE]   LLM optimizer (groq openai/gpt-oss-120b): the rules have nothing left to try
+  [LLM]     LLM produced no usable TAC: could not parse LLM TAC; reasoning: Replaced division and modulo by 2 with equivalent shift and bit‑and (strength reduction).
+  [REPAIR]  Feedback sent to the LLM: It is not valid TAC: TAC line 1: unrecognised instruction: 't1 = in_n >> 1'. Use only the instruction forms listed below; one instruction has at most one operator.
+  [LLM]     LLM repair: Eliminated the unused temporary t2 by propagating its expression directly into t5, removing dead code.
+  [VERIFY]  PASS (differential: 345/345 inputs matched, symbolic: equivalent)
+  [COST]    Before: 15.0, After: 14.5 (reduction: 3.3%); time 43.0 → 43.0 cycles
+  [ACCEPT]  ✓ Change accepted
+--- Iteration 7 ---
+  [ANALYZE] No more opportunities found.
+  [INFO]    LLM not consulted: call budget used up (1 per program)
 === RESULT ===
   Original cost: 28.5
-  Final cost:    15.0
-  Reduction:     47.4%
+  Final cost:    14.5
+  Reduction:     49.1%
   Exec. time:    48.0 → 43.0 cycles (10.4% less)
-  Iterations:    6
-  Accepted:      5
+  Iterations:    7
+  Accepted:      6
   Rejected:      0
   Invalid:       0
-  Routing:       hybrid (LLM: groq qwen/qwen3.8-27b)
+  Routing:       hybrid (LLM: groq openai/gpt-oss-120b)
+  LLM proposals: 1 (1 passed verification)
+  LLM repairs:   1 (1 accepted)
   Output match:  PASS ✓
   Equivalence:   proved for all inputs
 === Original TAC ===
@@ -62,7 +73,7 @@
   9 |     print t5
 === Optimized TAC ===
   0 |     t1 = in_n / 2
-  1 |     t2 = in_n + t1
-  2 |     t4 = in_n % 2
-  3 |     t5 = t2 + t4
+  1 |     t4 = in_n % 2
+  2 |     t5 = in_n + t1
+  3 |     t5 = t5 + t4
   4 |     print t5

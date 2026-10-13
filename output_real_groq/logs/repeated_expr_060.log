@@ -169,7 +169,13 @@
   [ACCEPT]  ✓ Change accepted
 --- Iteration 25 ---
   [ANALYZE] No more opportunities found.
-  [INFO]    LLM not consulted: unavailable (Groq daily quota used up (429): Rate limit reached for model `qwen/qwen3.8-27b` in organization `org_01m4qvej6keqr80jzd0yda90dw` service tier `on_demand` on tokens per day (TPD): Limit 200000, Used 199999, Requested 818. Please try )
+  [ROUTE]   LLM optimizer (groq openai/gpt-oss-120b): the rules have nothing left to try
+  [LLM]     LLM produced no usable TAC: could not parse LLM TAC; reasoning: Removed unreachable empty label L6 (dead code elimination).
+  [REPAIR]  Feedback sent to the LLM: It is not valid TAC: jump to undefined label 'L6'. Use only the instruction forms listed below; one instruction has at most one operator.
+  [LLM]     LLM repair: Eliminate the undefined label L6 by redirecting the loop‑exit jump to a new label L5_end (dead‑code elimination of the unreachable L6 label).
+  [VERIFY]  PASS (differential: 297/297 inputs matched, symbolic: skipped (control flow))
+  [COST]    Before: 108.5, After: 108.5 (reduction: 0.0%); time 1403.9 → 1403.9 cycles
+  [REJECT]  ✗ Change rejected: No cost improvement
 === RESULT ===
   Original cost: 179.5
   Final cost:    108.5
@@ -177,9 +183,11 @@
   Exec. time:    1629.6 → 1403.9 cycles (13.8% less)
   Iterations:    25
   Accepted:      24
-  Rejected:      0
+  Rejected:      1
   Invalid:       0
-  Routing:       hybrid (LLM: groq qwen/qwen3.8-27b)
+  Routing:       hybrid (LLM: groq openai/gpt-oss-120b)
+  LLM proposals: 1 (1 passed verification)
+  LLM repairs:   1 (0 accepted)
   Output match:  PASS ✓
   Equivalence:   tested on the verifier's inputs
 === Original TAC ===

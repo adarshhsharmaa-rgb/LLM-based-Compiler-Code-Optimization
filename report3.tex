@@ -51,6 +51,9 @@
 \usepackage{parskip}
 \setlength{\parindent}{0pt}
 \setlength{\parskip}{6pt}
+% long file and class names in typewriter type cannot be hyphenated: let lines stretch instead of overflowing
+\tolerance=2000
+\emergencystretch=3em
 
 % ---------- chapter/section formatting ----------
 \usepackage{titlesec}
@@ -144,7 +147,7 @@ Standard compilers apply a fixed chain of optimization passes, rarely confirming
 
 Every proposed change must pass a verification gate: differential testing on several hundred input sets, symbolic polynomial equivalence for straight-line code, and, for programs with branches but no loops, a proof by the Z3 SMT solver. A change is accepted only if it makes the program cheaper, where cost is either a static count or the measured execution time.
 
-On 500 generated programs in seven categories the rules alone achieved an 82.5\% average cost reduction, and 91.5\% with Gemini. On 500 real programs (accepted Codeforces submissions from 207 problems) the rules reduce the static cost by 52.3\% and the execution time by 25.2\%, and 253 of the optimized programs are proved equivalent to their originals for every input. Adding an LLM gave 53.6\% with Gemini, 52.9\% with Groq and 52.4\% with Ollama. An independent re-check found one wrong change that had passed every test; wide-range inputs now reject it, and the final results contain no incorrect change.
+On 500 generated programs in seven categories the rules alone achieved an 82.5\% average cost reduction, and 91.5\% with Gemini. On 500 real programs (accepted Codeforces submissions from 207 problems) the rules reduce the static cost by 52.3\% and the execution time by 25.2\%, and 253 of the optimized programs are proved equivalent to their originals for every input. Adding an LLM gave 53.6\% with Gemini, 53.2\% with Groq and 52.4\% with Ollama. An independent re-check found one wrong change that had passed every test; wide-range inputs now reject it, and the final results contain no incorrect change.
 
 \setstretch{1.5}
 \newpage
@@ -156,7 +159,12 @@ On 500 generated programs in seven categories the rules alone achieved an 82.5\%
 \vspace{0.5cm}
 
 \renewcommand{\contentsname}{}
+% keep the list on the same page as its heading (\tableofcontents would start a new page)
+\begingroup
+\let\clearpage\relax
+\vspace*{-2.5cm}
 \tableofcontents
+\endgroup
 \newpage
 
 % ============================================================
@@ -850,6 +858,7 @@ We ran the agent four times on the full 500-program dataset: once with the rule-
 \caption{Aggregate metrics across 500 programs}
 \label{tab:metrics}
 \small
+\setlength{\tabcolsep}{4pt}
 \begin{tabular}{|l|c|c|c|c|}
 \hline
 \textbf{Metric} & \textbf{Rule-only} & \textbf{Rule + Gemini} & \textbf{Rule + Groq} & \textbf{Rule + Ollama} \\
@@ -1021,7 +1030,7 @@ For 253 of the 500 real programs the optimized program is proved equivalent to t
 
 \subsubsection{LLM Proposers with Self-Repair}
 
-The LLM configurations were run on the real programs with self-repair switched on (Table~\ref{tab:realllms}). To stay inside the free daily quotas of the cloud providers, every fifth program is allowed two fresh LLM proposals and the others one; a rejected answer gets one repair in either case. Groq's free daily quota ended after 402 programs, and its remaining 98 programs were optimized by the rules alone, which is what the system does whenever an LLM becomes unavailable. Gemini uses \texttt{gemini-3.1-flash-lite} in the cloud. Groq uses its \texttt{gpt-oss} and \texttt{qwen} models in the cloud. Ollama runs \texttt{qwen2.5-coder:7b} on the laptop, mostly on its GPU.
+The LLM configurations were run on the real programs with self-repair switched on (Table~\ref{tab:realllms}). To stay inside the free daily quotas of the cloud providers, every fifth program is allowed two fresh LLM proposals and the others one; a rejected answer gets one repair in either case. Gemini uses \texttt{gemini-3.1-flash-lite} in the cloud. Groq uses its \texttt{gpt-oss} and \texttt{qwen} models in the cloud. Ollama runs \texttt{qwen2.5-coder:7b} on the laptop, mostly on its GPU.
 
 \begin{table}[H]
 \centering
@@ -1034,27 +1043,27 @@ The LLM configurations were run on the real programs with self-repair switched o
 \hline
 Programs & 500 & 500 & 500 \\
 \hline
-Programs the LLM was consulted on & 500 & 402 & 500 \\
+Programs the LLM was consulted on & 500 & 500 & 500 \\
 \hline
 Rules alone on these programs & 52.32\% & 52.32\% & 52.32\% \\
 \hline
-Rules + LLM & \textbf{53.60\%} & \textbf{52.86\%} & \textbf{52.42\%} \\
+Rules + LLM & \textbf{53.60\%} & \textbf{53.18\%} & \textbf{52.42\%} \\
 \hline
-Programs improved by the LLM & 113 & 81 & 9 \\
+Programs improved by the LLM & 113 & 127 & 9 \\
 \hline
-Average execution-time reduction & 26.50\% & 25.05\% & 25.38\% \\
+Average execution-time reduction & 26.50\% & 25.34\% & 25.38\% \\
 \hline
-LLM calls & 735 & 701 & 687 \\
+LLM calls & 735 & 855 & 687 \\
 \hline
-LLM proposals accepted & 196 & 154 & 24 \\
+LLM proposals accepted & 196 & 213 & 24 \\
 \hline
-LLM proposals with no cost gain & 84 & 60 & 19 \\
+LLM proposals with no cost gain & 84 & 74 & 19 \\
 \hline
-Wrong LLM proposals blocked & 171 & 153 & 161 \\
+Wrong LLM proposals blocked & 171 & 174 & 161 \\
 \hline
-LLM validity rate & 62.08\% & 58.31\% & 21.08\% \\
+LLM validity rate & 62.08\% & 62.26\% & 21.08\% \\
 \hline
-Self-repairs accepted / tried & 30 / 213 & 43 / 255 & 7 / 162 \\
+Self-repairs accepted / tried & 30 / 213 & 69 / 311 & 7 / 162 \\
 \hline
 False positives & \textbf{0} & \textbf{0} & \textbf{0} \\
 \hline
@@ -1063,11 +1072,69 @@ False positives & \textbf{0} & \textbf{0} & \textbf{0} \\
 
 On real programs an LLM adds much less than on the generated ones. A generated loop usually has constant bounds and can be replaced by its result; a real loop depends on the input, so it has to stay. Self-repair helps the cloud models, whose rejected answers are mostly invalid TAC (a whole expression written in one instruction): told so, they often answer again in valid form. It does not help the small local model, which repeats its mistake or returns the program unchanged.
 
+A verified LLM change is always correct and always cheaper at the moment it is accepted, but it is not always the best step: it can rewrite the code so that a rule which would have applied later no longer does. On the real programs this left 3 programs with Gemini and 2 programs with Groq slightly below the result of the rules alone (by 5 percentage points at most). The averages in Table~\ref{tab:realllms} include these programs.
+
 \begin{figure}[H]
 \centering
 \includegraphics[width=0.9\textwidth]{report_figures/real_comparison_gemini.png}
 \caption{Real programs: rule-only against rule + Gemini, per category}
 \label{fig:realcmp}
+\end{figure}
+
+\subsubsection{Analysis Charts for the Groq Run on Real Programs}
+
+The charts below are drawn from the Groq run on the 500 real programs.
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=0.85\textwidth]{report_figures/real_outcomes_groq.png}
+\caption{Real programs, Groq run: accept, reject, and invalid counts for each optimization type}
+\end{figure}
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=0.6\textwidth]{report_figures/real_accepted_groq.png}
+\caption{Real programs, Groq run: share of each optimization type among the accepted changes}
+\end{figure}
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=0.85\textwidth]{report_figures/real_heatmap_groq.png}
+\caption{Real programs, Groq run: accepted optimizations by program category and type}
+\end{figure}
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=0.85\textwidth]{report_figures/real_comparison_groq.png}
+\caption{Real programs, Groq run: rule-only against rule + LLM, per category}
+\end{figure}
+
+\subsubsection{Analysis Charts for the Ollama Run on Real Programs}
+
+The charts below are drawn from the Ollama run on the 500 real programs.
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=0.85\textwidth]{report_figures/real_outcomes_ollama.png}
+\caption{Real programs, Ollama run: accept, reject, and invalid counts for each optimization type}
+\end{figure}
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=0.6\textwidth]{report_figures/real_accepted_ollama.png}
+\caption{Real programs, Ollama run: share of each optimization type among the accepted changes}
+\end{figure}
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=0.85\textwidth]{report_figures/real_heatmap_ollama.png}
+\caption{Real programs, Ollama run: accepted optimizations by program category and type}
+\end{figure}
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=0.85\textwidth]{report_figures/real_comparison_ollama.png}
+\caption{Real programs, Ollama run: rule-only against rule + LLM, per category}
 \end{figure}
 
 \section{Output Screenshots}
@@ -1181,6 +1248,98 @@ Figures~\ref{fig:sankey} to \ref{fig:heatmap} are drawn from the Gemini run. Fig
 \includegraphics[width=0.9\textwidth]{report_figures/comparison_ollama.png}
 \caption{Rule-only against rule + the local Ollama model. The gains are small but come with no internet connection}
 \label{fig:cmp-ollama}
+\end{figure}
+
+\subsection{Analysis Charts for the Groq Run}
+
+Figures~\ref{fig:sankey-groq} to \ref{fig:heatmap-groq} repeat the six charts for the run with Groq. The picture is close to the Gemini run: the same optimization types dominate, and only 6 proposals fail verification.
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=\textwidth]{report_figures/sankey_groq.png}
+\caption{Groq run: flow of the 11,085 proposals. Only 6 LLM proposals were invalid, so the band of blocked proposals is barely visible}
+\label{fig:sankey-groq}
+\end{figure}
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=\textwidth]{report_figures/outcomes_by_type_groq.png}
+\caption{Groq run: accept, reject, and invalid counts for each optimization type}
+\label{fig:outcomes-groq}
+\end{figure}
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=\textwidth]{report_figures/cost_over_iterations_groq.png}
+\caption{Groq run: weighted cost at each iteration for five representative programs}
+\label{fig:trajectory-groq}
+\end{figure}
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=0.9\textwidth]{report_figures/accepted_types_groq.png}
+\caption{Groq run: breakdown of accepted optimizations by type}
+\label{fig:pie-groq}
+\end{figure}
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=\textwidth]{report_figures/steps_vs_improvement_groq.png}
+\caption{Groq run: agent steps versus percentage cost improvement}
+\label{fig:scatter-groq}
+\end{figure}
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=\textwidth]{report_figures/heatmap_groq.png}
+\caption{Groq run: accepted optimizations for each program category and optimization type}
+\label{fig:heatmap-groq}
+\end{figure}
+
+\subsection{Analysis Charts for the Ollama Run}
+
+Figures~\ref{fig:sankey-ollama} to \ref{fig:heatmap-ollama} show the same charts for the offline run with the local model. Here the band of invalid proposals is clearly visible: 113 of the local model's proposals were wrong, and every one was blocked by the verifier.
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=\textwidth]{report_figures/sankey_ollama.png}
+\caption{Ollama run: flow of the 10,805 proposals. The 113 invalid LLM proposals form a visible band that ends at the verifier}
+\label{fig:sankey-ollama}
+\end{figure}
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=\textwidth]{report_figures/outcomes_by_type_ollama.png}
+\caption{Ollama run: accept, reject, and invalid counts for each optimization type. The invalid bar belongs to the LLM proposals}
+\label{fig:outcomes-ollama}
+\end{figure}
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=\textwidth]{report_figures/cost_over_iterations_ollama.png}
+\caption{Ollama run: weighted cost at each iteration for five representative programs}
+\label{fig:trajectory-ollama}
+\end{figure}
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=0.9\textwidth]{report_figures/accepted_types_ollama.png}
+\caption{Ollama run: breakdown of accepted optimizations by type}
+\label{fig:pie-ollama}
+\end{figure}
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=\textwidth]{report_figures/steps_vs_improvement_ollama.png}
+\caption{Ollama run: agent steps versus percentage cost improvement}
+\label{fig:scatter-ollama}
+\end{figure}
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=\textwidth]{report_figures/heatmap_ollama.png}
+\caption{Ollama run: accepted optimizations for each program category and optimization type}
+\label{fig:heatmap-ollama}
 \end{figure}
 
 \section{Performance Analysis and Evaluation}

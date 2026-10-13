@@ -92,17 +92,28 @@
   [ACCEPT]  ✓ Change accepted
 --- Iteration 14 ---
   [ANALYZE] No more opportunities found.
-  [INFO]    LLM not consulted: unavailable (Groq daily quota used up (429): Rate limit reached for model `qwen/qwen3.8-27b` in organization `org_01m4qvej6keqr80jzd0yda90dw` service tier `on_demand` on tokens per day (TPD): Limit 200000, Used 199999, Requested 818. Please try )
+  [ROUTE]   LLM optimizer (groq openai/gpt-oss-120b): the rules have nothing left to try
+  [LLM]     LLM produced no usable TAC: could not parse LLM TAC; reasoning: Eliminated temporary t5 by copy‑propagating the expression t3 == 0 directly into the conditional.
+  [REPAIR]  Feedback sent to the LLM: It is not valid TAC: TAC line 7: malformed ifFalse: 'ifFalse t3 == 0 goto L2'. Use only the instruction forms listed below; one instruction has at most one operator.
+  [LLM]     LLM repair: Eliminate the unnecessary label L3 by redirecting the false branch of t7 directly to L2, preserving semantics.
+  [VERIFY]  PASS (differential: 351/351 inputs matched, symbolic: skipped (control flow))
+  [COST]    Before: 35.5, After: 34.5 (reduction: 2.8%); time 983.9 → 983.9 cycles
+  [ACCEPT]  ✓ Change accepted
+--- Iteration 15 ---
+  [ANALYZE] No more opportunities found.
+  [INFO]    LLM not consulted: call budget used up (1 per program)
 === RESULT ===
   Original cost: 71.5
-  Final cost:    35.5
-  Reduction:     50.3%
+  Final cost:    34.5
+  Reduction:     51.7%
   Exec. time:    1094.0 → 983.9 cycles (10.1% less)
-  Iterations:    14
-  Accepted:      13
+  Iterations:    15
+  Accepted:      14
   Rejected:      0
   Invalid:       0
-  Routing:       hybrid (LLM: groq qwen/qwen3.8-27b)
+  Routing:       hybrid (LLM: groq openai/gpt-oss-120b)
+  LLM proposals: 1 (1 passed verification)
+  LLM repairs:   1 (1 accepted)
   Output match:  PASS ✓
   Equivalence:   tested on the verifier's inputs
 === Original TAC ===
@@ -148,11 +159,10 @@
    7 |     ifFalse t5 goto L2
    8 |     t6 = in_x / i
    9 |     t7 = t6 <= in_n
-  10 |     ifFalse t7 goto L3
+  10 |     ifFalse t7 goto L2
   11 |     p = p + 1
-  12 | L3:
-  13 | L2:
-  14 |     i = i + 1
-  15 |     goto L0
-  16 | L1:
-  17 |     print p
+  12 | L2:
+  13 |     i = i + 1
+  14 |     goto L0
+  15 | L1:
+  16 |     print p

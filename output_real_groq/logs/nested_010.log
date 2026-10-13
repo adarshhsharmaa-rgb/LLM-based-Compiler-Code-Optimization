@@ -34,47 +34,39 @@
   [VERIFY]  PASS (differential: 349/349 inputs matched, symbolic: equivalent)
   [COST]    Before: 18.5, After: 18.5 (reduction: 0.0%); time 9.0 → 7.0 cycles
   [REJECT]  ✗ Change rejected: No cost improvement
+  [ROUTE]   LLM optimizer (groq openai/gpt-oss-120b): the rule-based proposal was turned down
+  [LLM]     LLM proposal: Replaced multiplication by 2 with a left shift (strength reduction) without changing semantics.
+  [VERIFY]  PASS (differential: 349/349 inputs matched, symbolic: equivalent)
+  [COST]    Before: 18.5, After: 16.5 (reduction: 10.8%); time 9.0 → 7.0 cycles
+  [ACCEPT]  ✓ Change accepted
 --- Iteration 6 ---
   [ANALYZE] Found 2 opportunities: COPY_PROPAGATIONx2 (priority=50)
   [ROUTE]   Rule-based optimizer: highest-priority opportunity is COPY_PROPAGATION (priority 50)
   [PROPOSE] Applying COPY_PROPAGATION at instruction 2: t4 = 1 → uses of t4 -> 1 at instr 3
-  [VERIFY]  PASS (differential: 349/349 inputs matched, symbolic: equivalent)
-  [COST]    Before: 18.5, After: 15.5 (reduction: 16.2%); time 9.0 → 8.0 cycles
+  [VERIFY]  PASS (differential: 348/348 inputs matched, symbolic: equivalent)
+  [COST]    Before: 16.5, After: 13.5 (reduction: 18.2%); time 7.0 → 6.0 cycles
   [ACCEPT]  ✓ Change accepted
 --- Iteration 7 ---
-  [ANALYZE] Found 2 opportunities: STRENGTH_REDUCTION (priority=60), COPY_PROPAGATION (priority=50)
-  [ROUTE]   Rule-based optimizer: highest-priority opportunity is STRENGTH_REDUCTION (priority 60)
-  [PROPOSE] Applying STRENGTH_REDUCTION at instruction 1: t3 = t1 * 2 → t3 = t1 + t1
-  [VERIFY]  PASS (differential: 349/349 inputs matched, symbolic: equivalent)
-  [COST]    Before: 15.5, After: 15.5 (reduction: 0.0%); time 8.0 → 6.0 cycles
-  [REJECT]  ✗ Change rejected: No cost improvement
---- Iteration 8 ---
   [ANALYZE] Found 1 opportunity: COPY_PROPAGATION (priority=50)
   [ROUTE]   Rule-based optimizer: highest-priority opportunity is COPY_PROPAGATION (priority 50)
   [PROPOSE] Applying COPY_PROPAGATION at instruction 4: t6 = 1000000 → uses of t6 -> 1000000 at instr 5
-  [VERIFY]  PASS (differential: 349/349 inputs matched, symbolic: equivalent)
-  [COST]    Before: 15.5, After: 12.5 (reduction: 19.4%); time 8.0 → 7.0 cycles
+  [VERIFY]  PASS (differential: 348/348 inputs matched, symbolic: equivalent)
+  [COST]    Before: 13.5, After: 10.5 (reduction: 22.2%); time 6.0 → 5.0 cycles
   [ACCEPT]  ✓ Change accepted
---- Iteration 9 ---
-  [ANALYZE] Found 1 opportunity: STRENGTH_REDUCTION (priority=60)
-  [ROUTE]   Rule-based optimizer: highest-priority opportunity is STRENGTH_REDUCTION (priority 60)
-  [PROPOSE] Applying STRENGTH_REDUCTION at instruction 1: t3 = t1 * 2 → t3 = t1 + t1
-  [VERIFY]  PASS (differential: 349/349 inputs matched, symbolic: equivalent)
-  [COST]    Before: 12.5, After: 12.5 (reduction: 0.0%); time 7.0 → 5.0 cycles
-  [REJECT]  ✗ Change rejected: No cost improvement
---- Iteration 10 ---
+--- Iteration 8 ---
   [ANALYZE] No more opportunities found.
-  [INFO]    LLM not consulted: unavailable (Groq daily quota used up (429): Rate limit reached for model `qwen/qwen3.8-27b` in organization `org_01m4qvej6keqr80jzd0yda90dw` service tier `on_demand` on tokens per day (TPD): Limit 200000, Used 199999, Requested 818. Please try )
+  [INFO]    LLM not consulted: call budget used up (1 per program)
 === RESULT ===
   Original cost: 29.5
-  Final cost:    12.5
-  Reduction:     57.6%
-  Exec. time:    13.0 → 7.0 cycles (46.2% less)
-  Iterations:    10
-  Accepted:      6
-  Rejected:      3
+  Final cost:    10.5
+  Reduction:     64.4%
+  Exec. time:    13.0 → 5.0 cycles (61.5% less)
+  Iterations:    8
+  Accepted:      7
+  Rejected:      1
   Invalid:       0
-  Routing:       hybrid (LLM: groq qwen/qwen3.8-27b)
+  Routing:       hybrid (LLM: groq openai/gpt-oss-120b)
+  LLM proposals: 1 (1 passed verification)
   Output match:  PASS ✓
   Equivalence:   proved for all inputs
 === Original TAC ===
@@ -91,7 +83,7 @@
   10 |     print t6
 === Optimized TAC ===
   0 |     t1 = in_a - 1
-  1 |     t3 = t1 * 2
+  1 |     t3 = t1 << 1
   2 |     t5 = t3 + 1
   3 |     print t5
   4 |     print 1000000

@@ -99,7 +99,12 @@
   [ACCEPT]  ✓ Change accepted
 --- Iteration 15 ---
   [ANALYZE] No more opportunities found.
-  [INFO]    LLM not consulted: unavailable (Groq daily quota used up (429): Rate limit reached for model `qwen/qwen3.8-27b` in organization `org_01m4qvej6keqr80jzd0yda90dw` service tier `on_demand` on tokens per day (TPD): Limit 200000, Used 199999, Requested 818. Please try )
+  [ROUTE]   LLM optimizer (groq openai/gpt-oss-120b): the rules have nothing left to try
+  [LLM]     LLM proposal: Replaced the recomputed expression `num + 1` after the loop with the already available value `t3` (common subexpression elimination).
+  [VERIFY]  FAIL (output mismatch on inputs {'in_in': 20}: original printed [5], candidate printed [3])
+  [REJECT]  ✗ Change rejected: Verification failed: output mismatch on inputs {'in_in': 20}: original printed [5], candidate printed [3]
+  [REPAIR]  Feedback sent to the LLM: It changes what the program does: output mismatch on inputs {'in_in': 20}: original printed [5], candidate printed [3].
+  [LLM]     LLM produced no usable TAC: could not parse LLM TAC; reasoning: Eliminate the temporary t13 by inlining its definition into t14 (copy propagation), preserving semantics.
 === RESULT ===
   Original cost: 81.5
   Final cost:    41.5
@@ -108,8 +113,10 @@
   Iterations:    15
   Accepted:      14
   Rejected:      0
-  Invalid:       0
-  Routing:       hybrid (LLM: groq qwen/qwen3.8-27b)
+  Invalid:       1
+  Routing:       hybrid (LLM: groq openai/gpt-oss-120b)
+  LLM proposals: 1 (0 passed verification)
+  LLM repairs:   1 (0 accepted)
   Output match:  PASS ✓
   Equivalence:   tested on the verifier's inputs
 === Original TAC ===

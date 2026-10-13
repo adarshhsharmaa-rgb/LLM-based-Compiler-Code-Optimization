@@ -253,7 +253,14 @@
   [ACCEPT]  ✓ Change accepted
 --- Iteration 37 ---
   [ANALYZE] No more opportunities found.
-  [INFO]    LLM not consulted: unavailable (Groq daily quota used up (429): Rate limit reached for model `qwen/qwen3.8-27b` in organization `org_01m4qvej6keqr80jzd0yda90dw` service tier `on_demand` on tokens per day (TPD): Limit 200000, Used 199999, Requested 818. Please try )
+  [ROUTE]   LLM optimizer (groq openai/gpt-oss-120b): the rules have nothing left to try
+  [LLM]     LLM proposal: Removed the dead unconditional jump to L5 and its empty label, which never affect program output.
+  [VERIFY]  FAIL (output mismatch on inputs {'in_a': 1, 'in_b': 1, 'in_m': 1, 'in_n': 1}: original printed [1000000], candidate printed [1000000, 1000000])
+  [REJECT]  ✗ Change rejected: Verification failed: output mismatch on inputs {'in_a': 1, 'in_b': 1, 'in_m': 1, 'in_n': 1}: original printed [1000000], candidate printed [1000000, 1000000]
+  [REPAIR]  Feedback sent to the LLM: It changes what the program does: output mismatch on inputs {'in_a': 1, 'in_b': 1, 'in_m': 1, 'in_n': 1}: original printed [1000000], candidate printed [1000000, 1000000].
+  [LLM]     LLM repair: Common subexpression elimination: reuse the previously computed `t17 = waj == 1` for later identical tests, removing redundant comparisons.
+  [VERIFY]  FAIL (output mismatch on inputs {'in_a': 1, 'in_b': 1, 'in_m': 1, 'in_n': 1}: original printed [1000000], candidate printed [1000000, 1000000])
+  [REJECT]  ✗ Change rejected: Verification failed: output mismatch on inputs {'in_a': 1, 'in_b': 1, 'in_m': 1, 'in_n': 1}: original printed [1000000], candidate printed [1000000, 1000000]
 === RESULT ===
   Original cost: 236.0
   Final cost:    134.0
@@ -262,8 +269,10 @@
   Iterations:    37
   Accepted:      36
   Rejected:      0
-  Invalid:       0
-  Routing:       hybrid (LLM: groq qwen/qwen3.8-27b)
+  Invalid:       2
+  Routing:       hybrid (LLM: groq openai/gpt-oss-120b)
+  LLM proposals: 2 (0 passed verification)
+  LLM repairs:   1 (0 accepted)
   Output match:  PASS ✓
   Equivalence:   proved for all inputs
 === Original TAC ===

@@ -55,6 +55,11 @@
   [VERIFY]  PASS (differential: 348/348 inputs matched, symbolic: skipped (control flow))
   [COST]    Before: 84.5, After: 84.5 (reduction: 0.0%); time 1130.2 → 1054.2 cycles
   [REJECT]  ✗ Change rejected: No cost improvement
+  [ROUTE]   LLM optimizer (groq openai/gpt-oss-120b): the rule-based proposal was turned down
+  [LLM]     LLM proposal: Replaced multiplications by the constant 2 with equivalent additions (strength reduction), preserving semantics.
+  [VERIFY]  PASS (differential: 348/348 inputs matched, symbolic: skipped (control flow))
+  [COST]    Before: 84.5, After: 84.5 (reduction: 0.0%); time 1130.2 → 886.4 cycles
+  [REJECT]  ✗ Change rejected: No cost improvement
 --- Iteration 9 ---
   [ANALYZE] Found 11 opportunities: COPY_PROPAGATIONx11 (priority=50)
   [ROUTE]   Rule-based optimizer: highest-priority opportunity is COPY_PROPAGATION (priority 50)
@@ -295,7 +300,7 @@
   [REJECT]  ✗ Change rejected: No cost improvement
 --- Iteration 43 ---
   [ANALYZE] No more opportunities found.
-  [INFO]    LLM not consulted: unavailable (Groq daily quota used up (429): Rate limit reached for model `qwen/qwen3.8-27b` in organization `org_01m4qvej6keqr80jzd0yda90dw` service tier `on_demand` on tokens per day (TPD): Limit 200000, Used 199999, Requested 818. Please try )
+  [INFO]    LLM not consulted: call budget used up (1 per program)
 === RESULT ===
   Original cost: 103.0
   Final cost:    44.5
@@ -303,9 +308,10 @@
   Exec. time:    1174.2 → 678.6 cycles (42.2% less)
   Iterations:    43
   Accepted:      22
-  Rejected:      20
+  Rejected:      21
   Invalid:       0
-  Routing:       hybrid (LLM: groq qwen/qwen3.8-27b)
+  Routing:       hybrid (LLM: groq openai/gpt-oss-120b)
+  LLM proposals: 1 (1 passed verification)
   Output match:  PASS ✓
   Equivalence:   tested on the verifier's inputs
 === Original TAC ===

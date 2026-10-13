@@ -85,17 +85,28 @@
   [ACCEPT]  ✓ Change accepted
 --- Iteration 13 ---
   [ANALYZE] No more opportunities found.
-  [INFO]    LLM not consulted: unavailable (Groq daily quota used up (429): Rate limit reached for model `qwen/qwen3.8-27b` in organization `org_01m4qvej6keqr80jzd0yda90dw` service tier `on_demand` on tokens per day (TPD): Limit 200000, Used 199999, Requested 818. Please try )
+  [ROUTE]   LLM optimizer (groq openai/gpt-oss-120b): the rules have nothing left to try
+  [LLM]     LLM produced no usable TAC: could not parse LLM TAC; reasoning: Replaced multiplication by constant 60 with equivalent shift‑add/subtract (strength reduction) to compute t1.
+  [REPAIR]  Feedback sent to the LLM: It is not valid TAC: TAC line 1: unrecognised instruction: 't1 = (in_a << 6) - (in_a << 2)'. Use only the instruction forms listed below; one instruction has at most one operator.
+  [LLM]     LLM repair: Eliminated the dead temporary t5 by using its value directly for t7, reducing one assignment.
+  [VERIFY]  PASS (differential: 409/409 inputs matched, symbolic: equivalent)
+  [COST]    Before: 23.5, After: 23.0 (reduction: 2.1%); time 68.0 → 68.0 cycles
+  [ACCEPT]  ✓ Change accepted
+--- Iteration 14 ---
+  [ANALYZE] No more opportunities found.
+  [INFO]    LLM not consulted: call budget used up (1 per program)
 === RESULT ===
   Original cost: 56.5
-  Final cost:    23.5
-  Reduction:     58.4%
+  Final cost:    23.0
+  Reduction:     59.3%
   Exec. time:    80.0 → 68.0 cycles (15.0% less)
-  Iterations:    13
-  Accepted:      12
+  Iterations:    14
+  Accepted:      13
   Rejected:      0
   Invalid:       0
-  Routing:       hybrid (LLM: groq qwen/qwen3.8-27b)
+  Routing:       hybrid (LLM: groq openai/gpt-oss-120b)
+  LLM proposals: 1 (1 passed verification)
+  LLM repairs:   1 (1 accepted)
   Output match:  PASS ✓
   Equivalence:   proved for all inputs
 === Original TAC ===
@@ -124,8 +135,8 @@
   0 |     t1 = in_a * 60
   1 |     t2 = in_b + t1
   2 |     b = t2 + in_c
-  3 |     t5 = b / 60
-  4 |     t7 = t5 % 24
+  3 |     t7 = b / 60
+  4 |     t7 = t7 % 24
   5 |     print t7
   6 |     print 1000000
   7 |     t10 = b % 60

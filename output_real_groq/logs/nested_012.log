@@ -29,17 +29,28 @@
   [ACCEPT]  ✓ Change accepted
 --- Iteration 5 ---
   [ANALYZE] No more opportunities found.
-  [INFO]    LLM not consulted: unavailable (Groq daily quota used up (429): Rate limit reached for model `qwen/qwen3.8-27b` in organization `org_01m4qvej6keqr80jzd0yda90dw` service tier `on_demand` on tokens per day (TPD): Limit 200000, Used 199999, Requested 818. Please try )
+  [ROUTE]   LLM optimizer (groq openai/gpt-oss-120b): the rules have nothing left to try
+  [LLM]     LLM produced no usable TAC: could not parse LLM TAC; reasoning: Algebraic simplification: substitute t1 and t3 into t4 to eliminate intermediate temporaries.
+  [REPAIR]  Feedback sent to the LLM: It is not valid TAC: TAC line 1: unrecognised instruction: 't4 = in_a + (in_a + 1) / 2'. Use only the instruction forms listed below; one instruction has at most one operator.
+  [LLM]     LLM repair: Eliminated the unnecessary temporary t1 by reusing t3 for the addition, reducing one instruction without changing semantics.
+  [VERIFY]  PASS (differential: 346/346 inputs matched, symbolic: equivalent)
+  [COST]    Before: 11.5, After: 11.0 (reduction: 4.3%); time 23.0 → 23.0 cycles
+  [ACCEPT]  ✓ Change accepted
+--- Iteration 6 ---
+  [ANALYZE] No more opportunities found.
+  [INFO]    LLM not consulted: call budget used up (1 per program)
 === RESULT ===
   Original cost: 22.5
-  Final cost:    11.5
-  Reduction:     48.9%
+  Final cost:    11.0
+  Reduction:     51.1%
   Exec. time:    27.0 → 23.0 cycles (14.8% less)
-  Iterations:    5
-  Accepted:      4
+  Iterations:    6
+  Accepted:      5
   Rejected:      0
   Invalid:       0
-  Routing:       hybrid (LLM: groq qwen/qwen3.8-27b)
+  Routing:       hybrid (LLM: groq openai/gpt-oss-120b)
+  LLM proposals: 1 (1 passed verification)
+  LLM repairs:   1 (1 accepted)
   Output match:  PASS ✓
   Equivalence:   proved for all inputs
 === Original TAC ===
@@ -52,7 +63,7 @@
   6 |     t4 = t3 + a
   7 |     print t4
 === Optimized TAC ===
-  0 |     t1 = in_a + 1
-  1 |     t3 = t1 / 2
+  0 |     t3 = in_a + 1
+  1 |     t3 = t3 / 2
   2 |     t4 = t3 + in_a
   3 |     print t4

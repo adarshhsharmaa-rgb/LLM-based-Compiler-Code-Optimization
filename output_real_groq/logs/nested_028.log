@@ -50,7 +50,12 @@
   [ACCEPT]  ✓ Change accepted
 --- Iteration 8 ---
   [ANALYZE] No more opportunities found.
-  [INFO]    LLM not consulted: unavailable (Groq daily quota used up (429): Rate limit reached for model `qwen/qwen3.8-27b` in organization `org_01m4qvej6keqr80jzd0yda90dw` service tier `on_demand` on tokens per day (TPD): Limit 200000, Used 199999, Requested 818. Please try )
+  [ROUTE]   LLM optimizer (groq openai/gpt-oss-120b): the rules have nothing left to try
+  [LLM]     LLM produced no usable TAC: could not parse LLM TAC; reasoning: Algebraic simplification: collapse the polynomial computation into (in_n³ + 5·in_n)/6.
+  [REPAIR]  Feedback sent to the LLM: It is not valid TAC: TAC line 1: unrecognised instruction: 't1 = in_n * in_n * in_n'. Use only the instruction forms listed below; one instruction has at most one operator.
+  [LLM]     LLM repair: Algebraic simplification: (n‑1)*n*(n+1) = n³‑n, so the expression becomes (n³+5n)/6, computed with fewer three‑address statements.
+  [VERIFY]  FAIL (print #1 is not symbolically equivalent)
+  [REJECT]  ✗ Change rejected: Verification failed: print #1 is not symbolically equivalent
 === RESULT ===
   Original cost: 41.0
   Final cost:    21.5
@@ -59,8 +64,10 @@
   Iterations:    8
   Accepted:      7
   Rejected:      0
-  Invalid:       0
-  Routing:       hybrid (LLM: groq qwen/qwen3.8-27b)
+  Invalid:       1
+  Routing:       hybrid (LLM: groq openai/gpt-oss-120b)
+  LLM proposals: 1 (0 passed verification)
+  LLM repairs:   1 (0 accepted)
   Output match:  PASS ✓
   Equivalence:   proved for all inputs
 === Original TAC ===

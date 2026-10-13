@@ -106,7 +106,14 @@
   [ACCEPT]  ✓ Change accepted
 --- Iteration 16 ---
   [ANALYZE] No more opportunities found.
-  [INFO]    LLM not consulted: unavailable (Groq daily quota used up (429): Rate limit reached for model `qwen/qwen3.8-27b` in organization `org_01m4qvej6keqr80jzd0yda90dw` service tier `on_demand` on tokens per day (TPD): Limit 200000, Used 199999, Requested 818. Please try )
+  [ROUTE]   LLM optimizer (groq openai/gpt-oss-120b): the rules have nothing left to try
+  [LLM]     LLM proposal: Replaced (t2+24) % 24 with t2 % 24 because adding a multiple of the modulus does not change the remainder.
+  [VERIFY]  FAIL (output mismatch on inputs {'in_h1': 76, 'in_h2': 92, 'in_m1': 86, 'in_m2': 19}: original printed [8, 1000000, 7], candidate printed [-16, 1000000, 7])
+  [REJECT]  ✗ Change rejected: Verification failed: output mismatch on inputs {'in_h1': 76, 'in_h2': 92, 'in_m1': 86, 'in_m2': 19}: original printed [8, 1000000, 7], candidate printed [-16, 1000000, 7]
+  [REPAIR]  Feedback sent to the LLM: It changes what the program does: output mismatch on inputs {'in_h1': 76, 'in_h2': 92, 'in_m1': 86, 'in_m2': 19}: original printed [8, 1000000, 7], candidate printed [-16, 1000000, 7].
+  [LLM]     LLM repair: Algebraic simplification: (x + 24) % 24 == x % 24, so replace t6 computation and eliminate dead t4.
+  [VERIFY]  FAIL (output mismatch on inputs {'in_h1': 76, 'in_h2': 92, 'in_m1': 86, 'in_m2': 19}: original printed [8, 1000000, 7], candidate printed [-16, 1000000, 7])
+  [REJECT]  ✗ Change rejected: Verification failed: output mismatch on inputs {'in_h1': 76, 'in_h2': 92, 'in_m1': 86, 'in_m2': 19}: original printed [8, 1000000, 7], candidate printed [-16, 1000000, 7]
 === RESULT ===
   Original cost: 69.0
   Final cost:    29.0
@@ -115,8 +122,10 @@
   Iterations:    16
   Accepted:      15
   Rejected:      0
-  Invalid:       0
-  Routing:       hybrid (LLM: groq qwen/qwen3.8-27b)
+  Invalid:       2
+  Routing:       hybrid (LLM: groq openai/gpt-oss-120b)
+  LLM proposals: 2 (0 passed verification)
+  LLM repairs:   1 (0 accepted)
   Output match:  PASS ✓
   Equivalence:   proved for all inputs
 === Original TAC ===

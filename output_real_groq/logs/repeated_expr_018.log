@@ -134,17 +134,25 @@
   [ACCEPT]  ✓ Change accepted
 --- Iteration 20 ---
   [ANALYZE] No more opportunities found.
-  [INFO]    LLM not consulted: unavailable (Groq daily quota used up (429): Rate limit reached for model `qwen/qwen3.8-27b` in organization `org_01m4qvej6keqr80jzd0yda90dw` service tier `on_demand` on tokens per day (TPD): Limit 200000, Used 199999, Requested 818. Please try )
+  [ROUTE]   LLM optimizer (groq openai/gpt-oss-120b): the rules have nothing left to try
+  [LLM]     LLM proposal: Eliminated repeated computation of n % 10 by reusing the earlier result t3, removing two identical modulo instructions.
+  [VERIFY]  PASS (differential: 384/384 inputs matched, symbolic: skipped (control flow))
+  [COST]    Before: 56.5, After: 49.5 (reduction: 12.4%); time 1733.3 → 1690.9 cycles
+  [ACCEPT]  ✓ Change accepted
+--- Iteration 21 ---
+  [ANALYZE] No more opportunities found.
+  [INFO]    LLM not consulted: call budget used up (1 per program)
 === RESULT ===
   Original cost: 107.5
-  Final cost:    56.5
-  Reduction:     47.4%
-  Exec. time:    2001.4 → 1733.3 cycles (13.4% less)
-  Iterations:    20
-  Accepted:      19
+  Final cost:    49.5
+  Reduction:     54.0%
+  Exec. time:    2001.4 → 1690.9 cycles (15.5% less)
+  Iterations:    21
+  Accepted:      20
   Rejected:      0
   Invalid:       0
-  Routing:       hybrid (LLM: groq qwen/qwen3.8-27b)
+  Routing:       hybrid (LLM: groq openai/gpt-oss-120b)
+  LLM proposals: 1 (1 passed verification)
   Output match:  PASS ✓
   Equivalence:   tested on the verifier's inputs
 === Original TAC ===
@@ -205,18 +213,16 @@
    9 |     n = n / 10
   10 |     goto L3
   11 | L2:
-  12 |     t11 = n % 10
-  13 |     t12 = t11 > k
-  14 |     ifFalse t12 goto L4
-  15 |     n = n - k
-  16 |     k = 0
-  17 |     goto L5
-  18 | L4:
-  19 |     t16 = n % 10
-  20 |     k = k - t16
-  21 |     n = n - t16
-  22 | L5:
-  23 | L3:
-  24 |     goto L0
-  25 | L1:
-  26 |     print n
+  12 |     t12 = t3 > k
+  13 |     ifFalse t12 goto L4
+  14 |     n = n - k
+  15 |     k = 0
+  16 |     goto L5
+  17 | L4:
+  18 |     k = k - t3
+  19 |     n = n - t3
+  20 | L5:
+  21 | L3:
+  22 |     goto L0
+  23 | L1:
+  24 |     print n

@@ -141,7 +141,10 @@
   [ACCEPT]  ✓ Change accepted
 --- Iteration 21 ---
   [ANALYZE] No more opportunities found.
-  [INFO]    LLM not consulted: unavailable (Groq daily quota used up (429): Rate limit reached for model `qwen/qwen3.8-27b` in organization `org_01m4qvej6keqr80jzd0yda90dw` service tier `on_demand` on tokens per day (TPD): Limit 200000, Used 199999, Requested 818. Please try )
+  [ROUTE]   LLM optimizer (groq openai/gpt-oss-120b): the rules have nothing left to try
+  [LLM]     LLM produced no usable TAC: could not parse LLM TAC; reasoning: Eliminated the temporary t7 by copy‑propagating its definition into t9, reducing one instruction while preserving semantics.
+  [REPAIR]  Feedback sent to the LLM: It is not valid TAC: TAC line 4: unrecognised instruction: 't9 = t1 / in_s + 1'. Use only the instruction forms listed below; one instruction has at most one operator.
+  [LLM]     LLM produced no usable TAC: could not parse LLM TAC; reasoning: Propagated the expressions (in_m‑1) and (in_n‑1) into their uses and removed the now‑dead temporaries t1 and t12.
 === RESULT ===
   Original cost: 97.5
   Final cost:    46.0
@@ -151,7 +154,8 @@
   Accepted:      20
   Rejected:      0
   Invalid:       0
-  Routing:       hybrid (LLM: groq qwen/qwen3.8-27b)
+  Routing:       hybrid (LLM: groq openai/gpt-oss-120b)
+  LLM repairs:   1 (0 accepted)
   Output match:  PASS ✓
   Equivalence:   proved for all inputs
 === Original TAC ===

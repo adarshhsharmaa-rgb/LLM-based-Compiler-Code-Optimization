@@ -64,17 +64,25 @@
   [ACCEPT]  ✓ Change accepted
 --- Iteration 10 ---
   [ANALYZE] No more opportunities found.
-  [INFO]    LLM not consulted: unavailable (Groq daily quota used up (429): Rate limit reached for model `qwen/qwen3.8-27b` in organization `org_01m4qvej6keqr80jzd0yda90dw` service tier `on_demand` on tokens per day (TPD): Limit 200000, Used 199999, Requested 818. Please try )
+  [ROUTE]   LLM optimizer (groq openai/gpt-oss-120b): the rules have nothing left to try
+  [LLM]     LLM proposal: Eliminated the repeated computation of in_n - in_k by hoisting it out of both loops and reusing the single result (common subexpression elimination).
+  [VERIFY]  PASS (differential: 342/342 inputs matched, symbolic: skipped (control flow))
+  [COST]    Before: 35.0, After: 31.5 (reduction: 10.0%); time 436.7 → 374.8 cycles
+  [ACCEPT]  ✓ Change accepted
+--- Iteration 11 ---
+  [ANALYZE] No more opportunities found.
+  [INFO]    LLM not consulted: call budget used up (1 per program)
 === RESULT ===
   Original cost: 60.0
-  Final cost:    35.0
-  Reduction:     41.7%
-  Exec. time:    563.6 → 436.7 cycles (22.5% less)
-  Iterations:    10
-  Accepted:      9
+  Final cost:    31.5
+  Reduction:     47.5%
+  Exec. time:    563.6 → 374.8 cycles (33.5% less)
+  Iterations:    11
+  Accepted:      10
   Rejected:      0
   Invalid:       0
-  Routing:       hybrid (LLM: groq qwen/qwen3.8-27b)
+  Routing:       hybrid (LLM: groq openai/gpt-oss-120b)
+  LLM proposals: 1 (1 passed verification)
   Output match:  PASS ✓
   Equivalence:   tested on the verifier's inputs
 === Original TAC ===
@@ -107,8 +115,8 @@
   26 | L3:
 === Optimized TAC ===
    0 |     i = in_n
-   1 | L0:
-   2 |     t0 = in_n - in_k
+   1 |     t0 = in_n - in_k
+   2 | L0:
    3 |     t1 = i > t0
    4 |     ifFalse t1 goto L1
    5 |     print i
@@ -117,10 +125,9 @@
    8 | L1:
    9 |     i = 1
   10 | L2:
-  11 |     t5 = in_n - in_k
-  12 |     t6 = i <= t5
-  13 |     ifFalse t6 goto L3
-  14 |     print i
-  15 |     i = i + 1
-  16 |     goto L2
-  17 | L3:
+  11 |     t6 = i <= t0
+  12 |     ifFalse t6 goto L3
+  13 |     print i
+  14 |     i = i + 1
+  15 |     goto L2
+  16 | L3:

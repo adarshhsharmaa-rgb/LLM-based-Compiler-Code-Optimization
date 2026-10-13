@@ -92,17 +92,25 @@
   [ACCEPT]  ✓ Change accepted
 --- Iteration 14 ---
   [ANALYZE] No more opportunities found.
-  [INFO]    LLM not consulted: unavailable (Groq daily quota used up (429): Rate limit reached for model `qwen/qwen3.8-27b` in organization `org_01m4qvej6keqr80jzd0yda90dw` service tier `on_demand` on tokens per day (TPD): Limit 200000, Used 199999, Requested 818. Please try )
+  [ROUTE]   LLM optimizer (groq openai/gpt-oss-120b): the rules have nothing left to try
+  [LLM]     LLM proposal: Eliminated the redundant computation of a % 2 by reusing t2 (common subexpression elimination).
+  [VERIFY]  PASS (differential: 465/465 inputs matched, SMT: proved equivalent for all inputs (8 paths))
+  [COST]    Before: 28.0, After: 24.5 (reduction: 12.5%); time 57.8 → 45.8 cycles
+  [ACCEPT]  ✓ Change accepted
+--- Iteration 15 ---
+  [ANALYZE] No more opportunities found.
+  [INFO]    LLM not consulted: call budget used up (1 per program)
 === RESULT ===
   Original cost: 64.5
-  Final cost:    28.0
-  Reduction:     56.6%
-  Exec. time:    67.8 → 57.8 cycles (14.8% less)
-  Iterations:    14
-  Accepted:      13
+  Final cost:    24.5
+  Reduction:     62.0%
+  Exec. time:    67.8 → 45.8 cycles (32.5% less)
+  Iterations:    15
+  Accepted:      14
   Rejected:      0
   Invalid:       0
-  Routing:       hybrid (LLM: groq qwen/qwen3.8-27b)
+  Routing:       hybrid (LLM: groq openai/gpt-oss-120b)
+  LLM proposals: 1 (1 passed verification)
   Output match:  PASS ✓
   Equivalence:   proved for all inputs
 === Original TAC ===
@@ -143,12 +151,11 @@
    4 |     print 1000000
    5 |     goto L1
    6 | L0:
-   7 |     t7 = a % 2
-   8 |     t9 = t7 == 0
-   9 |     ifFalse t9 goto L2
-  10 |     print 1000001
-  11 |     goto L3
-  12 | L2:
-  13 |     print 1000001
-  14 | L3:
-  15 | L1:
+   7 |     t9 = t2 == 0
+   8 |     ifFalse t9 goto L2
+   9 |     print 1000001
+  10 |     goto L3
+  11 | L2:
+  12 |     print 1000001
+  13 | L3:
+  14 | L1:

@@ -64,17 +64,25 @@
   [ACCEPT]  ✓ Change accepted
 --- Iteration 10 ---
   [ANALYZE] No more opportunities found.
-  [INFO]    LLM not consulted: unavailable (Groq daily quota used up (429): Rate limit reached for model `qwen/qwen3.8-27b` in organization `org_01m4qvej6keqr80jzd0yda90dw` service tier `on_demand` on tokens per day (TPD): Limit 200000, Used 199999, Requested 818. Please try )
+  [ROUTE]   LLM optimizer (groq openai/gpt-oss-120b): the rules have nothing left to try
+  [LLM]     LLM proposal: Reused temporaries to eliminate unnecessary intermediate variables (t1, t8, t12) by performing the addition directly into the variable later used for division.
+  [VERIFY]  PASS (differential: 350/350 inputs matched, symbolic: equivalent)
+  [COST]    Before: 33.5, After: 32.0 (reduction: 4.5%); time 87.0 → 87.0 cycles
+  [ACCEPT]  ✓ Change accepted
+--- Iteration 11 ---
+  [ANALYZE] No more opportunities found.
+  [INFO]    LLM not consulted: call budget used up (1 per program)
 === RESULT ===
   Original cost: 59.5
-  Final cost:    33.5
-  Reduction:     43.7%
+  Final cost:    32.0
+  Reduction:     46.2%
   Exec. time:    96.0 → 87.0 cycles (9.4% less)
-  Iterations:    10
-  Accepted:      9
+  Iterations:    11
+  Accepted:      10
   Rejected:      0
   Invalid:       0
-  Routing:       hybrid (LLM: groq qwen/qwen3.8-27b)
+  Routing:       hybrid (LLM: groq openai/gpt-oss-120b)
+  LLM proposals: 1 (1 passed verification)
   Output match:  PASS ✓
   Equivalence:   proved for all inputs
 === Original TAC ===
@@ -99,14 +107,14 @@
   18 |     t15 = t10 + t14
   19 |     print t15
 === Optimized TAC ===
-   0 |     t1 = in_n + 1
-   1 |     t3 = t1 / 7
+   0 |     t3 = in_n + 1
+   1 |     t3 = t3 / 7
    2 |     t5 = in_n / 7
    3 |     t6 = t3 + t5
    4 |     print t6
-   5 |     t8 = in_n + 6
-   6 |     t10 = t8 / 7
-   7 |     t12 = in_n + 5
-   8 |     t14 = t12 / 7
+   5 |     t10 = in_n + 6
+   6 |     t10 = t10 / 7
+   7 |     t14 = in_n + 5
+   8 |     t14 = t14 / 7
    9 |     t15 = t10 + t14
   10 |     print t15

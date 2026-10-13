@@ -190,17 +190,28 @@
   [ACCEPT]  ✓ Change accepted
 --- Iteration 28 ---
   [ANALYZE] No more opportunities found.
-  [INFO]    LLM not consulted: unavailable (Groq daily quota used up (429): Rate limit reached for model `qwen/qwen3.8-27b` in organization `org_01m4qvej6keqr80jzd0yda90dw` service tier `on_demand` on tokens per day (TPD): Limit 200000, Used 199999, Requested 818. Please try )
+  [ROUTE]   LLM optimizer (groq openai/gpt-oss-120b): the rules have nothing left to try
+  [LLM]     LLM produced no usable TAC: could not parse LLM TAC; reasoning: Eliminated the dead temporary t2 by substituting its expression directly into t3, removing an unnecessary assignment.
+  [REPAIR]  Feedback sent to the LLM: It is not valid TAC: TAC line 2: unrecognised instruction: 't3 = t1 + in_m + in_a'. Use only the instruction forms listed below; one instruction has at most one operator.
+  [LLM]     LLM repair: Eliminated dead temporary t2 by reusing t3 for the intermediate sum, preserving program semantics.
+  [VERIFY]  PASS (differential: 409/409 inputs matched, symbolic: equivalent)
+  [COST]    Before: 24.0, After: 23.5 (reduction: 2.1%); time 68.0 → 68.0 cycles
+  [ACCEPT]  ✓ Change accepted
+--- Iteration 29 ---
+  [ANALYZE] No more opportunities found.
+  [INFO]    LLM not consulted: call budget used up (1 per program)
 === RESULT ===
   Original cost: 87.0
-  Final cost:    24.0
-  Reduction:     72.4%
+  Final cost:    23.5
+  Reduction:     73.0%
   Exec. time:    114.0 → 68.0 cycles (40.4% less)
-  Iterations:    28
-  Accepted:      27
+  Iterations:    29
+  Accepted:      28
   Rejected:      0
   Invalid:       0
-  Routing:       hybrid (LLM: groq qwen/qwen3.8-27b)
+  Routing:       hybrid (LLM: groq openai/gpt-oss-120b)
+  LLM proposals: 1 (1 passed verification)
+  LLM repairs:   1 (1 accepted)
   Output match:  PASS ✓
   Equivalence:   proved for all inputs
 === Original TAC ===
@@ -236,8 +247,8 @@
   29 |     print t20
 === Optimized TAC ===
   0 |     t1 = in_h * 60
-  1 |     t2 = t1 + in_m
-  2 |     t3 = t2 + in_a
+  1 |     t3 = t1 + in_m
+  2 |     t3 = t3 + in_a
   3 |     t7 = t3 % 1440
   4 |     t9 = t7 / 60
   5 |     print t9

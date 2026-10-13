@@ -281,7 +281,7 @@ def build() -> str:
     replace_everywhere(deck, "336", str(TOTAL_TESTS))
     replace_everywhere(deck, "loop controller (up to 50 iterations)", "loop controller (up to 50 iterations, 200 for real programs)")
     replace_everywhere(deck, "decision logger, final checker", "decision logger, final checker with revert, resume cache")
-    tail = {"Project Status", "Conclusion"}
+    tail = {"Project Status", "Conclusion", "Review 1 Comments"}
     references = deck.order[-1]
     deck.order = [s for s in deck.order[:-1] if title_of(s) not in tail]
 

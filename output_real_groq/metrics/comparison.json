@@ -3,11 +3,11 @@
   "overall": {
     "programs": 500,
     "baseline_avg_reduction_pct": 52.32,
-    "current_avg_reduction_pct": 52.86,
+    "current_avg_reduction_pct": 53.18,
     "baseline_avg_final_cost": 46.22,
-    "current_avg_final_cost": 45.71,
-    "programs_improved": 81,
-    "programs_worse": 1
+    "current_avg_final_cost": 45.46,
+    "programs_improved": 127,
+    "programs_worse": 2
   },
   "per_category": {
     "arithmetic": {
@@ -22,19 +22,19 @@
     "nested": {
       "programs": 60,
       "baseline_avg_reduction_pct": 51.62,
-      "current_avg_reduction_pct": 51.93,
+      "current_avg_reduction_pct": 53.41,
       "baseline_avg_final_cost": 27.77,
-      "current_avg_final_cost": 27.68,
-      "programs_improved": 3,
-      "programs_worse": 0
+      "current_avg_final_cost": 27.14,
+      "programs_improved": 29,
+      "programs_worse": 1
     },
     "repeated_expr": {
       "programs": 60,
       "baseline_avg_reduction_pct": 47.08,
-      "current_avg_reduction_pct": 47.88,
+      "current_avg_reduction_pct": 48.95,
       "baseline_avg_final_cost": 83.67,
-      "current_avg_final_cost": 82.82,
-      "programs_improved": 8,
+      "current_avg_final_cost": 81.42,
+      "programs_improved": 23,
       "programs_worse": 0
     },
     "dead_code": {
@@ -67,10 +67,10 @@
     "mixed": {
       "programs": 100,
       "baseline_avg_reduction_pct": 48.75,
-      "current_avg_reduction_pct": 49.17,
+      "current_avg_reduction_pct": 49.24,
       "baseline_avg_final_cost": 55.63,
-      "current_avg_final_cost": 55.27,
-      "programs_improved": 20,
+      "current_avg_final_cost": 55.2,
+      "programs_improved": 25,
       "programs_worse": 0
     }
   }

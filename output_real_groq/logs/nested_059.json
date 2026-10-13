@@ -674,51 +674,37 @@
       "source": "rule"
     },
     {
-      "iteration": 9,
-      "phase": "analyze",
-      "opportunity_type": null,
-      "description": "Found 7 opportunities: COPY_PROPAGATIONx7 (priority=50)",
-      "tac_before": null,
-      "tac_after": null,
-      "verification_result": null,
-      "cost_before": null,
-      "cost_after": null,
-      "decision": null,
-      "reason": null,
-      "source": "rule"
-    },
-    {
-      "iteration": 9,
+      "iteration": 8,
       "phase": "route",
       "opportunity_type": null,
-      "description": "Rule-based optimizer: highest-priority opportunity is COPY_PROPAGATION (priority 50)",
+      "description": "LLM optimizer (groq openai/gpt-oss-120b): the rule-based proposal was turned down",
       "tac_before": null,
       "tac_after": null,
       "verification_result": null,
       "cost_before": null,
       "cost_after": null,
       "decision": null,
-      "reason": "highest-priority opportunity is COPY_PROPAGATION (priority 50)",
-      "source": "rule"
+      "reason": "the rule-based proposal was turned down",
+      "source": "llm"
     },
     {
-      "iteration": 9,
+      "iteration": 8,
       "phase": "propose",
-      "opportunity_type": "COPY_PROPAGATION",
-      "description": "Applying COPY_PROPAGATION at instruction 1: t2 = 2 \u2192 uses of t2 -> 2 at instr 2",
+      "opportunity_type": "LLM",
+      "description": "LLM proposal: Copy propagation: replace the use of a1 with its source t5 and eliminate the now\u2011dead assignment a1 = t5.",
       "tac_before": "t1 = in_n + in_m\nt2 = 2\nt3 = t1 - t2\nt4 = 2 * t3\nt5 = t4 * in_k\na1 = t5\nt6 = 1\nt7 = in_k - t6\nt8 = in_k * t7\nt9 = 8\nt10 = t8 * t9\na2 = t10\nt11 = a1 - a2\nprint t11",
-      "tac_after": "t1 = in_n + in_m\nt3 = t1 - 2\nt4 = 2 * t3\nt5 = t4 * in_k\na1 = t5\nt6 = 1\nt7 = in_k - t6\nt8 = in_k * t7\nt9 = 8\nt10 = t8 * t9\na2 = t10\nt11 = a1 - a2\nprint t11",
+      "tac_after": "t1 = in_n + in_m\nt2 = 2\nt3 = t1 - t2\nt4 = 2 * t3\nt5 = t4 * in_k\nt6 = 1\nt7 = in_k - t6\nt8 = in_k * t7\nt9 = 8\nt10 = t8 * t9\na2 = t10\nt11 = t5 - a2\nprint t11",
       "verification_result": null,
       "cost_before": null,
       "cost_after": null,
       "decision": null,
       "reason": null,
-      "source": "rule"
+      "source": "llm"
     },
     {
-      "iteration": 9,
+      "iteration": 8,
       "phase": "verify",
-      "opportunity_type": "COPY_PROPAGATION",
+      "opportunity_type": "LLM",
       "description": "PASS (differential: 311/311 inputs matched, symbolic: equivalent)",
       "tac_before": null,
       "tac_after": null,
@@ -727,26 +713,26 @@
       "cost_after": null,
       "decision": null,
       "reason": "differential: 311/311 inputs matched, symbolic: equivalent",
-      "source": "rule"
+      "source": "llm"
     },
     {
-      "iteration": 9,
+      "iteration": 8,
       "phase": "evaluate",
-      "opportunity_type": "COPY_PROPAGATION",
-      "description": "Before: 43.0, After: 40.0 (reduction: 7.0%); time 22.0 \u2192 21.0 cycles",
+      "opportunity_type": "LLM",
+      "description": "Before: 43.0, After: 40.5 (reduction: 5.8%); time 22.0 \u2192 21.0 cycles",
       "tac_before": null,
       "tac_after": null,
       "verification_result": null,
       "cost_before": 43.0,
-      "cost_after": 40.0,
+      "cost_after": 40.5,
       "decision": null,
       "reason": null,
-      "source": "rule"
+      "source": "llm"
     },
     {
-      "iteration": 9,
+      "iteration": 8,
       "phase": "accept",
-      "opportunity_type": "COPY_PROPAGATION",
+      "opportunity_type": "LLM",
       "description": "\u2713 Change accepted",
       "tac_before": null,
       "tac_after": null,
@@ -754,14 +740,14 @@
       "cost_before": null,
       "cost_after": null,
       "decision": "ACCEPT",
-      "reason": "Cost reduced: 43.0 \u2192 40.0",
-      "source": "rule"
+      "reason": "Cost reduced: 43.0 \u2192 40.5",
+      "source": "llm"
     },
     {
-      "iteration": 10,
+      "iteration": 9,
       "phase": "analyze",
       "opportunity_type": null,
-      "description": "Found 7 opportunities: STRENGTH_REDUCTION (priority=60), COPY_PROPAGATIONx6 (priority=50)",
+      "description": "Found 6 opportunities: STRENGTH_REDUCTION (priority=60), COPY_PROPAGATIONx5 (priority=50)",
       "tac_before": null,
       "tac_after": null,
       "verification_result": null,
@@ -772,7 +758,7 @@
       "source": "rule"
     },
     {
-      "iteration": 10,
+      "iteration": 9,
       "phase": "route",
       "opportunity_type": null,
       "description": "Rule-based optimizer: highest-priority opportunity is STRENGTH_REDUCTION (priority 60)",
@@ -786,12 +772,12 @@
       "source": "rule"
     },
     {
-      "iteration": 10,
+      "iteration": 9,
       "phase": "propose",
       "opportunity_type": "STRENGTH_REDUCTION",
-      "description": "Applying STRENGTH_REDUCTION at instruction 2: t4 = 2 * t3 \u2192 t4 = t3 + t3",
-      "tac_before": "t1 = in_n + in_m\nt3 = t1 - 2\nt4 = 2 * t3\nt5 = t4 * in_k\na1 = t5\nt6 = 1\nt7 = in_k - t6\nt8 = in_k * t7\nt9 = 8\nt10 = t8 * t9\na2 = t10\nt11 = a1 - a2\nprint t11",
-      "tac_after": "t1 = in_n + in_m\nt3 = t1 - 2\nt4 = t3 + t3\nt5 = t4 * in_k\na1 = t5\nt6 = 1\nt7 = in_k - t6\nt8 = in_k * t7\nt9 = 8\nt10 = t8 * t9\na2 = t10\nt11 = a1 - a2\nprint t11",
+      "description": "Applying STRENGTH_REDUCTION at instruction 3: t4 = 2 * t3 \u2192 t4 = t3 + t3",
+      "tac_before": "t1 = in_n + in_m\nt2 = 2\nt3 = t1 - t2\nt4 = 2 * t3\nt5 = t4 * in_k\nt6 = 1\nt7 = in_k - t6\nt8 = in_k * t7\nt9 = 8\nt10 = t8 * t9\na2 = t10\nt11 = t5 - a2\nprint t11",
+      "tac_after": "t1 = in_n + in_m\nt2 = 2\nt3 = t1 - t2\nt4 = t3 + t3\nt5 = t4 * in_k\nt6 = 1\nt7 = in_k - t6\nt8 = in_k * t7\nt9 = 8\nt10 = t8 * t9\na2 = t10\nt11 = t5 - a2\nprint t11",
       "verification_result": null,
       "cost_before": null,
       "cost_after": null,
@@ -800,7 +786,7 @@
       "source": "rule"
     },
     {
-      "iteration": 10,
+      "iteration": 9,
       "phase": "verify",
       "opportunity_type": "STRENGTH_REDUCTION",
       "description": "PASS (differential: 311/311 inputs matched, symbolic: equivalent)",
@@ -814,21 +800,21 @@
       "source": "rule"
     },
     {
-      "iteration": 10,
+      "iteration": 9,
       "phase": "evaluate",
       "opportunity_type": "STRENGTH_REDUCTION",
-      "description": "Before: 40.0, After: 40.0 (reduction: 0.0%); time 21.0 \u2192 19.0 cycles",
+      "description": "Before: 40.5, After: 40.5 (reduction: 0.0%); time 21.0 \u2192 19.0 cycles",
       "tac_before": null,
       "tac_after": null,
       "verification_result": null,
-      "cost_before": 40.0,
-      "cost_after": 40.0,
+      "cost_before": 40.5,
+      "cost_after": 40.5,
       "decision": null,
       "reason": null,
       "source": "rule"
     },
     {
-      "iteration": 10,
+      "iteration": 9,
       "phase": "reject",
       "opportunity_type": "STRENGTH_REDUCTION",
       "description": "\u2717 Change rejected: No cost improvement",
@@ -842,10 +828,10 @@
       "source": "rule"
     },
     {
-      "iteration": 11,
+      "iteration": 10,
       "phase": "analyze",
       "opportunity_type": null,
-      "description": "Found 6 opportunities: COPY_PROPAGATIONx6 (priority=50)",
+      "description": "Found 5 opportunities: COPY_PROPAGATIONx5 (priority=50)",
       "tac_before": null,
       "tac_after": null,
       "verification_result": null,
@@ -856,7 +842,7 @@
       "source": "rule"
     },
     {
-      "iteration": 11,
+      "iteration": 10,
       "phase": "route",
       "opportunity_type": null,
       "description": "Rule-based optimizer: highest-priority opportunity is COPY_PROPAGATION (priority 50)",
@@ -870,12 +856,12 @@
       "source": "rule"
     },
     {
-      "iteration": 11,
+      "iteration": 10,
       "phase": "propose",
       "opportunity_type": "COPY_PROPAGATION",
-      "description": "Applying COPY_PROPAGATION at instruction 4: t5 = t4 * in_k; a1 = t5 \u2192 a1 = t4 * in_k",
-      "tac_before": "t1 = in_n + in_m\nt3 = t1 - 2\nt4 = 2 * t3\nt5 = t4 * in_k\na1 = t5\nt6 = 1\nt7 = in_k - t6\nt8 = in_k * t7\nt9 = 8\nt10 = t8 * t9\na2 = t10\nt11 = a1 - a2\nprint t11",
-      "tac_after": "t1 = in_n + in_m\nt3 = t1 - 2\nt4 = 2 * t3\na1 = t4 * in_k\nt6 = 1\nt7 = in_k - t6\nt8 = in_k * t7\nt9 = 8\nt10 = t8 * t9\na2 = t10\nt11 = a1 - a2\nprint t11",
+      "description": "Applying COPY_PROPAGATION at instruction 1: t2 = 2 \u2192 uses of t2 -> 2 at instr 2",
+      "tac_before": "t1 = in_n + in_m\nt2 = 2\nt3 = t1 - t2\nt4 = 2 * t3\nt5 = t4 * in_k\nt6 = 1\nt7 = in_k - t6\nt8 = in_k * t7\nt9 = 8\nt10 = t8 * t9\na2 = t10\nt11 = t5 - a2\nprint t11",
+      "tac_after": "t1 = in_n + in_m\nt3 = t1 - 2\nt4 = 2 * t3\nt5 = t4 * in_k\nt6 = 1\nt7 = in_k - t6\nt8 = in_k * t7\nt9 = 8\nt10 = t8 * t9\na2 = t10\nt11 = t5 - a2\nprint t11",
       "verification_result": null,
       "cost_before": null,
       "cost_after": null,
@@ -884,7 +870,7 @@
       "source": "rule"
     },
     {
-      "iteration": 11,
+      "iteration": 10,
       "phase": "verify",
       "opportunity_type": "COPY_PROPAGATION",
       "description": "PASS (differential: 311/311 inputs matched, symbolic: equivalent)",
@@ -898,21 +884,21 @@
       "source": "rule"
     },
     {
-      "iteration": 11,
+      "iteration": 10,
       "phase": "evaluate",
       "opportunity_type": "COPY_PROPAGATION",
-      "description": "Before: 40.0, After: 37.0 (reduction: 7.5%); time 21.0 \u2192 20.0 cycles",
+      "description": "Before: 40.5, After: 37.5 (reduction: 7.4%); time 21.0 \u2192 20.0 cycles",
       "tac_before": null,
       "tac_after": null,
       "verification_result": null,
-      "cost_before": 40.0,
-      "cost_after": 37.0,
+      "cost_before": 40.5,
+      "cost_after": 37.5,
       "decision": null,
       "reason": null,
       "source": "rule"
     },
     {
-      "iteration": 11,
+      "iteration": 10,
       "phase": "accept",
       "opportunity_type": "COPY_PROPAGATION",
       "description": "\u2713 Change accepted",
@@ -922,11 +908,11 @@
       "cost_before": null,
       "cost_after": null,
       "decision": "ACCEPT",
-      "reason": "Cost reduced: 40.0 \u2192 37.0",
+      "reason": "Cost reduced: 40.5 \u2192 37.5",
       "source": "rule"
     },
     {
-      "iteration": 12,
+      "iteration": 11,
       "phase": "analyze",
       "opportunity_type": null,
       "description": "Found 5 opportunities: STRENGTH_REDUCTION (priority=60), COPY_PROPAGATIONx4 (priority=50)",
@@ -940,7 +926,7 @@
       "source": "rule"
     },
     {
-      "iteration": 12,
+      "iteration": 11,
       "phase": "route",
       "opportunity_type": null,
       "description": "Rule-based optimizer: highest-priority opportunity is STRENGTH_REDUCTION (priority 60)",
@@ -954,12 +940,12 @@
       "source": "rule"
     },
     {
-      "iteration": 12,
+      "iteration": 11,
       "phase": "propose",
       "opportunity_type": "STRENGTH_REDUCTION",
       "description": "Applying STRENGTH_REDUCTION at instruction 2: t4 = 2 * t3 \u2192 t4 = t3 + t3",
-      "tac_before": "t1 = in_n + in_m\nt3 = t1 - 2\nt4 = 2 * t3\na1 = t4 * in_k\nt6 = 1\nt7 = in_k - t6\nt8 = in_k * t7\nt9 = 8\nt10 = t8 * t9\na2 = t10\nt11 = a1 - a2\nprint t11",
-      "tac_after": "t1 = in_n + in_m\nt3 = t1 - 2\nt4 = t3 + t3\na1 = t4 * in_k\nt6 = 1\nt7 = in_k - t6\nt8 = in_k * t7\nt9 = 8\nt10 = t8 * t9\na2 = t10\nt11 = a1 - a2\nprint t11",
+      "tac_before": "t1 = in_n + in_m\nt3 = t1 - 2\nt4 = 2 * t3\nt5 = t4 * in_k\nt6 = 1\nt7 = in_k - t6\nt8 = in_k * t7\nt9 = 8\nt10 = t8 * t9\na2 = t10\nt11 = t5 - a2\nprint t11",
+      "tac_after": "t1 = in_n + in_m\nt3 = t1 - 2\nt4 = t3 + t3\nt5 = t4 * in_k\nt6 = 1\nt7 = in_k - t6\nt8 = in_k * t7\nt9 = 8\nt10 = t8 * t9\na2 = t10\nt11 = t5 - a2\nprint t11",
       "verification_result": null,
       "cost_before": null,
       "cost_after": null,
@@ -968,7 +954,7 @@
       "source": "rule"
     },
     {
-      "iteration": 12,
+      "iteration": 11,
       "phase": "verify",
       "opportunity_type": "STRENGTH_REDUCTION",
       "description": "PASS (differential: 311/311 inputs matched, symbolic: equivalent)",
@@ -982,21 +968,21 @@
       "source": "rule"
     },
     {
-      "iteration": 12,
+      "iteration": 11,
       "phase": "evaluate",
       "opportunity_type": "STRENGTH_REDUCTION",
-      "description": "Before: 37.0, After: 37.0 (reduction: 0.0%); time 20.0 \u2192 18.0 cycles",
+      "description": "Before: 37.5, After: 37.5 (reduction: 0.0%); time 20.0 \u2192 18.0 cycles",
       "tac_before": null,
       "tac_after": null,
       "verification_result": null,
-      "cost_before": 37.0,
-      "cost_after": 37.0,
+      "cost_before": 37.5,
+      "cost_after": 37.5,
       "decision": null,
       "reason": null,
       "source": "rule"
     },
     {
-      "iteration": 12,
+      "iteration": 11,
       "phase": "reject",
       "opportunity_type": "STRENGTH_REDUCTION",
       "description": "\u2717 Change rejected: No cost improvement",
@@ -1010,7 +996,7 @@
       "source": "rule"
     },
     {
-      "iteration": 13,
+      "iteration": 12,
       "phase": "analyze",
       "opportunity_type": null,
       "description": "Found 4 opportunities: COPY_PROPAGATIONx4 (priority=50)",
@@ -1024,7 +1010,7 @@
       "source": "rule"
     },
     {
-      "iteration": 13,
+      "iteration": 12,
       "phase": "route",
       "opportunity_type": null,
       "description": "Rule-based optimizer: highest-priority opportunity is COPY_PROPAGATION (priority 50)",
@@ -1038,12 +1024,12 @@
       "source": "rule"
     },
     {
-      "iteration": 13,
+      "iteration": 12,
       "phase": "propose",
       "opportunity_type": "COPY_PROPAGATION",
       "description": "Applying COPY_PROPAGATION at instruction 4: t6 = 1 \u2192 uses of t6 -> 1 at instr 5",
-      "tac_before": "t1 = in_n + in_m\nt3 = t1 - 2\nt4 = 2 * t3\na1 = t4 * in_k\nt6 = 1\nt7 = in_k - t6\nt8 = in_k * t7\nt9 = 8\nt10 = t8 * t9\na2 = t10\nt11 = a1 - a2\nprint t11",
-      "tac_after": "t1 = in_n + in_m\nt3 = t1 - 2\nt4 = 2 * t3\na1 = t4 * in_k\nt7 = in_k - 1\nt8 = in_k * t7\nt9 = 8\nt10 = t8 * t9\na2 = t10\nt11 = a1 - a2\nprint t11",
+      "tac_before": "t1 = in_n + in_m\nt3 = t1 - 2\nt4 = 2 * t3\nt5 = t4 * in_k\nt6 = 1\nt7 = in_k - t6\nt8 = in_k * t7\nt9 = 8\nt10 = t8 * t9\na2 = t10\nt11 = t5 - a2\nprint t11",
+      "tac_after": "t1 = in_n + in_m\nt3 = t1 - 2\nt4 = 2 * t3\nt5 = t4 * in_k\nt7 = in_k - 1\nt8 = in_k * t7\nt9 = 8\nt10 = t8 * t9\na2 = t10\nt11 = t5 - a2\nprint t11",
       "verification_result": null,
       "cost_before": null,
       "cost_after": null,
@@ -1052,7 +1038,7 @@
       "source": "rule"
     },
     {
-      "iteration": 13,
+      "iteration": 12,
       "phase": "verify",
       "opportunity_type": "COPY_PROPAGATION",
       "description": "PASS (differential: 311/311 inputs matched, symbolic: equivalent)",
@@ -1066,21 +1052,21 @@
       "source": "rule"
     },
     {
-      "iteration": 13,
+      "iteration": 12,
       "phase": "evaluate",
       "opportunity_type": "COPY_PROPAGATION",
-      "description": "Before: 37.0, After: 34.0 (reduction: 8.1%); time 20.0 \u2192 19.0 cycles",
+      "description": "Before: 37.5, After: 34.5 (reduction: 8.0%); time 20.0 \u2192 19.0 cycles",
       "tac_before": null,
       "tac_after": null,
       "verification_result": null,
-      "cost_before": 37.0,
-      "cost_after": 34.0,
+      "cost_before": 37.5,
+      "cost_after": 34.5,
       "decision": null,
       "reason": null,
       "source": "rule"
     },
     {
-      "iteration": 13,
+      "iteration": 12,
       "phase": "accept",
       "opportunity_type": "COPY_PROPAGATION",
       "description": "\u2713 Change accepted",
@@ -1090,11 +1076,11 @@
       "cost_before": null,
       "cost_after": null,
       "decision": "ACCEPT",
-      "reason": "Cost reduced: 37.0 \u2192 34.0",
+      "reason": "Cost reduced: 37.5 \u2192 34.5",
       "source": "rule"
     },
     {
-      "iteration": 14,
+      "iteration": 13,
       "phase": "analyze",
       "opportunity_type": null,
       "description": "Found 4 opportunities: STRENGTH_REDUCTION (priority=60), COPY_PROPAGATIONx3 (priority=50)",
@@ -1108,7 +1094,7 @@
       "source": "rule"
     },
     {
-      "iteration": 14,
+      "iteration": 13,
       "phase": "route",
       "opportunity_type": null,
       "description": "Rule-based optimizer: highest-priority opportunity is STRENGTH_REDUCTION (priority 60)",
@@ -1122,12 +1108,12 @@
       "source": "rule"
     },
     {
-      "iteration": 14,
+      "iteration": 13,
       "phase": "propose",
       "opportunity_type": "STRENGTH_REDUCTION",
       "description": "Applying STRENGTH_REDUCTION at instruction 2: t4 = 2 * t3 \u2192 t4 = t3 + t3",
-      "tac_before": "t1 = in_n + in_m\nt3 = t1 - 2\nt4 = 2 * t3\na1 = t4 * in_k\nt7 = in_k - 1\nt8 = in_k * t7\nt9 = 8\nt10 = t8 * t9\na2 = t10\nt11 = a1 - a2\nprint t11",
-      "tac_after": "t1 = in_n + in_m\nt3 = t1 - 2\nt4 = t3 + t3\na1 = t4 * in_k\nt7 = in_k - 1\nt8 = in_k * t7\nt9 = 8\nt10 = t8 * t9\na2 = t10\nt11 = a1 - a2\nprint t11",
+      "tac_before": "t1 = in_n + in_m\nt3 = t1 - 2\nt4 = 2 * t3\nt5 = t4 * in_k\nt7 = in_k - 1\nt8 = in_k * t7\nt9 = 8\nt10 = t8 * t9\na2 = t10\nt11 = t5 - a2\nprint t11",
+      "tac_after": "t1 = in_n + in_m\nt3 = t1 - 2\nt4 = t3 + t3\nt5 = t4 * in_k\nt7 = in_k - 1\nt8 = in_k * t7\nt9 = 8\nt10 = t8 * t9\na2 = t10\nt11 = t5 - a2\nprint t11",
       "verification_result": null,
       "cost_before": null,
       "cost_after": null,
@@ -1136,7 +1122,7 @@
       "source": "rule"
     },
     {
-      "iteration": 14,
+      "iteration": 13,
       "phase": "verify",
       "opportunity_type": "STRENGTH_REDUCTION",
       "description": "PASS (differential: 311/311 inputs matched, symbolic: equivalent)",
@@ -1150,21 +1136,21 @@
       "source": "rule"
     },
     {
-      "iteration": 14,
+      "iteration": 13,
       "phase": "evaluate",
       "opportunity_type": "STRENGTH_REDUCTION",
-      "description": "Before: 34.0, After: 34.0 (reduction: 0.0%); time 19.0 \u2192 17.0 cycles",
+      "description": "Before: 34.5, After: 34.5 (reduction: 0.0%); time 19.0 \u2192 17.0 cycles",
       "tac_before": null,
       "tac_after": null,
       "verification_result": null,
-      "cost_before": 34.0,
-      "cost_after": 34.0,
+      "cost_before": 34.5,
+      "cost_after": 34.5,
       "decision": null,
       "reason": null,
       "source": "rule"
     },
     {
-      "iteration": 14,
+      "iteration": 13,
       "phase": "reject",
       "opportunity_type": "STRENGTH_REDUCTION",
       "description": "\u2717 Change rejected: No cost improvement",
@@ -1178,7 +1164,7 @@
       "source": "rule"
     },
     {
-      "iteration": 15,
+      "iteration": 14,
       "phase": "analyze",
       "opportunity_type": null,
       "description": "Found 3 opportunities: COPY_PROPAGATIONx3 (priority=50)",
@@ -1192,7 +1178,7 @@
       "source": "rule"
     },
     {
-      "iteration": 15,
+      "iteration": 14,
       "phase": "route",
       "opportunity_type": null,
       "description": "Rule-based optimizer: highest-priority opportunity is COPY_PROPAGATION (priority 50)",
@@ -1206,12 +1192,12 @@
       "source": "rule"
     },
     {
-      "iteration": 15,
+      "iteration": 14,
       "phase": "propose",
       "opportunity_type": "COPY_PROPAGATION",
       "description": "Applying COPY_PROPAGATION at instruction 6: t9 = 8 \u2192 uses of t9 -> 8 at instr 7",
-      "tac_before": "t1 = in_n + in_m\nt3 = t1 - 2\nt4 = 2 * t3\na1 = t4 * in_k\nt7 = in_k - 1\nt8 = in_k * t7\nt9 = 8\nt10 = t8 * t9\na2 = t10\nt11 = a1 - a2\nprint t11",
-      "tac_after": "t1 = in_n + in_m\nt3 = t1 - 2\nt4 = 2 * t3\na1 = t4 * in_k\nt7 = in_k - 1\nt8 = in_k * t7\nt10 = t8 * 8\na2 = t10\nt11 = a1 - a2\nprint t11",
+      "tac_before": "t1 = in_n + in_m\nt3 = t1 - 2\nt4 = 2 * t3\nt5 = t4 * in_k\nt7 = in_k - 1\nt8 = in_k * t7\nt9 = 8\nt10 = t8 * t9\na2 = t10\nt11 = t5 - a2\nprint t11",
+      "tac_after": "t1 = in_n + in_m\nt3 = t1 - 2\nt4 = 2 * t3\nt5 = t4 * in_k\nt7 = in_k - 1\nt8 = in_k * t7\nt10 = t8 * 8\na2 = t10\nt11 = t5 - a2\nprint t11",
       "verification_result": null,
       "cost_before": null,
       "cost_after": null,
@@ -1220,7 +1206,7 @@
       "source": "rule"
     },
     {
-      "iteration": 15,
+      "iteration": 14,
       "phase": "verify",
       "opportunity_type": "COPY_PROPAGATION",
       "description": "PASS (differential: 311/311 inputs matched, symbolic: equivalent)",
@@ -1234,21 +1220,21 @@
       "source": "rule"
     },
     {
-      "iteration": 15,
+      "iteration": 14,
       "phase": "evaluate",
       "opportunity_type": "COPY_PROPAGATION",
-      "description": "Before: 34.0, After: 31.0 (reduction: 8.8%); time 19.0 \u2192 18.0 cycles",
+      "description": "Before: 34.5, After: 31.5 (reduction: 8.7%); time 19.0 \u2192 18.0 cycles",
       "tac_before": null,
       "tac_after": null,
       "verification_result": null,
-      "cost_before": 34.0,
-      "cost_after": 31.0,
+      "cost_before": 34.5,
+      "cost_after": 31.5,
       "decision": null,
       "reason": null,
       "source": "rule"
     },
     {
-      "iteration": 15,
+      "iteration": 14,
       "phase": "accept",
       "opportunity_type": "COPY_PROPAGATION",
       "description": "\u2713 Change accepted",
@@ -1258,11 +1244,11 @@
       "cost_before": null,
       "cost_after": null,
       "decision": "ACCEPT",
-      "reason": "Cost reduced: 34.0 \u2192 31.0",
+      "reason": "Cost reduced: 34.5 \u2192 31.5",
       "source": "rule"
     },
     {
-      "iteration": 16,
+      "iteration": 15,
       "phase": "analyze",
       "opportunity_type": null,
       "description": "Found 4 opportunities: STRENGTH_REDUCTIONx2 (priority=60), COPY_PROPAGATIONx2 (priority=50)",
@@ -1276,7 +1262,7 @@
       "source": "rule"
     },
     {
-      "iteration": 16,
+      "iteration": 15,
       "phase": "route",
       "opportunity_type": null,
       "description": "Rule-based optimizer: highest-priority opportunity is STRENGTH_REDUCTION (priority 60)",
@@ -1290,12 +1276,12 @@
       "source": "rule"
     },
     {
-      "iteration": 16,
+      "iteration": 15,
       "phase": "propose",
       "opportunity_type": "STRENGTH_REDUCTION",
       "description": "Applying STRENGTH_REDUCTION at instruction 2: t4 = 2 * t3 \u2192 t4 = t3 + t3",
-      "tac_before": "t1 = in_n + in_m\nt3 = t1 - 2\nt4 = 2 * t3\na1 = t4 * in_k\nt7 = in_k - 1\nt8 = in_k * t7\nt10 = t8 * 8\na2 = t10\nt11 = a1 - a2\nprint t11",
-      "tac_after": "t1 = in_n + in_m\nt3 = t1 - 2\nt4 = t3 + t3\na1 = t4 * in_k\nt7 = in_k - 1\nt8 = in_k * t7\nt10 = t8 * 8\na2 = t10\nt11 = a1 - a2\nprint t11",
+      "tac_before": "t1 = in_n + in_m\nt3 = t1 - 2\nt4 = 2 * t3\nt5 = t4 * in_k\nt7 = in_k - 1\nt8 = in_k * t7\nt10 = t8 * 8\na2 = t10\nt11 = t5 - a2\nprint t11",
+      "tac_after": "t1 = in_n + in_m\nt3 = t1 - 2\nt4 = t3 + t3\nt5 = t4 * in_k\nt7 = in_k - 1\nt8 = in_k * t7\nt10 = t8 * 8\na2 = t10\nt11 = t5 - a2\nprint t11",
       "verification_result": null,
       "cost_before": null,
       "cost_after": null,
@@ -1304,7 +1290,7 @@
       "source": "rule"
     },
     {
-      "iteration": 16,
+      "iteration": 15,
       "phase": "verify",
       "opportunity_type": "STRENGTH_REDUCTION",
       "description": "PASS (differential: 311/311 inputs matched, symbolic: equivalent)",
@@ -1318,21 +1304,21 @@
       "source": "rule"
     },
     {
-      "iteration": 16,
+      "iteration": 15,
       "phase": "evaluate",
       "opportunity_type": "STRENGTH_REDUCTION",
-      "description": "Before: 31.0, After: 31.0 (reduction: 0.0%); time 18.0 \u2192 16.0 cycles",
+      "description": "Before: 31.5, After: 31.5 (reduction: 0.0%); time 18.0 \u2192 16.0 cycles",
       "tac_before": null,
       "tac_after": null,
       "verification_result": null,
-      "cost_before": 31.0,
-      "cost_after": 31.0,
+      "cost_before": 31.5,
+      "cost_after": 31.5,
       "decision": null,
       "reason": null,
       "source": "rule"
     },
     {
-      "iteration": 16,
+      "iteration": 15,
       "phase": "reject",
       "opportunity_type": "STRENGTH_REDUCTION",
       "description": "\u2717 Change rejected: No cost improvement",
@@ -1346,7 +1332,7 @@
       "source": "rule"
     },
     {
-      "iteration": 17,
+      "iteration": 16,
       "phase": "analyze",
       "opportunity_type": null,
       "description": "Found 3 opportunities: STRENGTH_REDUCTION (priority=60), COPY_PROPAGATIONx2 (priority=50)",
@@ -1360,7 +1346,7 @@
       "source": "rule"
     },
     {
-      "iteration": 17,
+      "iteration": 16,
       "phase": "route",
       "opportunity_type": null,
       "description": "Rule-based optimizer: highest-priority opportunity is STRENGTH_REDUCTION (priority 60)",
@@ -1374,12 +1360,12 @@
       "source": "rule"
     },
     {
-      "iteration": 17,
+      "iteration": 16,
       "phase": "propose",
       "opportunity_type": "STRENGTH_REDUCTION",
       "description": "Applying STRENGTH_REDUCTION at instruction 6: t10 = t8 * 8 \u2192 t10 = t8 << 3",
-      "tac_before": "t1 = in_n + in_m\nt3 = t1 - 2\nt4 = 2 * t3\na1 = t4 * in_k\nt7 = in_k - 1\nt8 = in_k * t7\nt10 = t8 * 8\na2 = t10\nt11 = a1 - a2\nprint t11",
-      "tac_after": "t1 = in_n + in_m\nt3 = t1 - 2\nt4 = 2 * t3\na1 = t4 * in_k\nt7 = in_k - 1\nt8 = in_k * t7\nt10 = t8 << 3\na2 = t10\nt11 = a1 - a2\nprint t11",
+      "tac_before": "t1 = in_n + in_m\nt3 = t1 - 2\nt4 = 2 * t3\nt5 = t4 * in_k\nt7 = in_k - 1\nt8 = in_k * t7\nt10 = t8 * 8\na2 = t10\nt11 = t5 - a2\nprint t11",
+      "tac_after": "t1 = in_n + in_m\nt3 = t1 - 2\nt4 = 2 * t3\nt5 = t4 * in_k\nt7 = in_k - 1\nt8 = in_k * t7\nt10 = t8 << 3\na2 = t10\nt11 = t5 - a2\nprint t11",
       "verification_result": null,
       "cost_before": null,
       "cost_after": null,
@@ -1388,7 +1374,7 @@
       "source": "rule"
     },
     {
-      "iteration": 17,
+      "iteration": 16,
       "phase": "verify",
       "opportunity_type": "STRENGTH_REDUCTION",
       "description": "PASS (differential: 340/340 inputs matched, symbolic: equivalent)",
@@ -1402,21 +1388,21 @@
       "source": "rule"
     },
     {
-      "iteration": 17,
+      "iteration": 16,
       "phase": "evaluate",
       "opportunity_type": "STRENGTH_REDUCTION",
-      "description": "Before: 31.0, After: 29.0 (reduction: 6.5%); time 18.0 \u2192 16.0 cycles",
+      "description": "Before: 31.5, After: 29.5 (reduction: 6.3%); time 18.0 \u2192 16.0 cycles",
       "tac_before": null,
       "tac_after": null,
       "verification_result": null,
-      "cost_before": 31.0,
-      "cost_after": 29.0,
+      "cost_before": 31.5,
+      "cost_after": 29.5,
       "decision": null,
       "reason": null,
       "source": "rule"
     },
     {
-      "iteration": 17,
+      "iteration": 16,
       "phase": "accept",
       "opportunity_type": "STRENGTH_REDUCTION",
       "description": "\u2713 Change accepted",
@@ -1426,11 +1412,11 @@
       "cost_before": null,
       "cost_after": null,
       "decision": "ACCEPT",
-      "reason": "Cost reduced: 31.0 \u2192 29.0",
+      "reason": "Cost reduced: 31.5 \u2192 29.5",
       "source": "rule"
     },
     {
-      "iteration": 18,
+      "iteration": 17,
       "phase": "analyze",
       "opportunity_type": null,
       "description": "Found 3 opportunities: STRENGTH_REDUCTION (priority=60), COPY_PROPAGATIONx2 (priority=50)",
@@ -1444,7 +1430,7 @@
       "source": "rule"
     },
     {
-      "iteration": 18,
+      "iteration": 17,
       "phase": "route",
       "opportunity_type": null,
       "description": "Rule-based optimizer: highest-priority opportunity is STRENGTH_REDUCTION (priority 60)",
@@ -1458,12 +1444,12 @@
       "source": "rule"
     },
     {
-      "iteration": 18,
+      "iteration": 17,
       "phase": "propose",
       "opportunity_type": "STRENGTH_REDUCTION",
       "description": "Applying STRENGTH_REDUCTION at instruction 2: t4 = 2 * t3 \u2192 t4 = t3 + t3",
-      "tac_before": "t1 = in_n + in_m\nt3 = t1 - 2\nt4 = 2 * t3\na1 = t4 * in_k\nt7 = in_k - 1\nt8 = in_k * t7\nt10 = t8 << 3\na2 = t10\nt11 = a1 - a2\nprint t11",
-      "tac_after": "t1 = in_n + in_m\nt3 = t1 - 2\nt4 = t3 + t3\na1 = t4 * in_k\nt7 = in_k - 1\nt8 = in_k * t7\nt10 = t8 << 3\na2 = t10\nt11 = a1 - a2\nprint t11",
+      "tac_before": "t1 = in_n + in_m\nt3 = t1 - 2\nt4 = 2 * t3\nt5 = t4 * in_k\nt7 = in_k - 1\nt8 = in_k * t7\nt10 = t8 << 3\na2 = t10\nt11 = t5 - a2\nprint t11",
+      "tac_after": "t1 = in_n + in_m\nt3 = t1 - 2\nt4 = t3 + t3\nt5 = t4 * in_k\nt7 = in_k - 1\nt8 = in_k * t7\nt10 = t8 << 3\na2 = t10\nt11 = t5 - a2\nprint t11",
       "verification_result": null,
       "cost_before": null,
       "cost_after": null,
@@ -1472,7 +1458,7 @@
       "source": "rule"
     },
     {
-      "iteration": 18,
+      "iteration": 17,
       "phase": "verify",
       "opportunity_type": "STRENGTH_REDUCTION",
       "description": "PASS (differential: 265/265 inputs matched, symbolic: equivalent)",
@@ -1486,21 +1472,21 @@
       "source": "rule"
     },
     {
-      "iteration": 18,
+      "iteration": 17,
       "phase": "evaluate",
       "opportunity_type": "STRENGTH_REDUCTION",
-      "description": "Before: 29.0, After: 29.0 (reduction: 0.0%); time 16.0 \u2192 14.0 cycles",
+      "description": "Before: 29.5, After: 29.5 (reduction: 0.0%); time 16.0 \u2192 14.0 cycles",
       "tac_before": null,
       "tac_after": null,
       "verification_result": null,
-      "cost_before": 29.0,
-      "cost_after": 29.0,
+      "cost_before": 29.5,
+      "cost_after": 29.5,
       "decision": null,
       "reason": null,
       "source": "rule"
     },
     {
-      "iteration": 18,
+      "iteration": 17,
       "phase": "reject",
       "opportunity_type": "STRENGTH_REDUCTION",
       "description": "\u2717 Change rejected: No cost improvement",
@@ -1514,7 +1500,7 @@
       "source": "rule"
     },
     {
-      "iteration": 19,
+      "iteration": 18,
       "phase": "analyze",
       "opportunity_type": null,
       "description": "Found 2 opportunities: COPY_PROPAGATIONx2 (priority=50)",
@@ -1528,7 +1514,7 @@
       "source": "rule"
     },
     {
-      "iteration": 19,
+      "iteration": 18,
       "phase": "route",
       "opportunity_type": null,
       "description": "Rule-based optimizer: highest-priority opportunity is COPY_PROPAGATION (priority 50)",
@@ -1542,12 +1528,12 @@
       "source": "rule"
     },
     {
-      "iteration": 19,
+      "iteration": 18,
       "phase": "propose",
       "opportunity_type": "COPY_PROPAGATION",
       "description": "Applying COPY_PROPAGATION at instruction 7: t10 = t8 << 3; a2 = t10 \u2192 a2 = t8 << 3",
-      "tac_before": "t1 = in_n + in_m\nt3 = t1 - 2\nt4 = 2 * t3\na1 = t4 * in_k\nt7 = in_k - 1\nt8 = in_k * t7\nt10 = t8 << 3\na2 = t10\nt11 = a1 - a2\nprint t11",
-      "tac_after": "t1 = in_n + in_m\nt3 = t1 - 2\nt4 = 2 * t3\na1 = t4 * in_k\nt7 = in_k - 1\nt8 = in_k * t7\na2 = t8 << 3\nt11 = a1 - a2\nprint t11",
+      "tac_before": "t1 = in_n + in_m\nt3 = t1 - 2\nt4 = 2 * t3\nt5 = t4 * in_k\nt7 = in_k - 1\nt8 = in_k * t7\nt10 = t8 << 3\na2 = t10\nt11 = t5 - a2\nprint t11",
+      "tac_after": "t1 = in_n + in_m\nt3 = t1 - 2\nt4 = 2 * t3\nt5 = t4 * in_k\nt7 = in_k - 1\nt8 = in_k * t7\na2 = t8 << 3\nt11 = t5 - a2\nprint t11",
       "verification_result": null,
       "cost_before": null,
       "cost_after": null,
@@ -1556,7 +1542,7 @@
       "source": "rule"
     },
     {
-      "iteration": 19,
+      "iteration": 18,
       "phase": "verify",
       "opportunity_type": "COPY_PROPAGATION",
       "description": "PASS (differential: 265/265 inputs matched, symbolic: equivalent)",
@@ -1570,21 +1556,21 @@
       "source": "rule"
     },
     {
-      "iteration": 19,
+      "iteration": 18,
       "phase": "evaluate",
       "opportunity_type": "COPY_PROPAGATION",
-      "description": "Before: 29.0, After: 26.0 (reduction: 10.3%); time 16.0 \u2192 15.0 cycles",
+      "description": "Before: 29.5, After: 26.5 (reduction: 10.2%); time 16.0 \u2192 15.0 cycles",
       "tac_before": null,
       "tac_after": null,
       "verification_result": null,
-      "cost_before": 29.0,
-      "cost_after": 26.0,
+      "cost_before": 29.5,
+      "cost_after": 26.5,
       "decision": null,
       "reason": null,
       "source": "rule"
     },
     {
-      "iteration": 19,
+      "iteration": 18,
       "phase": "accept",
       "opportunity_type": "COPY_PROPAGATION",
       "description": "\u2713 Change accepted",
@@ -1594,11 +1580,11 @@
       "cost_before": null,
       "cost_after": null,
       "decision": "ACCEPT",
-      "reason": "Cost reduced: 29.0 \u2192 26.0",
+      "reason": "Cost reduced: 29.5 \u2192 26.5",
       "source": "rule"
     },
     {
-      "iteration": 20,
+      "iteration": 19,
       "phase": "analyze",
       "opportunity_type": null,
       "description": "Found 1 opportunity: STRENGTH_REDUCTION (priority=60)",
@@ -1612,7 +1598,7 @@
       "source": "rule"
     },
     {
-      "iteration": 20,
+      "iteration": 19,
       "phase": "route",
       "opportunity_type": null,
       "description": "Rule-based optimizer: highest-priority opportunity is STRENGTH_REDUCTION (priority 60)",
@@ -1626,12 +1612,12 @@
       "source": "rule"
     },
     {
-      "iteration": 20,
+      "iteration": 19,
       "phase": "propose",
       "opportunity_type": "STRENGTH_REDUCTION",
       "description": "Applying STRENGTH_REDUCTION at instruction 2: t4 = 2 * t3 \u2192 t4 = t3 + t3",
-      "tac_before": "t1 = in_n + in_m\nt3 = t1 - 2\nt4 = 2 * t3\na1 = t4 * in_k\nt7 = in_k - 1\nt8 = in_k * t7\na2 = t8 << 3\nt11 = a1 - a2\nprint t11",
-      "tac_after": "t1 = in_n + in_m\nt3 = t1 - 2\nt4 = t3 + t3\na1 = t4 * in_k\nt7 = in_k - 1\nt8 = in_k * t7\na2 = t8 << 3\nt11 = a1 - a2\nprint t11",
+      "tac_before": "t1 = in_n + in_m\nt3 = t1 - 2\nt4 = 2 * t3\nt5 = t4 * in_k\nt7 = in_k - 1\nt8 = in_k * t7\na2 = t8 << 3\nt11 = t5 - a2\nprint t11",
+      "tac_after": "t1 = in_n + in_m\nt3 = t1 - 2\nt4 = t3 + t3\nt5 = t4 * in_k\nt7 = in_k - 1\nt8 = in_k * t7\na2 = t8 << 3\nt11 = t5 - a2\nprint t11",
       "verification_result": null,
       "cost_before": null,
       "cost_after": null,
@@ -1640,7 +1626,7 @@
       "source": "rule"
     },
     {
-      "iteration": 20,
+      "iteration": 19,
       "phase": "verify",
       "opportunity_type": "STRENGTH_REDUCTION",
       "description": "PASS (differential: 265/265 inputs matched, symbolic: equivalent)",
@@ -1654,21 +1640,21 @@
       "source": "rule"
     },
     {
-      "iteration": 20,
+      "iteration": 19,
       "phase": "evaluate",
       "opportunity_type": "STRENGTH_REDUCTION",
-      "description": "Before: 26.0, After: 26.0 (reduction: 0.0%); time 15.0 \u2192 13.0 cycles",
+      "description": "Before: 26.5, After: 26.5 (reduction: 0.0%); time 15.0 \u2192 13.0 cycles",
       "tac_before": null,
       "tac_after": null,
       "verification_result": null,
-      "cost_before": 26.0,
-      "cost_after": 26.0,
+      "cost_before": 26.5,
+      "cost_after": 26.5,
       "decision": null,
       "reason": null,
       "source": "rule"
     },
     {
-      "iteration": 20,
+      "iteration": 19,
       "phase": "reject",
       "opportunity_type": "STRENGTH_REDUCTION",
       "description": "\u2717 Change rejected: No cost improvement",
@@ -1682,7 +1668,7 @@
       "source": "rule"
     },
     {
-      "iteration": 21,
+      "iteration": 20,
       "phase": "analyze",
       "opportunity_type": null,
       "description": "No more opportunities found.",
@@ -1696,10 +1682,10 @@
       "source": "rule"
     },
     {
-      "iteration": 21,
+      "iteration": 20,
       "phase": "info",
       "opportunity_type": null,
-      "description": "LLM not consulted: unavailable (Groq daily quota used up (429): Rate limit reached for model `qwen/qwen3.8-27b` in organization `org_01m4qvej6keqr80jzd0yda90dw` service tier `on_demand` on tokens per day (TPD): Limit 200000, Used 199999, Requested 818. Please try )",
+      "description": "LLM not consulted: call budget used up (1 per program)",
       "tac_before": null,
       "tac_after": null,
       "verification_result": null,

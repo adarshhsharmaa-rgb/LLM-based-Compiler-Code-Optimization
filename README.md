@@ -606,14 +606,14 @@ py main.py --run-all --dataset real --quiet --resume --require-llm --use-llm --l
 | Metric | Rules + Gemini | Rules + Groq | Rules + Ollama |
 |---|---:|---:|---:|
 | Programs | 500 | 500 | 500 |
-| Programs the LLM was consulted on | 500 | 402 | 500 |
+| Programs the LLM was consulted on | 500 | 500 | 500 |
 | Rules alone on these programs | 52.32 % | 52.32 % | 52.32 % |
-| Rules + LLM | **53.60 %** | **52.86 %** | **52.42 %** |
-| Programs improved by the LLM | 113 | 81 | 9 |
-| LLM calls | 735 | 701 | 687 |
-| LLM proposals accepted / no gain / wrong | 196 / 84 / 171 | 154 / 60 / 153 | 24 / 19 / 161 |
-| LLM validity rate | 62.08 % | 58.31 % | 21.08 % |
-| Self-repairs accepted / tried | 30 / 213 | 43 / 255 | 7 / 162 |
+| Rules + LLM | **53.60 %** | **53.18 %** | **52.42 %** |
+| Programs improved by the LLM | 113 | 127 | 9 |
+| LLM calls | 735 | 855 | 687 |
+| LLM proposals accepted / no gain / wrong | 196 / 84 / 171 | 213 / 74 / 174 | 24 / 19 / 161 |
+| LLM validity rate | 62.08 % | 62.26 % | 21.08 % |
+| Self-repairs accepted / tried | 30 / 213 | 69 / 311 | 7 / 162 |
 | False positives | 0 | 0 | 0 |
 
 * LLM budget per program: 2 fresh proposals for every fifth program and 1 for the

@@ -2033,17 +2033,31 @@
     },
     {
       "iteration": 25,
-      "phase": "info",
+      "phase": "route",
       "opportunity_type": null,
-      "description": "LLM not consulted: unavailable (Groq daily quota used up (429): Rate limit reached for model `qwen/qwen3.8-27b` in organization `org_01m4qvej6keqr80jzd0yda90dw` service tier `on_demand` on tokens per day (TPD): Limit 200000, Used 199999, Requested 818. Please try )",
+      "description": "LLM optimizer (groq openai/gpt-oss-120b): the rules have nothing left to try",
       "tac_before": null,
       "tac_after": null,
       "verification_result": null,
       "cost_before": null,
       "cost_after": null,
       "decision": null,
+      "reason": "the rules have nothing left to try",
+      "source": "llm"
+    },
+    {
+      "iteration": 25,
+      "phase": "propose",
+      "opportunity_type": "LLM",
+      "description": "LLM produced no usable TAC: LLM returned unchanged TAC; reasoning: Removed redundant unconditional jumps to the immediately following label (dead code elimination).",
+      "tac_before": "i = 0\nn = in_n\nL0:\nt2 = n > 0\nifFalse t2 goto L1\nt4 = n % 10\nt6 = t4 == 1\nifFalse t6 goto L2\nn = n / 10\ngoto L3\nL2:\nt10 = n % 100\nt12 = t10 == 14\nifFalse t12 goto L4\nn = n / 100\ngoto L5\nL4:\nt16 = n % 1000\nt18 = t16 == 144\nifFalse t18 goto L6\nn = n / 1000\ngoto L7\nL6:\ni = i + 1\nn = -1\nL7:\nL5:\nL3:\ngoto L0\nL1:\nt26 = i == 0\nifFalse t26 goto L8\nprint 1000000\nL8:\nt29 = i > 0\nifFalse t29 goto L9\nprint 1000001\nL9:",
+      "tac_after": null,
+      "verification_result": null,
+      "cost_before": null,
+      "cost_after": null,
+      "decision": null,
       "reason": null,
-      "source": "rule"
+      "source": "llm"
     }
   ]
 }

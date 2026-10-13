@@ -134,17 +134,25 @@
   [ACCEPT]  ✓ Change accepted
 --- Iteration 20 ---
   [ANALYZE] No more opportunities found.
-  [INFO]    LLM not consulted: unavailable (Groq daily quota used up (429): Rate limit reached for model `qwen/qwen3.8-27b` in organization `org_01m4qvej6keqr80jzd0yda90dw` service tier `on_demand` on tokens per day (TPD): Limit 200000, Used 199999, Requested 818. Please try )
+  [ROUTE]   LLM optimizer (groq openai/gpt-oss-120b): the rules have nothing left to try
+  [LLM]     LLM proposal: Common subexpression elimination: compute `in_n - 10` once (t1) and reuse it, removing redundant identical calculations.
+  [VERIFY]  PASS (differential: 355/355 inputs matched, SMT: proved equivalent for all inputs (10 paths))
+  [COST]    Before: 52.0, After: 41.5 (reduction: 20.2%); time 13.6 → 11.8 cycles
+  [ACCEPT]  ✓ Change accepted
+--- Iteration 21 ---
+  [ANALYZE] No more opportunities found.
+  [INFO]    LLM not consulted: call budget used up (1 per program)
 === RESULT ===
   Original cost: 105.5
-  Final cost:    52.0
-  Reduction:     50.7%
-  Exec. time:    23.8 → 13.6 cycles (43.0% less)
-  Iterations:    20
-  Accepted:      19
+  Final cost:    41.5
+  Reduction:     60.7%
+  Exec. time:    23.8 → 11.8 cycles (50.3% less)
+  Iterations:    21
+  Accepted:      20
   Rejected:      0
   Invalid:       0
-  Routing:       hybrid (LLM: groq qwen/qwen3.8-27b)
+  Routing:       hybrid (LLM: groq openai/gpt-oss-120b)
+  LLM proposals: 1 (1 passed verification)
   Output match:  PASS ✓
   Equivalence:   proved for all inputs
 === Original TAC ===
@@ -204,28 +212,25 @@
    3 |     print 1000000
    4 |     goto L1
    5 | L0:
-   6 |     t6 = in_n - 10
-   7 |     t8 = t6 >= 1
-   8 |     t12 = t6 < 10
-   9 |     t13 = t8 && t12
-  10 |     ifFalse t13 goto L2
-  11 |     print 1000001
-  12 |     goto L3
-  13 | L2:
-  14 |     t16 = in_n - 10
-  15 |     t18 = t16 == 10
-  16 |     ifFalse t18 goto L4
-  17 |     print 1000002
-  18 |     goto L5
-  19 | L4:
-  20 |     t21 = in_n - 10
-  21 |     t23 = t21 == 11
-  22 |     ifFalse t23 goto L6
-  23 |     print 1000001
-  24 |     goto L7
-  25 | L6:
-  26 |     print 1000000
-  27 | L7:
-  28 | L5:
-  29 | L3:
-  30 | L1:
+   6 |     t8 = t1 >= 1
+   7 |     t12 = t1 < 10
+   8 |     t13 = t8 && t12
+   9 |     ifFalse t13 goto L2
+  10 |     print 1000001
+  11 |     goto L3
+  12 | L2:
+  13 |     t18 = t1 == 10
+  14 |     ifFalse t18 goto L4
+  15 |     print 1000002
+  16 |     goto L5
+  17 | L4:
+  18 |     t23 = t1 == 11
+  19 |     ifFalse t23 goto L6
+  20 |     print 1000001
+  21 |     goto L7
+  22 | L6:
+  23 |     print 1000000
+  24 | L7:
+  25 | L5:
+  26 | L3:
+  27 | L1:

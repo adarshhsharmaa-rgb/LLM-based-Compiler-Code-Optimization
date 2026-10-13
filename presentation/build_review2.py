@@ -923,6 +923,28 @@ def build() -> str:
         if element.tag == qn("a:br") or underlined:
             para.remove(element)
 
+    # ------------------------------------------------------------------ comments received at Review 1
+    s = deck.new("Review 1 Comments")
+    comments = [
+        ("layers", "a1", "Edit the system architecture to incorporate the features of its components",
+         "The architecture slide and the report figure now list the components inside every agent and show "
+         "where a run ends: final check, outputs, end."),
+        ("chat", "a4", "Add more LLMs",
+         "Three LLM backends now sit behind one router: Google Gemini, Groq, and a local Ollama model that "
+         "works offline."),
+        ("chart", "a2", "Add more analysing figures",
+         "Added the class and data-flow diagrams, a comparison chart for each LLM against the rules, and result "
+         "tables for all four configurations."),
+    ]
+    for i, (name, colour, comment, done) in enumerate(comments):
+        y = TOP + i * 1.78
+        card(s, LM, y, CW, 1.58)
+        icon(s, name, LM + 0.3, y + 0.34, d=0.7, fill=colour)
+        text(s, LM + 1.3, y + 0.2, CW - 1.6, 0.45, [[(f"{i + 1}.  ", {"color": colour}), comment]],
+             size=19, color="tx1", bold=True)
+        text(s, LM + 1.3, y + 0.78, CW - 1.6, 0.7, [[("What was done: ", {"bold": True, "color": colour}), done]],
+             size=14.5, color="tx1")
+
     # 2 ---------------------------------------------------------------- objectives
     s = deck.new("Objectives")
     objectives = [

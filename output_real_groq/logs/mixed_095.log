@@ -183,17 +183,28 @@
   [ACCEPT]  ✓ Change accepted
 --- Iteration 27 ---
   [ANALYZE] No more opportunities found.
-  [INFO]    LLM not consulted: unavailable (Groq daily quota used up (429): Rate limit reached for model `qwen/qwen3.8-27b` in organization `org_01m4qvej6keqr80jzd0yda90dw` service tier `on_demand` on tokens per day (TPD): Limit 200000, Used 199999, Requested 818. Please try )
+  [ROUTE]   LLM optimizer (groq openai/gpt-oss-120b): the rules have nothing left to try
+  [LLM]     LLM produced no usable TAC: could not parse LLM TAC; reasoning: Eliminated the unnecessary temporary t1 by copy‑propagating its value directly into the conditional branch.
+  [REPAIR]  Feedback sent to the LLM: It is not valid TAC: TAC line 4: malformed ifFalse: 'ifFalse j != 0 goto L1'. Use only the instruction forms listed below; one instruction has at most one operator.
+  [LLM]     LLM repair: Copy propagation: replace temporary t3 with l, eliminating t3 and preserving semantics.
+  [VERIFY]  PASS (differential: 359/359 inputs matched, symbolic: skipped (control flow))
+  [COST]    Before: 71.5, After: 71.0 (reduction: 0.7%); time 183.0 → 183.0 cycles
+  [ACCEPT]  ✓ Change accepted
+--- Iteration 28 ---
+  [ANALYZE] No more opportunities found.
+  [INFO]    LLM not consulted: call budget used up (1 per program)
 === RESULT ===
   Original cost: 140.5
-  Final cost:    71.5
-  Reduction:     49.1%
+  Final cost:    71.0
+  Reduction:     49.5%
   Exec. time:    213.3 → 183.0 cycles (14.2% less)
-  Iterations:    27
-  Accepted:      26
+  Iterations:    28
+  Accepted:      27
   Rejected:      0
   Invalid:       0
-  Routing:       hybrid (LLM: groq qwen/qwen3.8-27b)
+  Routing:       hybrid (LLM: groq openai/gpt-oss-120b)
+  LLM proposals: 1 (1 passed verification)
+  LLM repairs:   1 (1 accepted)
   Output match:  PASS ✓
   Equivalence:   tested on the verifier's inputs
 === Original TAC ===
@@ -263,8 +274,8 @@
    7 |     i = t
    8 |     goto L0
    9 | L1:
-  10 |     t3 = in_a * in_b
-  11 |     l = t3 / i
+  10 |     l = in_a * in_b
+  11 |     l = l / i
   12 |     c = in_n / in_a
   13 |     d = in_n / in_b
   14 |     e = in_n / l

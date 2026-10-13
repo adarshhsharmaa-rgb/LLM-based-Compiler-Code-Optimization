@@ -120,17 +120,25 @@
   [ACCEPT]  ✓ Change accepted
 --- Iteration 18 ---
   [ANALYZE] No more opportunities found.
-  [INFO]    LLM not consulted: unavailable (Groq daily quota used up (429): Rate limit reached for model `qwen/qwen3.8-27b` in organization `org_01m4qvej6keqr80jzd0yda90dw` service tier `on_demand` on tokens per day (TPD): Limit 200000, Used 199999, Requested 818. Please try )
+  [ROUTE]   LLM optimizer (groq openai/gpt-oss-120b): the rules have nothing left to try
+  [LLM]     LLM proposal: Eliminate the empty L4 block by redirecting its jump to L3, removing dead label L4.
+  [VERIFY]  PASS (differential: 352/352 inputs matched, symbolic: skipped (control flow))
+  [COST]    Before: 52.0, After: 51.0 (reduction: 1.9%); time 1046.6 → 1046.6 cycles
+  [ACCEPT]  ✓ Change accepted
+--- Iteration 19 ---
+  [ANALYZE] No more opportunities found.
+  [INFO]    LLM not consulted: call budget used up (1 per program)
 === RESULT ===
   Original cost: 102.0
-  Final cost:    52.0
-  Reduction:     49.0%
+  Final cost:    51.0
+  Reduction:     50.0%
   Exec. time:    1570.3 → 1046.6 cycles (33.4% less)
-  Iterations:    18
-  Accepted:      17
+  Iterations:    19
+  Accepted:      18
   Rejected:      0
   Invalid:       0
-  Routing:       hybrid (LLM: groq qwen/qwen3.8-27b)
+  Routing:       hybrid (LLM: groq openai/gpt-oss-120b)
+  LLM proposals: 1 (1 passed verification)
   Output match:  PASS ✓
   Equivalence:   tested on the verifier's inputs
 === Original TAC ===
@@ -197,12 +205,11 @@
   15 |     goto L3
   16 | L2:
   17 |     t15 = x <= y
-  18 |     ifFalse t15 goto L4
+  18 |     ifFalse t15 goto L3
   19 |     s = s + 1
   20 |     x = x + 1
   21 |     y = y - 2
-  22 | L4:
-  23 | L3:
-  24 |     goto L0
-  25 | L1:
-  26 |     print s
+  22 | L3:
+  23 |     goto L0
+  24 | L1:
+  25 |     print s

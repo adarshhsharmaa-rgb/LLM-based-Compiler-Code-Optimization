@@ -85,17 +85,25 @@
   [ACCEPT]  ✓ Change accepted
 --- Iteration 13 ---
   [ANALYZE] No more opportunities found.
-  [INFO]    LLM not consulted: unavailable (Groq daily quota used up (429): Rate limit reached for model `qwen/qwen3.8-27b` in organization `org_01m4qvej6keqr80jzd0yda90dw` service tier `on_demand` on tokens per day (TPD): Limit 200000, Used 199999, Requested 818. Please try )
+  [ROUTE]   LLM optimizer (groq openai/gpt-oss-120b): the rules have nothing left to try
+  [LLM]     LLM proposal: Eliminated the repeated computation i * in_dollar by reusing t5 (common subexpression elimination).
+  [VERIFY]  PASS (differential: 305/305 inputs matched, symbolic: skipped (control flow))
+  [COST]    Before: 48.0, After: 44.5 (reduction: 7.3%); time 182.1 → 178.0 cycles
+  [ACCEPT]  ✓ Change accepted
+--- Iteration 14 ---
+  [ANALYZE] No more opportunities found.
+  [INFO]    LLM not consulted: call budget used up (1 per program)
 === RESULT ===
   Original cost: 81.0
-  Final cost:    48.0
-  Reduction:     40.7%
-  Exec. time:    197.1 → 182.1 cycles (7.6% less)
-  Iterations:    13
-  Accepted:      12
+  Final cost:    44.5
+  Reduction:     45.1%
+  Exec. time:    197.1 → 178.0 cycles (9.7% less)
+  Iterations:    14
+  Accepted:      13
   Rejected:      0
   Invalid:       0
-  Routing:       hybrid (LLM: groq qwen/qwen3.8-27b)
+  Routing:       hybrid (LLM: groq openai/gpt-oss-120b)
+  LLM proposals: 1 (1 passed verification)
   Output match:  PASS ✓
   Equivalence:   tested on the verifier's inputs
 === Original TAC ===
@@ -144,11 +152,10 @@
    9 |     t7 = t6 % euro
   10 |     t8 = min > t7
   11 |     ifFalse t8 goto L2
-  12 |     t9 = i * in_dollar
-  13 |     t10 = in_n - t9
-  14 |     min = t10 % euro
-  15 | L2:
-  16 |     i = i + 1
-  17 |     goto L0
-  18 | L1:
-  19 |     print min
+  12 |     t10 = in_n - t5
+  13 |     min = t10 % euro
+  14 | L2:
+  15 |     i = i + 1
+  16 |     goto L0
+  17 | L1:
+  18 |     print min

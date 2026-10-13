@@ -43,17 +43,25 @@
   [ACCEPT]  ✓ Change accepted
 --- Iteration 7 ---
   [ANALYZE] No more opportunities found.
-  [INFO]    LLM not consulted: unavailable (Groq daily quota used up (429): Rate limit reached for model `qwen/qwen3.8-27b` in organization `org_01m4qvej6keqr80jzd0yda90dw` service tier `on_demand` on tokens per day (TPD): Limit 200000, Used 199999, Requested 818. Please try )
+  [ROUTE]   LLM optimizer (groq openai/gpt-oss-120b): the rules have nothing left to try
+  [LLM]     LLM proposal: Eliminated the unused temporary t0 by computing the square directly into t1, removing dead code.
+  [VERIFY]  PASS (differential: 346/346 inputs matched, symbolic: equivalent)
+  [COST]    Before: 18.0, After: 17.5 (reduction: 2.8%); time 31.0 → 31.0 cycles
+  [ACCEPT]  ✓ Change accepted
+--- Iteration 8 ---
+  [ANALYZE] No more opportunities found.
+  [INFO]    LLM not consulted: call budget used up (1 per program)
 === RESULT ===
   Original cost: 34.5
-  Final cost:    18.0
-  Reduction:     47.8%
+  Final cost:    17.5
+  Reduction:     49.3%
   Exec. time:    37.0 → 31.0 cycles (16.2% less)
-  Iterations:    7
-  Accepted:      6
+  Iterations:    8
+  Accepted:      7
   Rejected:      0
   Invalid:       0
-  Routing:       hybrid (LLM: groq qwen/qwen3.8-27b)
+  Routing:       hybrid (LLM: groq openai/gpt-oss-120b)
+  LLM proposals: 1 (1 passed verification)
   Output match:  PASS ✓
   Equivalence:   proved for all inputs
 === Original TAC ===
@@ -70,8 +78,8 @@
   10 |     ans = t6
   11 |     print ans
 === Optimized TAC ===
-  0 |     t0 = in_n * in_n
-  1 |     t1 = t0 * in_n
+  0 |     t1 = in_n * in_n
+  1 |     t1 = t1 * in_n
   2 |     t3 = 5 * in_n
   3 |     t4 = t1 + t3
   4 |     ans = t4 / 6

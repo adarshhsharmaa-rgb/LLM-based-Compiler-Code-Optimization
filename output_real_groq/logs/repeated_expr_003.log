@@ -505,17 +505,25 @@
   [ACCEPT]  ✓ Change accepted
 --- Iteration 73 ---
   [ANALYZE] No more opportunities found.
-  [INFO]    LLM not consulted: unavailable (Groq daily quota used up (429): Rate limit reached for model `qwen/qwen3.8-27b` in organization `org_01m4qvej6keqr80jzd0yda90dw` service tier `on_demand` on tokens per day (TPD): Limit 200000, Used 199999, Requested 818. Please try )
+  [ROUTE]   LLM optimizer (groq openai/gpt-oss-120b): the rules have nothing left to try
+  [LLM]     LLM proposal: Common subexpression elimination: compute in_n % 6 once (t29) and reuse it for all subsequent comparisons.
+  [VERIFY]  PASS (differential: 545/545 inputs matched, symbolic: skipped (control flow))
+  [COST]    Before: 162.0, After: 144.5 (reduction: 10.8%); time 213.7 → 165.7 cycles
+  [ACCEPT]  ✓ Change accepted
+--- Iteration 74 ---
+  [ANALYZE] No more opportunities found.
+  [INFO]    LLM not consulted: call budget used up (1 per program)
 === RESULT ===
   Original cost: 366.5
-  Final cost:    162.0
-  Reduction:     55.8%
-  Exec. time:    264.3 → 213.7 cycles (19.1% less)
-  Iterations:    73
-  Accepted:      72
+  Final cost:    144.5
+  Reduction:     60.6%
+  Exec. time:    264.3 → 165.7 cycles (37.3% less)
+  Iterations:    74
+  Accepted:      73
   Rejected:      0
   Invalid:       0
-  Routing:       hybrid (LLM: groq qwen/qwen3.8-27b)
+  Routing:       hybrid (LLM: groq openai/gpt-oss-120b)
+  LLM proposals: 1 (1 passed verification)
   Output match:  PASS ✓
   Equivalence:   tested on the verifier's inputs
 === Original TAC ===
@@ -700,67 +708,62 @@
   19 |     print a
   20 |     goto L1
   21 | L0:
-  22 |     t37 = in_n % 6
-  23 |     t39 = t37 == 2
-  24 |     ifFalse t39 goto L4
-  25 | L6:
-  26 |     t41 = b < 0
-  27 |     ifFalse t41 goto L7
-  28 |     b = b + 1000000007
-  29 |     goto L6
-  30 | L7:
-  31 |     print b
-  32 |     goto L5
-  33 | L4:
-  34 |     t45 = in_n % 6
-  35 |     t47 = t45 == 3
-  36 |     ifFalse t47 goto L8
-  37 | L10:
-  38 |     t49 = c < 0
-  39 |     ifFalse t49 goto L11
-  40 |     c = c + 1000000007
-  41 |     goto L10
-  42 | L11:
-  43 |     print c
-  44 |     goto L9
-  45 | L8:
-  46 |     t53 = in_n % 6
-  47 |     t55 = t53 == 4
-  48 |     ifFalse t55 goto L12
-  49 | L14:
-  50 |     t57 = d < 0
-  51 |     ifFalse t57 goto L15
-  52 |     d = d + 1000000007
-  53 |     goto L14
-  54 | L15:
-  55 |     print d
-  56 |     goto L13
-  57 | L12:
-  58 |     t61 = in_n % 6
-  59 |     t63 = t61 == 5
-  60 |     ifFalse t63 goto L16
-  61 | L18:
-  62 |     t65 = e < 0
-  63 |     ifFalse t65 goto L19
-  64 |     e = e + 1000000007
-  65 |     goto L18
-  66 | L19:
-  67 |     print e
-  68 |     goto L17
-  69 | L16:
-  70 |     t69 = in_n % 6
-  71 |     t71 = t69 == 0
-  72 |     ifFalse t71 goto L20
-  73 | L21:
-  74 |     t73 = f < 0
-  75 |     ifFalse t73 goto L22
-  76 |     f = f + 1000000007
-  77 |     goto L21
-  78 | L22:
-  79 |     print f
-  80 | L20:
-  81 | L17:
-  82 | L13:
-  83 | L9:
-  84 | L5:
-  85 | L1:
+  22 |     t39 = t29 == 2
+  23 |     ifFalse t39 goto L4
+  24 | L6:
+  25 |     t41 = b < 0
+  26 |     ifFalse t41 goto L7
+  27 |     b = b + 1000000007
+  28 |     goto L6
+  29 | L7:
+  30 |     print b
+  31 |     goto L5
+  32 | L4:
+  33 |     t47 = t29 == 3
+  34 |     ifFalse t47 goto L8
+  35 | L10:
+  36 |     t49 = c < 0
+  37 |     ifFalse t49 goto L11
+  38 |     c = c + 1000000007
+  39 |     goto L10
+  40 | L11:
+  41 |     print c
+  42 |     goto L9
+  43 | L8:
+  44 |     t55 = t29 == 4
+  45 |     ifFalse t55 goto L12
+  46 | L14:
+  47 |     t57 = d < 0
+  48 |     ifFalse t57 goto L15
+  49 |     d = d + 1000000007
+  50 |     goto L14
+  51 | L15:
+  52 |     print d
+  53 |     goto L13
+  54 | L12:
+  55 |     t63 = t29 == 5
+  56 |     ifFalse t63 goto L16
+  57 | L18:
+  58 |     t65 = e < 0
+  59 |     ifFalse t65 goto L19
+  60 |     e = e + 1000000007
+  61 |     goto L18
+  62 | L19:
+  63 |     print e
+  64 |     goto L17
+  65 | L16:
+  66 |     t71 = t29 == 0
+  67 |     ifFalse t71 goto L20
+  68 | L21:
+  69 |     t73 = f < 0
+  70 |     ifFalse t73 goto L22
+  71 |     f = f + 1000000007
+  72 |     goto L21
+  73 | L22:
+  74 |     print f
+  75 | L20:
+  76 | L17:
+  77 | L13:
+  78 | L9:
+  79 | L5:
+  80 | L1:

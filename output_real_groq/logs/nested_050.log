@@ -113,17 +113,28 @@
   [ACCEPT]  ✓ Change accepted
 --- Iteration 17 ---
   [ANALYZE] No more opportunities found.
-  [INFO]    LLM not consulted: unavailable (Groq daily quota used up (429): Rate limit reached for model `qwen/qwen3.8-27b` in organization `org_01m4qvej6keqr80jzd0yda90dw` service tier `on_demand` on tokens per day (TPD): Limit 200000, Used 199999, Requested 818. Please try )
+  [ROUTE]   LLM optimizer (groq openai/gpt-oss-120b): the rules have nothing left to try
+  [LLM]     LLM produced no usable TAC: could not parse LLM TAC; reasoning: Eliminated the temporary variable t by directly using the expression t2 + in_a for the modulo and division, preserving semantics.
+  [REPAIR]  Feedback sent to the LLM: It is not valid TAC: TAC line 3: unrecognised instruction: 'm = (t2 + in_a) % 60'. Use only the instruction forms listed below; one instruction has at most one operator.
+  [LLM]     LLM repair: Eliminated the unnecessary temporary t1 by copy‑propagating its value directly into t2, preserving semantics.
+  [VERIFY]  PASS (differential: 409/409 inputs matched, symbolic: equivalent)
+  [COST]    Before: 22.0, After: 21.5 (reduction: 2.3%); time 68.0 → 68.0 cycles
+  [ACCEPT]  ✓ Change accepted
+--- Iteration 18 ---
+  [ANALYZE] No more opportunities found.
+  [INFO]    LLM not consulted: call budget used up (1 per program)
 === RESULT ===
   Original cost: 66.5
-  Final cost:    22.0
-  Reduction:     66.9%
+  Final cost:    21.5
+  Reduction:     67.7%
   Exec. time:    84.0 → 68.0 cycles (19.0% less)
-  Iterations:    17
-  Accepted:      16
+  Iterations:    18
+  Accepted:      17
   Rejected:      0
   Invalid:       0
-  Routing:       hybrid (LLM: groq qwen/qwen3.8-27b)
+  Routing:       hybrid (LLM: groq openai/gpt-oss-120b)
+  LLM proposals: 1 (1 passed verification)
+  LLM repairs:   1 (1 accepted)
   Output match:  PASS ✓
   Equivalence:   proved for all inputs
 === Original TAC ===
@@ -153,8 +164,8 @@
   23 |     print t10
   24 |     print m
 === Optimized TAC ===
-  0 |     t1 = 60 * in_h
-  1 |     t2 = t1 + in_m
+  0 |     t2 = 60 * in_h
+  1 |     t2 = t2 + in_m
   2 |     t = t2 + in_a
   3 |     m = t % 60
   4 |     t = t / 60

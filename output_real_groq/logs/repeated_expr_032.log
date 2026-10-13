@@ -477,17 +477,56 @@
   [ACCEPT]  ✓ Change accepted
 --- Iteration 69 ---
   [ANALYZE] No more opportunities found.
-  [INFO]    LLM not consulted: unavailable (Groq daily quota used up (429): Rate limit reached for model `qwen/qwen3.8-27b` in organization `org_01m4qvej6keqr80jzd0yda90dw` service tier `on_demand` on tokens per day (TPD): Limit 200000, Used 199999, Requested 818. Please try )
+  [ROUTE]   LLM optimizer (groq openai/gpt-oss-120b): the rules have nothing left to try
+  [LLM]     LLM produced no usable TAC: could not parse LLM TAC; reasoning: Copy‑propagated the temporary t10 (in_a+1) into its two print uses and removed the now‑dead assignment.
+  [REPAIR]  Feedback sent to the LLM: It is not valid TAC: TAC line 14: malformed print: 'print in_a + 1'. Use only the instruction forms listed below; one instruction has at most one operator.
+  [LLM]     LLM repair: Replaced repeated calculations of “in_a % 10”, “in_a / 10”, “t46 % 10”, “t46 / 10”, etc., with copies of already computed temporaries (copy propagation).
+  [VERIFY]  PASS (differential: 796/796 inputs matched, SMT: proved equivalent for all inputs (24 paths))
+  [COST]    Before: 205.5, After: 203.5 (reduction: 1.0%); time 30.2 → 28.7 cycles
+  [ACCEPT]  ✓ Change accepted
+--- Iteration 70 ---
+  [ANALYZE] Found 4 opportunities: COPY_PROPAGATIONx4 (priority=50)
+  [ROUTE]   Rule-based optimizer: highest-priority opportunity is COPY_PROPAGATION (priority 50)
+  [PROPOSE] Applying COPY_PROPAGATION at instruction 47: t42 = t33 → uses of t42 -> t33 at instr 48
+  [VERIFY]  PASS (differential: 796/796 inputs matched, symbolic: skipped (control flow))
+  [COST]    Before: 203.5, After: 200.5 (reduction: 1.5%); time 28.7 → 28.6 cycles
+  [ACCEPT]  ✓ Change accepted
+--- Iteration 71 ---
+  [ANALYZE] Found 3 opportunities: COPY_PROPAGATIONx3 (priority=50)
+  [ROUTE]   Rule-based optimizer: highest-priority opportunity is COPY_PROPAGATION (priority 50)
+  [PROPOSE] Applying COPY_PROPAGATION at instruction 48: t44 = t37 → uses of t44 -> t37 at instr 49
+  [VERIFY]  PASS (differential: 796/796 inputs matched, symbolic: skipped (control flow))
+  [COST]    Before: 200.5, After: 197.5 (reduction: 1.5%); time 28.6 → 28.6 cycles
+  [ACCEPT]  ✓ Change accepted
+--- Iteration 72 ---
+  [ANALYZE] Found 2 opportunities: COPY_PROPAGATIONx2 (priority=50)
+  [ROUTE]   Rule-based optimizer: highest-priority opportunity is COPY_PROPAGATION (priority 50)
+  [PROPOSE] Applying COPY_PROPAGATION at instruction 87: t83 = t74 → uses of t83 -> t74 at instr 88
+  [VERIFY]  PASS (differential: 796/796 inputs matched, symbolic: skipped (control flow))
+  [COST]    Before: 197.5, After: 194.5 (reduction: 1.5%); time 28.6 → 28.6 cycles
+  [ACCEPT]  ✓ Change accepted
+--- Iteration 73 ---
+  [ANALYZE] Found 1 opportunity: COPY_PROPAGATION (priority=50)
+  [ROUTE]   Rule-based optimizer: highest-priority opportunity is COPY_PROPAGATION (priority 50)
+  [PROPOSE] Applying COPY_PROPAGATION at instruction 88: t85 = t78 → uses of t85 -> t78 at instr 89
+  [VERIFY]  PASS (differential: 796/796 inputs matched, symbolic: skipped (control flow))
+  [COST]    Before: 194.5, After: 191.5 (reduction: 1.5%); time 28.6 → 28.6 cycles
+  [ACCEPT]  ✓ Change accepted
+--- Iteration 74 ---
+  [ANALYZE] No more opportunities found.
+  [INFO]    LLM not consulted: call budget used up (1 per program)
 === RESULT ===
   Original cost: 395.0
-  Final cost:    205.5
-  Reduction:     48.0%
-  Exec. time:    45.7 → 30.2 cycles (33.9% less)
-  Iterations:    69
-  Accepted:      68
+  Final cost:    191.5
+  Reduction:     51.5%
+  Exec. time:    45.7 → 28.6 cycles (37.4% less)
+  Iterations:    74
+  Accepted:      73
   Rejected:      0
   Invalid:       0
-  Routing:       hybrid (LLM: groq qwen/qwen3.8-27b)
+  Routing:       hybrid (LLM: groq openai/gpt-oss-120b)
+  LLM proposals: 1 (1 passed verification)
+  LLM repairs:   1 (1 accepted)
   Output match:  PASS ✓
   Equivalence:   proved for all inputs
 === Original TAC ===
@@ -723,77 +762,73 @@
    44 |     ifFalse t39 goto L10
    45 |     print in_a
    46 |     print 1000001
-   47 |     t42 = in_a % 10
-   48 |     print t42
-   49 |     t44 = in_a / 10
-   50 |     print t44
-   51 |     goto L11
-   52 | L10:
-   53 |     t46 = in_a + 1
-   54 |     print t46
-   55 |     print 1000001
-   56 |     t51 = t46 % 10
-   57 |     print t51
-   58 |     t55 = t46 / 10
-   59 |     print t55
-   60 | L11:
-   61 |     goto L9
-   62 | L8:
-   63 |     t57 = in_a == 15
-   64 |     t59 = in_b < 51
-   65 |     t60 = t57 && t59
-   66 |     ifFalse t60 goto L12
-   67 |     print 1000004
-   68 |     goto L13
-   69 | L12:
-   70 |     t63 = in_a >= 15
-   71 |     t65 = in_a <= 19
-   72 |     t66 = t63 && t65
-   73 |     ifFalse t66 goto L14
-   74 |     print 1000005
-   75 |     goto L15
-   76 | L14:
-   77 |     t69 = in_a >= 20
-   78 |     t71 = in_a <= 22
-   79 |     t72 = t69 && t71
-   80 |     ifFalse t72 goto L16
-   81 |     t74 = in_a % 10
-   82 |     t76 = t74 * 10
-   83 |     t78 = in_a / 10
-   84 |     t79 = t76 + t78
-   85 |     t80 = in_b < t79
-   86 |     ifFalse t80 goto L18
-   87 |     print in_a
-   88 |     print 1000001
-   89 |     t83 = in_a % 10
-   90 |     print t83
-   91 |     t85 = in_a / 10
-   92 |     print t85
-   93 |     goto L19
-   94 | L18:
-   95 |     t87 = in_a + 1
-   96 |     print t87
-   97 |     print 1000001
-   98 |     t92 = t87 % 10
-   99 |     print t92
-  100 |     t96 = t87 / 10
-  101 |     print t96
-  102 | L19:
-  103 |     goto L17
-  104 | L16:
-  105 |     t98 = in_a == 23
-  106 |     t100 = in_b < 32
-  107 |     t101 = t98 && t100
-  108 |     ifFalse t101 goto L20
-  109 |     print 1000006
-  110 |     goto L21
-  111 | L20:
-  112 |     print 1000007
-  113 | L21:
-  114 | L17:
-  115 | L15:
-  116 | L13:
-  117 | L9:
-  118 | L7:
-  119 | L5:
-  120 | L1:
+   47 |     print t33
+   48 |     print t37
+   49 |     goto L11
+   50 | L10:
+   51 |     t46 = in_a + 1
+   52 |     print t46
+   53 |     print 1000001
+   54 |     t51 = t46 % 10
+   55 |     print t51
+   56 |     t55 = t46 / 10
+   57 |     print t55
+   58 | L11:
+   59 |     goto L9
+   60 | L8:
+   61 |     t57 = in_a == 15
+   62 |     t59 = in_b < 51
+   63 |     t60 = t57 && t59
+   64 |     ifFalse t60 goto L12
+   65 |     print 1000004
+   66 |     goto L13
+   67 | L12:
+   68 |     t63 = in_a >= 15
+   69 |     t65 = in_a <= 19
+   70 |     t66 = t63 && t65
+   71 |     ifFalse t66 goto L14
+   72 |     print 1000005
+   73 |     goto L15
+   74 | L14:
+   75 |     t69 = in_a >= 20
+   76 |     t71 = in_a <= 22
+   77 |     t72 = t69 && t71
+   78 |     ifFalse t72 goto L16
+   79 |     t74 = in_a % 10
+   80 |     t76 = t74 * 10
+   81 |     t78 = in_a / 10
+   82 |     t79 = t76 + t78
+   83 |     t80 = in_b < t79
+   84 |     ifFalse t80 goto L18
+   85 |     print in_a
+   86 |     print 1000001
+   87 |     print t74
+   88 |     print t78
+   89 |     goto L19
+   90 | L18:
+   91 |     t87 = in_a + 1
+   92 |     print t87
+   93 |     print 1000001
+   94 |     t92 = t87 % 10
+   95 |     print t92
+   96 |     t96 = t87 / 10
+   97 |     print t96
+   98 | L19:
+   99 |     goto L17
+  100 | L16:
+  101 |     t98 = in_a == 23
+  102 |     t100 = in_b < 32
+  103 |     t101 = t98 && t100
+  104 |     ifFalse t101 goto L20
+  105 |     print 1000006
+  106 |     goto L21
+  107 | L20:
+  108 |     print 1000007
+  109 | L21:
+  110 | L17:
+  111 | L15:
+  112 | L13:
+  113 | L9:
+  114 | L7:
+  115 | L5:
+  116 | L1:

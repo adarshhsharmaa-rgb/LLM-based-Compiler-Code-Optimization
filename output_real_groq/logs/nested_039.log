@@ -36,17 +36,28 @@
   [ACCEPT]  ✓ Change accepted
 --- Iteration 6 ---
   [ANALYZE] No more opportunities found.
-  [INFO]    LLM not consulted: unavailable (Groq daily quota used up (429): Rate limit reached for model `qwen/qwen3.8-27b` in organization `org_01m4qvej6keqr80jzd0yda90dw` service tier `on_demand` on tokens per day (TPD): Limit 200000, Used 199999, Requested 818. Please try )
+  [ROUTE]   LLM optimizer (groq openai/gpt-oss-120b): the rules have nothing left to try
+  [LLM]     LLM produced no usable TAC: could not parse LLM TAC; reasoning: Algebraic simplification: combine the three arithmetic steps into a single expression t5 = (in_n + 1) / 2.
+  [REPAIR]  Feedback sent to the LLM: It is not valid TAC: TAC line 1: unrecognised instruction: 't5 = (in_n + 1) / 2'. Use only the instruction forms listed below; one instruction has at most one operator.
+  [LLM]     LLM repair: Eliminate the unnecessary temporary t5 by adding 1 directly to t3 and printing t3.
+  [VERIFY]  PASS (differential: 346/346 inputs matched, symbolic: equivalent)
+  [COST]    Before: 11.5, After: 11.0 (reduction: 4.3%); time 23.0 → 23.0 cycles
+  [ACCEPT]  ✓ Change accepted
+--- Iteration 7 ---
+  [ANALYZE] No more opportunities found.
+  [INFO]    LLM not consulted: call budget used up (1 per program)
 === RESULT ===
   Original cost: 25.5
-  Final cost:    11.5
-  Reduction:     54.9%
+  Final cost:    11.0
+  Reduction:     56.9%
   Exec. time:    28.0 → 23.0 cycles (17.9% less)
-  Iterations:    6
-  Accepted:      5
+  Iterations:    7
+  Accepted:      6
   Rejected:      0
   Invalid:       0
-  Routing:       hybrid (LLM: groq qwen/qwen3.8-27b)
+  Routing:       hybrid (LLM: groq openai/gpt-oss-120b)
+  LLM proposals: 1 (1 passed verification)
+  LLM repairs:   1 (1 accepted)
   Output match:  PASS ✓
   Equivalence:   proved for all inputs
 === Original TAC ===
@@ -62,5 +73,5 @@
 === Optimized TAC ===
   0 |     t1 = in_n - 1
   1 |     t3 = t1 / 2
-  2 |     t5 = t3 + 1
-  3 |     print t5
+  2 |     t3 = t3 + 1
+  3 |     print t3

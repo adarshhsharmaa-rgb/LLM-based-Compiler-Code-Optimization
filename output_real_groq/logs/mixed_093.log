@@ -176,7 +176,12 @@
   [ACCEPT]  ✓ Change accepted
 --- Iteration 26 ---
   [ANALYZE] No more opportunities found.
-  [INFO]    LLM not consulted: unavailable (Groq daily quota used up (429): Rate limit reached for model `qwen/qwen3.8-27b` in organization `org_01m4qvej6keqr80jzd0yda90dw` service tier `on_demand` on tokens per day (TPD): Limit 200000, Used 199999, Requested 818. Please try )
+  [ROUTE]   LLM optimizer (groq openai/gpt-oss-120b): the rules have nothing left to try
+  [LLM]     LLM proposal: Eliminated redundant modulo operation before printing because sum is already maintained modulo in_p throughout the program.
+  [VERIFY]  FAIL (output mismatch on inputs {'in_k': 0, 'in_p': 0}: original DivisionByZeroError after printing [], candidate printed [0])
+  [REJECT]  ✗ Change rejected: Verification failed: output mismatch on inputs {'in_k': 0, 'in_p': 0}: original DivisionByZeroError after printing [], candidate printed [0]
+  [REPAIR]  Feedback sent to the LLM: It changes what the program does: output mismatch on inputs {'in_k': 0, 'in_p': 0}: original DivisionByZeroError after printing [], candidate printed [0].
+  [LLM]     LLM produced no usable TAC: could not parse LLM TAC; reasoning: Eliminate the redundant temporary t31 by directly printing the expression sum % in_p (copy propagation), preserving semantics.
 === RESULT ===
   Original cost: 164.5
   Final cost:    91.5
@@ -185,8 +190,10 @@
   Iterations:    26
   Accepted:      25
   Rejected:      0
-  Invalid:       0
-  Routing:       hybrid (LLM: groq qwen/qwen3.8-27b)
+  Invalid:       1
+  Routing:       hybrid (LLM: groq openai/gpt-oss-120b)
+  LLM proposals: 1 (0 passed verification)
+  LLM repairs:   1 (0 accepted)
   Output match:  PASS ✓
   Equivalence:   tested on the verifier's inputs
 === Original TAC ===

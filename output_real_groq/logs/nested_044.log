@@ -34,6 +34,12 @@
   [VERIFY]  PASS (differential: 345/345 inputs matched, symbolic: equivalent)
   [COST]    Before: 18.0, After: 18.0 (reduction: 0.0%); time 27.0 → 25.0 cycles
   [REJECT]  ✗ Change rejected: No cost improvement
+  [ROUTE]   LLM optimizer (groq openai/gpt-oss-120b): the rule-based proposal was turned down
+  [LLM]     LLM produced no usable TAC: could not parse LLM TAC; reasoning: Algebraic simplification: collapse the sequence into the equivalent expression t6 = 2 - (in_n % 2)
+  [REPAIR]  Feedback sent to the LLM: It is not valid TAC: TAC line 1: unrecognised instruction: 't6 = 2 - (in_n % 2)'. Use only the instruction forms listed below; one instruction has at most one operator.
+  [LLM]     LLM repair: Algebraic simplification: (in_n/2)*2 = in_n - (in_n % 2), so the whole expression reduces to 2 - (in_n % 2); replace the original sequence with a % and a subtraction, removing dead code.
+  [VERIFY]  FAIL (print #1 is not symbolically equivalent)
+  [REJECT]  ✗ Change rejected: Verification failed: print #1 is not symbolically equivalent
 --- Iteration 6 ---
   [ANALYZE] Found 1 opportunity: COPY_PROPAGATION (priority=50)
   [ROUTE]   Rule-based optimizer: highest-priority opportunity is COPY_PROPAGATION (priority 50)
@@ -50,7 +56,7 @@
   [REJECT]  ✗ Change rejected: No cost improvement
 --- Iteration 8 ---
   [ANALYZE] No more opportunities found.
-  [INFO]    LLM not consulted: unavailable (Groq daily quota used up (429): Rate limit reached for model `qwen/qwen3.8-27b` in organization `org_01m4qvej6keqr80jzd0yda90dw` service tier `on_demand` on tokens per day (TPD): Limit 200000, Used 199999, Requested 818. Please try )
+  [INFO]    LLM not consulted: call budget used up (1 per program)
 === RESULT ===
   Original cost: 29.0
   Final cost:    15.0
@@ -59,8 +65,10 @@
   Iterations:    8
   Accepted:      5
   Rejected:      2
-  Invalid:       0
-  Routing:       hybrid (LLM: groq qwen/qwen3.8-27b)
+  Invalid:       1
+  Routing:       hybrid (LLM: groq openai/gpt-oss-120b)
+  LLM proposals: 1 (0 passed verification)
+  LLM repairs:   1 (0 accepted)
   Output match:  PASS ✓
   Equivalence:   proved for all inputs
 === Original TAC ===

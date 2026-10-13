@@ -162,7 +162,12 @@
   [ACCEPT]  ✓ Change accepted
 --- Iteration 24 ---
   [ANALYZE] No more opportunities found.
-  [INFO]    LLM not consulted: unavailable (Groq daily quota used up (429): Rate limit reached for model `qwen/qwen3.8-27b` in organization `org_01m4qvej6keqr80jzd0yda90dw` service tier `on_demand` on tokens per day (TPD): Limit 200000, Used 199999, Requested 818. Please try )
+  [ROUTE]   LLM optimizer (groq openai/gpt-oss-120b): the rules have nothing left to try
+  [LLM]     LLM produced no usable TAC: could not parse LLM TAC; reasoning: Copy propagation: replace use of temporary t13 with its defining expression in the assignment to ans, eliminating t13.
+  [REPAIR]  Feedback sent to the LLM: It is not valid TAC: TAC line 20: unrecognised instruction: 'ans = in_a * (in_n - 1)'. Use only the instruction forms listed below; one instruction has at most one operator.
+  [LLM]     LLM repair: Removed the dead initial assignment `ans = 0` because every control path overwrites `ans` before it is printed.
+  [VERIFY]  FAIL (output mismatch on inputs {'ans': -1, 'in_a': -1, 'in_b': -1, 'in_c': -1, 'in_n': -1}: original printed [0], candidate printed [-1])
+  [REJECT]  ✗ Change rejected: Verification failed: output mismatch on inputs {'ans': -1, 'in_a': -1, 'in_b': -1, 'in_c': -1, 'in_n': -1}: original printed [0], candidate printed [-1]
 === RESULT ===
   Original cost: 153.0
   Final cost:    88.0
@@ -171,8 +176,10 @@
   Iterations:    24
   Accepted:      23
   Rejected:      0
-  Invalid:       0
-  Routing:       hybrid (LLM: groq qwen/qwen3.8-27b)
+  Invalid:       1
+  Routing:       hybrid (LLM: groq openai/gpt-oss-120b)
+  LLM proposals: 1 (0 passed verification)
+  LLM repairs:   1 (0 accepted)
   Output match:  PASS ✓
   Equivalence:   proved for all inputs
 === Original TAC ===

@@ -120,7 +120,11 @@
   [ACCEPT]  ✓ Change accepted
 --- Iteration 18 ---
   [ANALYZE] No more opportunities found.
-  [INFO]    LLM not consulted: unavailable (Groq daily quota used up (429): Rate limit reached for model `qwen/qwen3.8-27b` in organization `org_01m4qvej6keqr80jzd0yda90dw` service tier `on_demand` on tokens per day (TPD): Limit 200000, Used 199999, Requested 818. Please try )
+  [ROUTE]   LLM optimizer (groq openai/gpt-oss-120b): the rules have nothing left to try
+  [LLM]     LLM proposal: Replace successive subtractions of the same variable with decrements of the previously computed result, reducing redundant computations.
+  [VERIFY]  PASS (differential: 354/354 inputs matched, symbolic: equivalent)
+  [COST]    Before: 59.0, After: 59.0 (reduction: 0.0%); time 87.0 → 87.0 cycles
+  [REJECT]  ✗ Change rejected: No cost improvement
 === RESULT ===
   Original cost: 107.5
   Final cost:    59.0
@@ -128,9 +132,10 @@
   Exec. time:    104.0 → 87.0 cycles (16.3% less)
   Iterations:    18
   Accepted:      17
-  Rejected:      0
+  Rejected:      1
   Invalid:       0
-  Routing:       hybrid (LLM: groq qwen/qwen3.8-27b)
+  Routing:       hybrid (LLM: groq openai/gpt-oss-120b)
+  LLM proposals: 1 (1 passed verification)
   Output match:  PASS ✓
   Equivalence:   proved for all inputs
 === Original TAC ===

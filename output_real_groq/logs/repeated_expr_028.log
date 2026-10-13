@@ -90,6 +90,14 @@
   [VERIFY]  PASS (differential: 373/373 inputs matched, symbolic: skipped (control flow))
   [COST]    Before: 149.0, After: 149.0 (reduction: 0.0%); time 132.5 → 130.6 cycles
   [REJECT]  ✗ Change rejected: No cost improvement
+  [ROUTE]   LLM optimizer (groq openai/gpt-oss-120b): the rule-based proposal was turned down
+  [LLM]     LLM proposal: Copy propagation: eliminated the temporary variable t by replacing its uses with t8, removing the assignment t = t8.
+  [VERIFY]  FAIL (output mismatch on inputs {'in_d': 20, 'in_k': -54, 'in_t': 86}: original printed [118, 1000000], candidate printed [266, 1000000])
+  [REJECT]  ✗ Change rejected: Verification failed: output mismatch on inputs {'in_d': 20, 'in_k': -54, 'in_t': 86}: original printed [118, 1000000], candidate printed [266, 1000000]
+  [REPAIR]  Feedback sent to the LLM: It changes what the program does: output mismatch on inputs {'in_d': 20, 'in_k': -54, 'in_t': 86}: original printed [118, 1000000], candidate printed [266, 1000000].
+  [LLM]     LLM repair: Constant‑folded the multiplication by the literal 2, replacing “t9 = 2; t10 = t9 * in_k” with a single “t10 = 2 * in_k”.
+  [VERIFY]  FAIL (output mismatch on inputs {'in_d': 20, 'in_k': -54, 'in_t': 86}: original printed [118, 1000000], candidate printed [266, 1000000])
+  [REJECT]  ✗ Change rejected: Verification failed: output mismatch on inputs {'in_d': 20, 'in_k': -54, 'in_t': 86}: original printed [118, 1000000], candidate printed [266, 1000000]
 --- Iteration 14 ---
   [ANALYZE] Found 23 opportunities: COPY_PROPAGATIONx23 (priority=50)
   [ROUTE]   Rule-based optimizer: highest-priority opportunity is COPY_PROPAGATION (priority 50)
@@ -582,7 +590,7 @@
   [REJECT]  ✗ Change rejected: No cost improvement
 --- Iteration 84 ---
   [ANALYZE] No more opportunities found.
-  [INFO]    LLM not consulted: unavailable (Groq daily quota used up (429): Rate limit reached for model `qwen/qwen3.8-27b` in organization `org_01m4qvej6keqr80jzd0yda90dw` service tier `on_demand` on tokens per day (TPD): Limit 200000, Used 199999, Requested 818. Please try )
+  [INFO]    LLM not consulted: call budget used up (1 per program)
 === RESULT ===
   Original cost: 176.5
   Final cost:    87.5
@@ -591,8 +599,10 @@
   Iterations:    84
   Accepted:      35
   Rejected:      48
-  Invalid:       0
-  Routing:       hybrid (LLM: groq qwen/qwen3.8-27b)
+  Invalid:       2
+  Routing:       hybrid (LLM: groq openai/gpt-oss-120b)
+  LLM proposals: 2 (0 passed verification)
+  LLM repairs:   1 (0 accepted)
   Output match:  PASS ✓
   Equivalence:   proved for all inputs
 === Original TAC ===

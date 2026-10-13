@@ -92,7 +92,12 @@
   [ACCEPT]  ✓ Change accepted
 --- Iteration 14 ---
   [ANALYZE] No more opportunities found.
-  [INFO]    LLM not consulted: unavailable (Groq daily quota used up (429): Rate limit reached for model `qwen/qwen3.8-27b` in organization `org_01m4qvej6keqr80jzd0yda90dw` service tier `on_demand` on tokens per day (TPD): Limit 200000, Used 199999, Requested 818. Please try )
+  [ROUTE]   LLM optimizer (groq openai/gpt-oss-120b): the rules have nothing left to try
+  [LLM]     LLM proposal: Algebraic simplification: (t2 + 24) % 24 equals t2 % 24, so removed t4 and replaced t6 computation.
+  [VERIFY]  FAIL (output mismatch on inputs {'in_a': 93, 'in_b': 83, 'in_c': 94, 'in_d': -33}: original printed [23, 1000000, 56], candidate printed [-1, 1000000, 56])
+  [REJECT]  ✗ Change rejected: Verification failed: output mismatch on inputs {'in_a': 93, 'in_b': 83, 'in_c': 94, 'in_d': -33}: original printed [23, 1000000, 56], candidate printed [-1, 1000000, 56]
+  [REPAIR]  Feedback sent to the LLM: It changes what the program does: output mismatch on inputs {'in_a': 93, 'in_b': 83, 'in_c': 94, 'in_d': -33}: original printed [23, 1000000, 56], candidate printed [-1, 1000000, 56].
+  [LLM]     LLM produced no usable TAC: could not parse LLM TAC; reasoning: Performed copy propagation: replaced use of t1 in t2 with its defining expression (in_d > in_b) and eliminated the now‑unused t1 assignment.
 === RESULT ===
   Original cost: 64.0
   Final cost:    29.0
@@ -101,8 +106,10 @@
   Iterations:    14
   Accepted:      13
   Rejected:      0
-  Invalid:       0
-  Routing:       hybrid (LLM: groq qwen/qwen3.8-27b)
+  Invalid:       1
+  Routing:       hybrid (LLM: groq openai/gpt-oss-120b)
+  LLM proposals: 1 (0 passed verification)
+  LLM repairs:   1 (0 accepted)
   Output match:  PASS ✓
   Equivalence:   proved for all inputs
 === Original TAC ===

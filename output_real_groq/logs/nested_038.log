@@ -239,7 +239,12 @@
   [ACCEPT]  ✓ Change accepted
 --- Iteration 35 ---
   [ANALYZE] No more opportunities found.
-  [INFO]    LLM not consulted: unavailable (Groq daily quota used up (429): Rate limit reached for model `qwen/qwen3.8-27b` in organization `org_01m4qvej6keqr80jzd0yda90dw` service tier `on_demand` on tokens per day (TPD): Limit 200000, Used 199999, Requested 818. Please try )
+  [ROUTE]   LLM optimizer (groq openai/gpt-oss-120b): the rules have nothing left to try
+  [LLM]     LLM proposal: Replaced the division‑multiply‑subtract sequence computing the remainder of in_n mod 100 with a single modulus operation, eliminating the intermediate multiplication (strength reduction/algebraic simplification).
+  [VERIFY]  FAIL (print #1 is not symbolically equivalent)
+  [REJECT]  ✗ Change rejected: Verification failed: print #1 is not symbolically equivalent
+  [REPAIR]  Feedback sent to the LLM: It changes what the program does: print #1 is not symbolically equivalent.
+  [LLM]     LLM produced no usable TAC: could not parse LLM TAC; reasoning: Algebraic simplification: collapse the chain of additions (t22, t23, t24) into a single expression for k.
 === RESULT ===
   Original cost: 145.0
   Final cost:    52.5
@@ -248,8 +253,10 @@
   Iterations:    35
   Accepted:      34
   Rejected:      0
-  Invalid:       0
-  Routing:       hybrid (LLM: groq qwen/qwen3.8-27b)
+  Invalid:       1
+  Routing:       hybrid (LLM: groq openai/gpt-oss-120b)
+  LLM proposals: 1 (0 passed verification)
+  LLM repairs:   1 (0 accepted)
   Output match:  PASS ✓
   Equivalence:   proved for all inputs
 === Original TAC ===

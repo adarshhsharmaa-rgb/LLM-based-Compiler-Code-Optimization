@@ -353,17 +353,59 @@
     },
     {
       "iteration": 5,
-      "phase": "info",
+      "phase": "route",
       "opportunity_type": null,
-      "description": "LLM not consulted: unavailable (Groq daily quota used up (429): Rate limit reached for model `qwen/qwen3.8-27b` in organization `org_01m4qvej6keqr80jzd0yda90dw` service tier `on_demand` on tokens per day (TPD): Limit 200000, Used 199999, Requested 818. Please try )",
+      "description": "LLM optimizer (groq openai/gpt-oss-120b): the rules have nothing left to try",
       "tac_before": null,
       "tac_after": null,
       "verification_result": null,
       "cost_before": null,
       "cost_after": null,
       "decision": null,
+      "reason": "the rules have nothing left to try",
+      "source": "llm"
+    },
+    {
+      "iteration": 5,
+      "phase": "propose",
+      "opportunity_type": "LLM",
+      "description": "LLM produced no usable TAC: could not parse LLM TAC; reasoning: Replace division by constant 2 with arithmetic right shift (strength reduction).",
+      "tac_before": "t1 = in_n / 2\nt3 = in_n % 2\nt4 = t3 * in_n\nt5 = t1 - t4\nprint t5",
+      "tac_after": null,
+      "verification_result": null,
+      "cost_before": null,
+      "cost_after": null,
+      "decision": null,
       "reason": null,
-      "source": "rule"
+      "source": "llm"
+    },
+    {
+      "iteration": 5,
+      "phase": "repair",
+      "opportunity_type": "LLM",
+      "description": "Feedback sent to the LLM: It is not valid TAC: TAC line 1: unrecognised instruction: 't1 = in_n >> 1'. Use only the instruction forms listed below; one instruction has at most one operator.",
+      "tac_before": null,
+      "tac_after": null,
+      "verification_result": null,
+      "cost_before": null,
+      "cost_after": null,
+      "decision": null,
+      "reason": "It is not valid TAC: TAC line 1: unrecognised instruction: 't1 = in_n >> 1'. Use only the instruction forms listed below; one instruction has at most one operator.",
+      "source": "llm"
+    },
+    {
+      "iteration": 5,
+      "phase": "propose",
+      "opportunity_type": "LLM",
+      "description": "LLM produced no usable TAC: LLM returned unchanged TAC; reasoning: Original code is already minimal; no safe single\u2011instruction optimization applies.",
+      "tac_before": "t1 = in_n / 2\nt3 = in_n % 2\nt4 = t3 * in_n\nt5 = t1 - t4\nprint t5",
+      "tac_after": null,
+      "verification_result": null,
+      "cost_before": null,
+      "cost_after": null,
+      "decision": null,
+      "reason": null,
+      "source": "llm"
     }
   ]
 }

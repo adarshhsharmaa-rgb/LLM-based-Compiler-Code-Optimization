@@ -1109,17 +1109,59 @@
     },
     {
       "iteration": 14,
-      "phase": "info",
+      "phase": "route",
       "opportunity_type": null,
-      "description": "LLM not consulted: unavailable (Groq daily quota used up (429): Rate limit reached for model `qwen/qwen3.8-27b` in organization `org_01m4qvej6keqr80jzd0yda90dw` service tier `on_demand` on tokens per day (TPD): Limit 200000, Used 199999, Requested 818. Please try )",
+      "description": "LLM optimizer (groq openai/gpt-oss-120b): the rules have nothing left to try",
       "tac_before": null,
       "tac_after": null,
       "verification_result": null,
       "cost_before": null,
       "cost_after": null,
       "decision": null,
+      "reason": "the rules have nothing left to try",
+      "source": "llm"
+    },
+    {
+      "iteration": 14,
+      "phase": "propose",
+      "opportunity_type": "LLM",
+      "description": "LLM produced no usable TAC: could not parse LLM TAC; reasoning: Replace the separate comparison and conditional jump with a single combined test, eliminating the temporary t6.",
+      "tac_before": "t0 = in_a * in_c\nt1 = t0 / in_b\nt = t1 - in_c\nt4 = t0 % in_b\nt6 = t4 != 0\nifFalse t6 goto L0\nt = t + 1\nL0:\nprint t",
+      "tac_after": null,
+      "verification_result": null,
+      "cost_before": null,
+      "cost_after": null,
+      "decision": null,
       "reason": null,
-      "source": "rule"
+      "source": "llm"
+    },
+    {
+      "iteration": 14,
+      "phase": "repair",
+      "opportunity_type": "LLM",
+      "description": "Feedback sent to the LLM: It is not valid TAC: TAC line 5: malformed if: 'if t4 == 0 goto L0'. Use only the instruction forms listed below; one instruction has at most one operator.",
+      "tac_before": null,
+      "tac_after": null,
+      "verification_result": null,
+      "cost_before": null,
+      "cost_after": null,
+      "decision": null,
+      "reason": "It is not valid TAC: TAC line 5: malformed if: 'if t4 == 0 goto L0'. Use only the instruction forms listed below; one instruction has at most one operator.",
+      "source": "llm"
+    },
+    {
+      "iteration": 14,
+      "phase": "propose",
+      "opportunity_type": "LLM",
+      "description": "LLM produced no usable TAC: could not parse LLM TAC; reasoning: Copy\u2011propagation: reuse the already computed expression t1\u2011in_c when incrementing t, avoiding the extra temporary read/write of t.",
+      "tac_before": "t0 = in_a * in_c\nt1 = t0 / in_b\nt = t1 - in_c\nt4 = t0 % in_b\nt6 = t4 != 0\nifFalse t6 goto L0\nt = t + 1\nL0:\nprint t",
+      "tac_after": null,
+      "verification_result": null,
+      "cost_before": null,
+      "cost_after": null,
+      "decision": null,
+      "reason": null,
+      "source": "llm"
     }
   ]
 }

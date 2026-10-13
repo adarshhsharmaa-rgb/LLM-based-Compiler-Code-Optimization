@@ -232,17 +232,32 @@
   [ACCEPT]  ✓ Change accepted
 --- Iteration 34 ---
   [ANALYZE] No more opportunities found.
-  [INFO]    LLM not consulted: unavailable (Groq daily quota used up (429): Rate limit reached for model `qwen/qwen3.8-27b` in organization `org_01m4qvej6keqr80jzd0yda90dw` service tier `on_demand` on tokens per day (TPD): Limit 200000, Used 199999, Requested 818. Please try )
+  [ROUTE]   LLM optimizer (groq openai/gpt-oss-120b): the rules have nothing left to try
+  [LLM]     LLM proposal: Common subexpression elimination: the modulo of in_n is computed twice (t3 and t15); replace the second with a copy of t3.
+  [VERIFY]  PASS (differential: 299/299 inputs matched, symbolic: skipped (control flow))
+  [COST]    Before: 143.5, After: 143.0 (reduction: 0.3%); time 230.9 → 223.3 cycles
+  [ACCEPT]  ✓ Change accepted
+--- Iteration 35 ---
+  [ANALYZE] Found 1 opportunity: COPY_PROPAGATION (priority=50)
+  [ROUTE]   Rule-based optimizer: highest-priority opportunity is COPY_PROPAGATION (priority 50)
+  [PROPOSE] Applying COPY_PROPAGATION at instruction 24: t15 = t3 → uses of t15 -> t3 at instr 25
+  [VERIFY]  PASS (differential: 299/299 inputs matched, symbolic: skipped (control flow))
+  [COST]    Before: 143.0, After: 140.0 (reduction: 2.1%); time 223.3 → 222.9 cycles
+  [ACCEPT]  ✓ Change accepted
+--- Iteration 36 ---
+  [ANALYZE] No more opportunities found.
+  [INFO]    LLM not consulted: call budget used up (1 per program)
 === RESULT ===
   Original cost: 238.5
-  Final cost:    143.5
-  Reduction:     39.8%
-  Exec. time:    303.8 → 230.9 cycles (24.0% less)
-  Iterations:    34
-  Accepted:      33
+  Final cost:    140.0
+  Reduction:     41.3%
+  Exec. time:    303.8 → 222.9 cycles (26.6% less)
+  Iterations:    36
+  Accepted:      35
   Rejected:      0
   Invalid:       0
-  Routing:       hybrid (LLM: groq qwen/qwen3.8-27b)
+  Routing:       hybrid (LLM: groq openai/gpt-oss-120b)
+  LLM proposals: 1 (1 passed verification)
   Output match:  PASS ✓
   Equivalence:   tested on the verifier's inputs
 === Original TAC ===
@@ -387,63 +402,62 @@
   21 | L7:
   22 |     goto L3
   23 | L2:
-  24 |     t15 = in_n % 2
-  25 |     t17 = t15 != 0
-  26 |     ifFalse t17 goto L8
-  27 |     i = 1
-  28 | L9:
-  29 |     t19 = i <= in_n
-  30 |     ifFalse t19 goto L10
-  31 |     print i
-  32 |     i = i + 2
-  33 |     goto L9
-  34 | L10:
-  35 |     i = 2
-  36 | L11:
-  37 |     t23 = i < in_n
-  38 |     ifFalse t23 goto L12
-  39 |     print i
-  40 |     i = i + 2
-  41 |     goto L11
-  42 | L12:
-  43 | L8:
-  44 | L3:
-  45 |     goto L1
-  46 | L0:
-  47 |     t27 = in_n == 1
-  48 |     ifFalse t27 goto L13
+  24 |     t17 = t3 != 0
+  25 |     ifFalse t17 goto L8
+  26 |     i = 1
+  27 | L9:
+  28 |     t19 = i <= in_n
+  29 |     ifFalse t19 goto L10
+  30 |     print i
+  31 |     i = i + 2
+  32 |     goto L9
+  33 | L10:
+  34 |     i = 2
+  35 | L11:
+  36 |     t23 = i < in_n
+  37 |     ifFalse t23 goto L12
+  38 |     print i
+  39 |     i = i + 2
+  40 |     goto L11
+  41 | L12:
+  42 | L8:
+  43 | L3:
+  44 |     goto L1
+  45 | L0:
+  46 |     t27 = in_n == 1
+  47 |     ifFalse t27 goto L13
+  48 |     print in_n
   49 |     print in_n
-  50 |     print in_n
-  51 |     goto L14
-  52 | L13:
-  53 |     t29 = in_n == 2
-  54 |     ifFalse t29 goto L15
-  55 |     t31 = in_n - 1
+  50 |     goto L14
+  51 | L13:
+  52 |     t29 = in_n == 2
+  53 |     ifFalse t29 goto L15
+  54 |     t31 = in_n - 1
+  55 |     print t31
   56 |     print t31
-  57 |     print t31
-  58 |     goto L16
-  59 | L15:
-  60 |     t35 = in_n == 3
-  61 |     ifFalse t35 goto L17
-  62 |     t37 = in_n - 1
-  63 |     print t37
-  64 |     t39 = in_n - 2
-  65 |     print t39
-  66 |     print in_n
-  67 |     goto L18
-  68 | L17:
-  69 |     t41 = in_n == 4
-  70 |     ifFalse t41 goto L19
-  71 |     print in_n
-  72 |     t43 = in_n - 1
-  73 |     print t43
-  74 |     t45 = in_n - 3
-  75 |     print t45
-  76 |     print in_n
-  77 |     t47 = in_n - 2
-  78 |     print t47
-  79 | L19:
-  80 | L18:
-  81 | L16:
-  82 | L14:
-  83 | L1:
+  57 |     goto L16
+  58 | L15:
+  59 |     t35 = in_n == 3
+  60 |     ifFalse t35 goto L17
+  61 |     t37 = in_n - 1
+  62 |     print t37
+  63 |     t39 = in_n - 2
+  64 |     print t39
+  65 |     print in_n
+  66 |     goto L18
+  67 | L17:
+  68 |     t41 = in_n == 4
+  69 |     ifFalse t41 goto L19
+  70 |     print in_n
+  71 |     t43 = in_n - 1
+  72 |     print t43
+  73 |     t45 = in_n - 3
+  74 |     print t45
+  75 |     print in_n
+  76 |     t47 = in_n - 2
+  77 |     print t47
+  78 | L19:
+  79 | L18:
+  80 | L16:
+  81 | L14:
+  82 | L1:

@@ -50,17 +50,28 @@
   [ACCEPT]  ✓ Change accepted
 --- Iteration 8 ---
   [ANALYZE] No more opportunities found.
-  [INFO]    LLM not consulted: unavailable (Groq daily quota used up (429): Rate limit reached for model `qwen/qwen3.8-27b` in organization `org_01m4qvej6keqr80jzd0yda90dw` service tier `on_demand` on tokens per day (TPD): Limit 200000, Used 199999, Requested 818. Please try )
+  [ROUTE]   LLM optimizer (groq openai/gpt-oss-120b): the rules have nothing left to try
+  [LLM]     LLM produced no usable TAC: could not parse LLM TAC; reasoning: Algebraic simplification: replace t1 = t0 + in_m with t1 = in_n * in_k + in_m and remove the now‑unused t0.
+  [REPAIR]  Feedback sent to the LLM: It is not valid TAC: TAC line 1: unrecognised instruction: 't1 = in_n * in_k + in_m'. Use only the instruction forms listed below; one instruction has at most one operator.
+  [LLM]     LLM repair: Eliminated dead variable t3 by reusing t4 for the subtraction, reducing one temporary.
+  [VERIFY]  PASS (differential: 235/235 inputs matched, symbolic: equivalent)
+  [COST]    Before: 18.5, After: 18.0 (reduction: 2.7%); time 26.9 → 26.9 cycles
+  [ACCEPT]  ✓ Change accepted
+--- Iteration 9 ---
+  [ANALYZE] No more opportunities found.
+  [INFO]    LLM not consulted: call budget used up (1 per program)
 === RESULT ===
   Original cost: 36.5
-  Final cost:    18.5
-  Reduction:     49.3%
+  Final cost:    18.0
+  Reduction:     50.7%
   Exec. time:    33.9 → 26.9 cycles (20.6% less)
-  Iterations:    8
-  Accepted:      7
+  Iterations:    9
+  Accepted:      8
   Rejected:      0
   Invalid:       0
-  Routing:       hybrid (LLM: groq qwen/qwen3.8-27b)
+  Routing:       hybrid (LLM: groq openai/gpt-oss-120b)
+  LLM proposals: 1 (1 passed verification)
+  LLM repairs:   1 (1 accepted)
   Output match:  PASS ✓
   Equivalence:   proved for all inputs
 === Original TAC ===
@@ -80,7 +91,7 @@
 === Optimized TAC ===
   0 |     t0 = in_n * in_k
   1 |     t1 = t0 + in_m
-  2 |     t3 = t1 - 1
-  3 |     t4 = t3 / in_m
+  2 |     t4 = t1 - 1
+  3 |     t4 = t4 / in_m
   4 |     t5 = t4 - in_k
   5 |     print t5

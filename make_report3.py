@@ -112,6 +112,11 @@ def build() -> str:
         return sum(1 for name, rec in run["by_name"].items()
                    if rec["reduction_pct"] > rule["by_name"][name]["reduction_pct"] + 0.01)
 
+    def lower(run):
+        """Programs that end below the rules alone: an accepted LLM change can close off a later rule step."""
+        return sum(1 for name, rec in run["by_name"].items()
+                   if rec["reduction_pct"] < rule["by_name"][name]["reduction_pct"] - 0.01)
+
     def consulted(run):
         return sum(1 for rec in run["by_name"].values() if rec.get("llm_calls", 0) > 0)
 
@@ -423,9 +428,38 @@ def build() -> str:
             "stay. Self-repair helps the cloud models, whose rejected answers are mostly invalid TAC (a whole "
             "expression written in one instruction): told so, they often answer again in valid form. It does not "
             "help the small local model, which repeats its mistake or returns the program unchanged.\n\n")
+        below = [(name, lower(run)) for name, run in llm_runs if lower(run)]
+        if below:
+            results += (
+                "A verified LLM change is always correct and always cheaper at the moment it is accepted, but it "
+                "is not always the best step: it can rewrite the code so that a rule which would have applied "
+                "later no longer does. On the real programs this left "
+                + " and ".join(f"{count} program{'s' if count != 1 else ''} with {name}" for name, count in below)
+                + " slightly below the result of the rules alone (by 5 percentage points at most). The averages "
+                "in Table~\\ref{tab:realllms} include these programs.\n\n")
         if os.path.exists(os.path.join(figures, "real_comparison_gemini.png")):
             results += ("\\begin{figure}[H]\n\\centering\n\\includegraphics[width=0.9\\textwidth]{report_figures/real_comparison_gemini.png}\n"
                         "\\caption{Real programs: rule-only against rule + Gemini, per category}\n\\label{fig:realcmp}\n\\end{figure}\n\n")
+        # the charts of the Groq and Ollama runs on the real programs, copied from the run folders
+        charts = (("2_bar_outcomes_by_type", "outcomes", "accept, reject, and invalid counts for each optimization type", "0.85"),
+                  ("4_pie_accepted_types", "accepted", "share of each optimization type among the accepted changes", "0.6"),
+                  ("6_heatmap_category_vs_type", "heatmap", "accepted optimizations by program category and type", "0.85"),
+                  ("7_comparison_rule_vs_llm", "comparison", "rule-only against rule + LLM, per category", "0.85"))
+        for name, run in llm_runs:
+            if name == "Gemini":
+                continue
+            plots = os.path.join(ROOT, f"output_real_{name.lower()}", "plots")
+            block = ""
+            for source, short_name, caption, width in charts:
+                if not os.path.exists(os.path.join(plots, source + ".png")):
+                    continue
+                target = f"real_{short_name}_{name.lower()}.png"
+                shutil.copyfile(os.path.join(plots, source + ".png"), os.path.join(figures, target))
+                block += (f"\\begin{{figure}}[H]\n\\centering\n\\includegraphics[width={width}\\textwidth]{{report_figures/{target}}}\n"
+                          f"\\caption{{Real programs, {name} run: {caption}}}\n\\end{{figure}}\n\n")
+            if block:
+                results += (f"\\subsubsection{{Analysis Charts for the {name} Run on Real Programs}}\n\n"
+                            f"The charts below are drawn from the {name} run on the 500 real programs.\n\n" + block)
     doc.before("\\section{Output Screenshots}\n", results)
 
     # ------------------------------------------------------------------ analysis and limitations

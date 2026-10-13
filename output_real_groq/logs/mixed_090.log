@@ -134,17 +134,30 @@
   [ACCEPT]  ✓ Change accepted
 --- Iteration 20 ---
   [ANALYZE] No more opportunities found.
-  [INFO]    LLM not consulted: unavailable (Groq daily quota used up (429): Rate limit reached for model `qwen/qwen3.8-27b` in organization `org_01m4qvej6keqr80jzd0yda90dw` service tier `on_demand` on tokens per day (TPD): Limit 200000, Used 199999, Requested 818. Please try )
+  [ROUTE]   LLM optimizer (groq openai/gpt-oss-120b): the rules have nothing left to try
+  [LLM]     LLM proposal: Copy propagation: replace use of temporary r with its source in_x and delete the dead copy.
+  [VERIFY]  FAIL (output mismatch on inputs {'in_h': 20, 'in_w': -54, 'in_x': 86, 'in_y': 48}: original printed [-1], candidate DivisionByZeroError after printing [])
+  [REJECT]  ✗ Change rejected: Verification failed: output mismatch on inputs {'in_h': 20, 'in_w': -54, 'in_x': 86, 'in_y': 48}: original printed [-1], candidate DivisionByZeroError after printing []
+  [REPAIR]  Feedback sent to the LLM: It changes what the program does: output mismatch on inputs {'in_h': 20, 'in_w': -54, 'in_x': 86, 'in_y': 48}: original printed [-1], candidate DivisionByZeroError after printing [].
+  [LLM]     LLM repair: Eliminate the dead variable num by printing the selected value directly, preserving the same control flow.
+  [VERIFY]  PASS (differential: 366/366 inputs matched, symbolic: skipped (control flow))
+  [COST]    Before: 48.5, After: 44.5 (reduction: 8.2%); time 167.9 → 167.0 cycles
+  [ACCEPT]  ✓ Change accepted
+--- Iteration 21 ---
+  [ANALYZE] No more opportunities found.
+  [INFO]    LLM not consulted: call budget used up (1 per program)
 === RESULT ===
   Original cost: 99.0
-  Final cost:    48.5
-  Reduction:     51.0%
-  Exec. time:    191.8 → 167.9 cycles (12.5% less)
-  Iterations:    20
-  Accepted:      19
+  Final cost:    44.5
+  Reduction:     55.1%
+  Exec. time:    191.8 → 167.0 cycles (13.0% less)
+  Iterations:    21
+  Accepted:      20
   Rejected:      0
-  Invalid:       0
-  Routing:       hybrid (LLM: groq qwen/qwen3.8-27b)
+  Invalid:       1
+  Routing:       hybrid (LLM: groq openai/gpt-oss-120b)
+  LLM proposals: 2 (1 passed verification)
+  LLM repairs:   1 (1 accepted)
   Output match:  PASS ✓
   Equivalence:   tested on the verifier's inputs
 === Original TAC ===
@@ -208,9 +221,8 @@
   14 |     y1 = in_h / y
   15 |     t7 = x1 < y1
   16 |     ifFalse t7 goto L2
-  17 |     num = x1
+  17 |     print x1
   18 |     goto L3
   19 | L2:
-  20 |     num = y1
+  20 |     print y1
   21 | L3:
-  22 |     print num

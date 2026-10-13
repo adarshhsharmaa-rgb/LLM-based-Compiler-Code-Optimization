@@ -1697,17 +1697,59 @@
     },
     {
       "iteration": 21,
-      "phase": "info",
+      "phase": "route",
       "opportunity_type": null,
-      "description": "LLM not consulted: unavailable (Groq daily quota used up (429): Rate limit reached for model `qwen/qwen3.8-27b` in organization `org_01m4qvej6keqr80jzd0yda90dw` service tier `on_demand` on tokens per day (TPD): Limit 200000, Used 199999, Requested 818. Please try )",
+      "description": "LLM optimizer (groq openai/gpt-oss-120b): the rules have nothing left to try",
       "tac_before": null,
       "tac_after": null,
       "verification_result": null,
       "cost_before": null,
       "cost_after": null,
       "decision": null,
+      "reason": "the rules have nothing left to try",
+      "source": "llm"
+    },
+    {
+      "iteration": 21,
+      "phase": "propose",
+      "opportunity_type": "LLM",
+      "description": "LLM produced no usable TAC: could not parse LLM TAC; reasoning: Eliminated the temporary t7 by copy\u2011propagating its definition into t9, reducing one instruction while preserving semantics.",
+      "tac_before": "t1 = in_m - 1\nt2 = t1 % in_s\nt4 = t2 + 1\nt7 = t1 / in_s\nt9 = t7 + 1\nt10 = t4 * t9\nt12 = in_n - 1\nt13 = t12 / in_s\nt15 = t13 + 1\nt16 = t10 * t15\nt19 = t12 % in_s\nt21 = t19 + 1\nx = t16 * t21\nprint x",
+      "tac_after": null,
+      "verification_result": null,
+      "cost_before": null,
+      "cost_after": null,
+      "decision": null,
       "reason": null,
-      "source": "rule"
+      "source": "llm"
+    },
+    {
+      "iteration": 21,
+      "phase": "repair",
+      "opportunity_type": "LLM",
+      "description": "Feedback sent to the LLM: It is not valid TAC: TAC line 4: unrecognised instruction: 't9 = t1 / in_s + 1'. Use only the instruction forms listed below; one instruction has at most one operator.",
+      "tac_before": null,
+      "tac_after": null,
+      "verification_result": null,
+      "cost_before": null,
+      "cost_after": null,
+      "decision": null,
+      "reason": "It is not valid TAC: TAC line 4: unrecognised instruction: 't9 = t1 / in_s + 1'. Use only the instruction forms listed below; one instruction has at most one operator.",
+      "source": "llm"
+    },
+    {
+      "iteration": 21,
+      "phase": "propose",
+      "opportunity_type": "LLM",
+      "description": "LLM produced no usable TAC: could not parse LLM TAC; reasoning: Propagated the expressions (in_m\u20111) and (in_n\u20111) into their uses and removed the now\u2011dead temporaries t1 and t12.",
+      "tac_before": "t1 = in_m - 1\nt2 = t1 % in_s\nt4 = t2 + 1\nt7 = t1 / in_s\nt9 = t7 + 1\nt10 = t4 * t9\nt12 = in_n - 1\nt13 = t12 / in_s\nt15 = t13 + 1\nt16 = t10 * t15\nt19 = t12 % in_s\nt21 = t19 + 1\nx = t16 * t21\nprint x",
+      "tac_after": null,
+      "verification_result": null,
+      "cost_before": null,
+      "cost_after": null,
+      "decision": null,
+      "reason": null,
+      "source": "llm"
     }
   ]
 }

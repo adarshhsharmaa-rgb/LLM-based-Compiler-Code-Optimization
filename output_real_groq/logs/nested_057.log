@@ -113,17 +113,30 @@
   [ACCEPT]  ✓ Change accepted
 --- Iteration 17 ---
   [ANALYZE] No more opportunities found.
-  [INFO]    LLM not consulted: unavailable (Groq daily quota used up (429): Rate limit reached for model `qwen/qwen3.8-27b` in organization `org_01m4qvej6keqr80jzd0yda90dw` service tier `on_demand` on tokens per day (TPD): Limit 200000, Used 199999, Requested 818. Please try )
+  [ROUTE]   LLM optimizer (groq openai/gpt-oss-120b): the rules have nothing left to try
+  [LLM]     LLM proposal: Replaced (t6 + 2880) % 1440 with t6 % 1440 because adding a multiple of the modulus does not change the result.
+  [VERIFY]  FAIL (output mismatch on inputs {'in_a': 36, 'in_b': -38, 'in_c': 62, 'in_d': 88}: original printed [19, 1000000, 54], candidate printed [-4, 1000000, -6])
+  [REJECT]  ✗ Change rejected: Verification failed: output mismatch on inputs {'in_a': 36, 'in_b': -38, 'in_c': 62, 'in_d': 88}: original printed [19, 1000000, 54], candidate printed [-4, 1000000, -6]
+  [REPAIR]  Feedback sent to the LLM: It changes what the program does: output mismatch on inputs {'in_a': 36, 'in_b': -38, 'in_c': 62, 'in_d': 88}: original printed [19, 1000000, 54], candidate printed [-4, 1000000, -6].
+  [LLM]     LLM repair: Algebraic simplification: combine the separate multiplications and additions into fewer temporaries while preserving exact arithmetic.
+  [VERIFY]  PASS (differential: 675/675 inputs matched, symbolic: equivalent)
+  [COST]    Before: 34.0, After: 30.5 (reduction: 10.3%); time 73.0 → 70.0 cycles
+  [ACCEPT]  ✓ Change accepted
+--- Iteration 18 ---
+  [ANALYZE] No more opportunities found.
+  [INFO]    LLM not consulted: call budget used up (1 per program)
 === RESULT ===
   Original cost: 78.0
-  Final cost:    34.0
-  Reduction:     56.4%
-  Exec. time:    89.0 → 73.0 cycles (18.0% less)
-  Iterations:    17
-  Accepted:      16
+  Final cost:    30.5
+  Reduction:     60.9%
+  Exec. time:    89.0 → 70.0 cycles (21.3% less)
+  Iterations:    18
+  Accepted:      17
   Rejected:      0
-  Invalid:       0
-  Routing:       hybrid (LLM: groq qwen/qwen3.8-27b)
+  Invalid:       1
+  Routing:       hybrid (LLM: groq openai/gpt-oss-120b)
+  LLM proposals: 2 (1 passed verification)
+  LLM repairs:   1 (1 accepted)
   Output match:  PASS ✓
   Equivalence:   proved for all inputs
 === Original TAC ===
@@ -156,15 +169,14 @@
   26 |     t15 = e % t14
   27 |     print t15
 === Optimized TAC ===
-   0 |     t1 = in_a * 60
-   1 |     t2 = t1 + in_b
-   2 |     t4 = in_c * 60
-   3 |     t5 = t2 - t4
-   4 |     t6 = t5 - in_d
-   5 |     t8 = t6 + 2880
-   6 |     e = t8 % 1440
-   7 |     t12 = e / 60
-   8 |     print t12
-   9 |     print 1000000
-  10 |     t15 = e % 60
-  11 |     print t15
+   0 |     t9 = in_a - in_c
+   1 |     t10 = t9 * 60
+   2 |     t11 = t10 + in_b
+   3 |     t6 = t11 - in_d
+   4 |     t8 = t6 + 2880
+   5 |     e = t8 % 1440
+   6 |     t12 = e / 60
+   7 |     print t12
+   8 |     print 1000000
+   9 |     t15 = e % 60
+  10 |     print t15

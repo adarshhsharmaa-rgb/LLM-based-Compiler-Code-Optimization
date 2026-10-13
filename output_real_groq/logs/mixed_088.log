@@ -218,17 +218,28 @@
   [ACCEPT]  ✓ Change accepted
 --- Iteration 32 ---
   [ANALYZE] No more opportunities found.
-  [INFO]    LLM not consulted: unavailable (Groq daily quota used up (429): Rate limit reached for model `qwen/qwen3.8-27b` in organization `org_01m4qvej6keqr80jzd0yda90dw` service tier `on_demand` on tokens per day (TPD): Limit 200000, Used 199999, Requested 818. Please try )
+  [ROUTE]   LLM optimizer (groq openai/gpt-oss-120b): the rules have nothing left to try
+  [LLM]     LLM produced no usable TAC: could not parse LLM TAC; reasoning: Copy propagation: eliminated temporary t7 by using the original expression directly in the conditional.
+  [REPAIR]  Feedback sent to the LLM: It is not valid TAC: TAC line 9: malformed ifFalse: 'ifFalse pos == 1 goto L2'. Use only the instruction forms listed below; one instruction has at most one operator.
+  [LLM]     LLM repair: Removed redundant label L3 by redirecting its jump directly to L0 (dead code elimination of an empty block).
+  [VERIFY]  PASS (differential: 365/365 inputs matched, symbolic: skipped (control flow))
+  [COST]    Before: 94.0, After: 93.0 (reduction: 1.1%); time 549.3 → 540.6 cycles
+  [ACCEPT]  ✓ Change accepted
+--- Iteration 33 ---
+  [ANALYZE] No more opportunities found.
+  [INFO]    LLM not consulted: call budget used up (1 per program)
 === RESULT ===
   Original cost: 181.5
-  Final cost:    94.0
-  Reduction:     48.2%
-  Exec. time:    753.3 → 549.3 cycles (27.1% less)
-  Iterations:    32
-  Accepted:      31
+  Final cost:    93.0
+  Reduction:     48.8%
+  Exec. time:    753.3 → 540.6 cycles (28.2% less)
+  Iterations:    33
+  Accepted:      32
   Rejected:      0
   Invalid:       0
-  Routing:       hybrid (LLM: groq qwen/qwen3.8-27b)
+  Routing:       hybrid (LLM: groq openai/gpt-oss-120b)
+  LLM proposals: 1 (1 passed verification)
+  LLM repairs:   1 (1 accepted)
   Output match:  PASS ✓
   Equivalence:   tested on the verifier's inputs
 === Original TAC ===
@@ -332,7 +343,7 @@
   15 |     pos = 3
   16 |     val = val + in_b
   17 | L5:
-  18 |     goto L3
+  18 |     goto L0
   19 | L2:
   20 |     t14 = pos == 2
   21 |     ifFalse t14 goto L6
@@ -360,7 +371,6 @@
   43 | L12:
   44 | L10:
   45 | L7:
-  46 | L3:
-  47 |     goto L0
-  48 | L1:
-  49 |     print val
+  46 |     goto L0
+  47 | L1:
+  48 |     print val

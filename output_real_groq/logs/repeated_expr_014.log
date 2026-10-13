@@ -92,17 +92,25 @@
   [ACCEPT]  ✓ Change accepted
 --- Iteration 14 ---
   [ANALYZE] No more opportunities found.
-  [INFO]    LLM not consulted: unavailable (Groq daily quota used up (429): Rate limit reached for model `qwen/qwen3.8-27b` in organization `org_01m4qvej6keqr80jzd0yda90dw` service tier `on_demand` on tokens per day (TPD): Limit 200000, Used 199999, Requested 818. Please try )
+  [ROUTE]   LLM optimizer (groq openai/gpt-oss-120b): the rules have nothing left to try
+  [LLM]     LLM proposal: Eliminated the redundant computation of i*i by reusing t2 for both comparisons (common subexpression elimination).
+  [VERIFY]  PASS (differential: 311/311 inputs matched, symbolic: skipped (control flow))
+  [COST]    Before: 45.0, After: 41.5 (reduction: 7.8%); time 163.3 → 150.7 cycles
+  [ACCEPT]  ✓ Change accepted
+--- Iteration 15 ---
+  [ANALYZE] No more opportunities found.
+  [INFO]    LLM not consulted: call budget used up (1 per program)
 === RESULT ===
   Original cost: 82.0
-  Final cost:    45.0
-  Reduction:     45.1%
-  Exec. time:    184.9 → 163.3 cycles (11.7% less)
-  Iterations:    14
-  Accepted:      13
+  Final cost:    41.5
+  Reduction:     49.4%
+  Exec. time:    184.9 → 150.7 cycles (18.5% less)
+  Iterations:    15
+  Accepted:      14
   Rejected:      0
   Invalid:       0
-  Routing:       hybrid (LLM: groq qwen/qwen3.8-27b)
+  Routing:       hybrid (LLM: groq openai/gpt-oss-120b)
+  LLM proposals: 1 (1 passed verification)
   Output match:  PASS ✓
   Equivalence:   tested on the verifier's inputs
 === Original TAC ===
@@ -148,19 +156,18 @@
    3 |     t2 = i * i
    4 |     t3 = t2 <= in_n
    5 |     ifFalse t3 goto L1
-   6 |     t4 = i * i
-   7 |     t5 = t4 == in_n
-   8 |     ifFalse t5 goto L2
-   9 |     ans = ans + 1
-  10 |     goto L3
-  11 | L2:
-  12 |     t8 = in_n % i
-  13 |     t10 = t8 == 0
-  14 |     ifFalse t10 goto L4
-  15 |     ans = ans + 2
-  16 | L4:
-  17 | L3:
-  18 |     i = i + 1
-  19 |     goto L0
-  20 | L1:
-  21 |     print ans
+   6 |     t5 = t2 == in_n
+   7 |     ifFalse t5 goto L2
+   8 |     ans = ans + 1
+   9 |     goto L3
+  10 | L2:
+  11 |     t8 = in_n % i
+  12 |     t10 = t8 == 0
+  13 |     ifFalse t10 goto L4
+  14 |     ans = ans + 2
+  15 | L4:
+  16 | L3:
+  17 |     i = i + 1
+  18 |     goto L0
+  19 | L1:
+  20 |     print ans

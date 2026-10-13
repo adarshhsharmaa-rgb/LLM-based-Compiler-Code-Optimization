@@ -51,6 +51,9 @@
 \usepackage{parskip}
 \setlength{\parindent}{0pt}
 \setlength{\parskip}{6pt}
+% long file and class names in typewriter type cannot be hyphenated: let lines stretch instead of overflowing
+\tolerance=2000
+\emergencystretch=3em
 
 % ---------- chapter/section formatting ----------
 \usepackage{titlesec}
@@ -156,7 +159,12 @@ Tested on a dataset of 500 programs spanning seven structural categories, the ru
 \vspace{0.5cm}
 
 \renewcommand{\contentsname}{}
+% keep the list on the same page as its heading (\tableofcontents would start a new page)
+\begingroup
+\let\clearpage\relax
+\vspace*{-2.5cm}
 \tableofcontents
+\endgroup
 \newpage
 
 % ============================================================
@@ -717,6 +725,7 @@ We ran the agent four times on the full 500-program dataset: once with the rule-
 \caption{Aggregate metrics across 500 programs}
 \label{tab:metrics}
 \small
+\setlength{\tabcolsep}{4pt}
 \begin{tabular}{|l|c|c|c|c|}
 \hline
 \textbf{Metric} & \textbf{Rule-only} & \textbf{Rule + Gemini} & \textbf{Rule + Groq} & \textbf{Rule + Ollama} \\
@@ -919,6 +928,98 @@ Figures~\ref{fig:sankey} to \ref{fig:heatmap} are drawn from the Gemini run. Fig
 \includegraphics[width=0.9\textwidth]{report_figures/comparison_ollama.png}
 \caption{Rule-only against rule + the local Ollama model. The gains are small but come with no internet connection}
 \label{fig:cmp-ollama}
+\end{figure}
+
+\subsection{Analysis Charts for the Groq Run}
+
+Figures~\ref{fig:sankey-groq} to \ref{fig:heatmap-groq} repeat the six charts for the run with Groq. The picture is close to the Gemini run: the same optimization types dominate, and only 6 proposals fail verification.
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=\textwidth]{report_figures/sankey_groq.png}
+\caption{Groq run: flow of the 11,085 proposals. Only 6 LLM proposals were invalid, so the band of blocked proposals is barely visible}
+\label{fig:sankey-groq}
+\end{figure}
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=\textwidth]{report_figures/outcomes_by_type_groq.png}
+\caption{Groq run: accept, reject, and invalid counts for each optimization type}
+\label{fig:outcomes-groq}
+\end{figure}
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=\textwidth]{report_figures/cost_over_iterations_groq.png}
+\caption{Groq run: weighted cost at each iteration for five representative programs}
+\label{fig:trajectory-groq}
+\end{figure}
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=0.9\textwidth]{report_figures/accepted_types_groq.png}
+\caption{Groq run: breakdown of accepted optimizations by type}
+\label{fig:pie-groq}
+\end{figure}
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=\textwidth]{report_figures/steps_vs_improvement_groq.png}
+\caption{Groq run: agent steps versus percentage cost improvement}
+\label{fig:scatter-groq}
+\end{figure}
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=\textwidth]{report_figures/heatmap_groq.png}
+\caption{Groq run: accepted optimizations for each program category and optimization type}
+\label{fig:heatmap-groq}
+\end{figure}
+
+\subsection{Analysis Charts for the Ollama Run}
+
+Figures~\ref{fig:sankey-ollama} to \ref{fig:heatmap-ollama} show the same charts for the offline run with the local model. Here the band of invalid proposals is clearly visible: 113 of the local model's proposals were wrong, and every one was blocked by the verifier.
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=\textwidth]{report_figures/sankey_ollama.png}
+\caption{Ollama run: flow of the 10,805 proposals. The 113 invalid LLM proposals form a visible band that ends at the verifier}
+\label{fig:sankey-ollama}
+\end{figure}
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=\textwidth]{report_figures/outcomes_by_type_ollama.png}
+\caption{Ollama run: accept, reject, and invalid counts for each optimization type. The invalid bar belongs to the LLM proposals}
+\label{fig:outcomes-ollama}
+\end{figure}
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=\textwidth]{report_figures/cost_over_iterations_ollama.png}
+\caption{Ollama run: weighted cost at each iteration for five representative programs}
+\label{fig:trajectory-ollama}
+\end{figure}
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=0.9\textwidth]{report_figures/accepted_types_ollama.png}
+\caption{Ollama run: breakdown of accepted optimizations by type}
+\label{fig:pie-ollama}
+\end{figure}
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=\textwidth]{report_figures/steps_vs_improvement_ollama.png}
+\caption{Ollama run: agent steps versus percentage cost improvement}
+\label{fig:scatter-ollama}
+\end{figure}
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=\textwidth]{report_figures/heatmap_ollama.png}
+\caption{Ollama run: accepted optimizations for each program category and optimization type}
+\label{fig:heatmap-ollama}
 \end{figure}
 
 \section{Performance Analysis and Evaluation}

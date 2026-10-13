@@ -90,75 +90,60 @@
   [VERIFY]  PASS (differential: 302/302 inputs matched, symbolic: skipped (control flow))
   [COST]    Before: 48.5, After: 48.5 (reduction: 0.0%); time 151.2 → 149.2 cycles
   [REJECT]  ✗ Change rejected: No cost improvement
---- Iteration 14 ---
-  [ANALYZE] Found 5 opportunities: COPY_PROPAGATIONx5 (priority=50)
-  [ROUTE]   Rule-based optimizer: highest-priority opportunity is COPY_PROPAGATION (priority 50)
-  [PROPOSE] Applying COPY_PROPAGATION at instruction 11: t9 = cnt * 2; cnt = t9 → cnt = cnt * 2
+  [ROUTE]   LLM optimizer (groq openai/gpt-oss-120b): the rule-based proposal was turned down
+  [LLM]     LLM proposal: Copy propagation removes the unnecessary temporaries t10 and t12, replacing them with their constant values.
   [VERIFY]  PASS (differential: 302/302 inputs matched, symbolic: skipped (control flow))
-  [COST]    Before: 48.5, After: 45.5 (reduction: 6.2%); time 151.2 → 150.2 cycles
+  [COST]    Before: 48.5, After: 42.5 (reduction: 12.4%); time 151.2 → 149.2 cycles
   [ACCEPT]  ✓ Change accepted
---- Iteration 15 ---
+--- Iteration 14 ---
   [ANALYZE] Found 4 opportunities: STRENGTH_REDUCTION (priority=60), COPY_PROPAGATIONx3 (priority=50)
   [ROUTE]   Rule-based optimizer: highest-priority opportunity is STRENGTH_REDUCTION (priority 60)
-  [PROPOSE] Applying STRENGTH_REDUCTION at instruction 10: cnt = cnt * 2 → cnt = cnt + cnt
-  [VERIFY]  PASS (differential: 302/302 inputs matched, symbolic: skipped (control flow))
-  [COST]    Before: 45.5, After: 45.5 (reduction: 0.0%); time 150.2 → 148.2 cycles
-  [REJECT]  ✗ Change rejected: No cost improvement
---- Iteration 16 ---
-  [ANALYZE] Found 3 opportunities: COPY_PROPAGATIONx3 (priority=50)
-  [ROUTE]   Rule-based optimizer: highest-priority opportunity is COPY_PROPAGATION (priority 50)
-  [PROPOSE] Applying COPY_PROPAGATION at instruction 11: t10 = 2 → uses of t10 -> 2 at instr 12
-  [VERIFY]  PASS (differential: 302/302 inputs matched, symbolic: skipped (control flow))
-  [COST]    Before: 45.5, After: 42.5 (reduction: 6.6%); time 150.2 → 149.2 cycles
-  [ACCEPT]  ✓ Change accepted
---- Iteration 17 ---
-  [ANALYZE] Found 3 opportunities: STRENGTH_REDUCTION (priority=60), COPY_PROPAGATIONx2 (priority=50)
-  [ROUTE]   Rule-based optimizer: highest-priority opportunity is STRENGTH_REDUCTION (priority 60)
-  [PROPOSE] Applying STRENGTH_REDUCTION at instruction 10: cnt = cnt * 2 → cnt = cnt + cnt
+  [PROPOSE] Applying STRENGTH_REDUCTION at instruction 10: t9 = cnt * 2 → t9 = cnt + cnt
   [VERIFY]  PASS (differential: 302/302 inputs matched, symbolic: skipped (control flow))
   [COST]    Before: 42.5, After: 42.5 (reduction: 0.0%); time 149.2 → 147.2 cycles
   [REJECT]  ✗ Change rejected: No cost improvement
---- Iteration 18 ---
-  [ANALYZE] Found 2 opportunities: COPY_PROPAGATIONx2 (priority=50)
+--- Iteration 15 ---
+  [ANALYZE] Found 3 opportunities: COPY_PROPAGATIONx3 (priority=50)
   [ROUTE]   Rule-based optimizer: highest-priority opportunity is COPY_PROPAGATION (priority 50)
-  [PROPOSE] Applying COPY_PROPAGATION at instruction 12: t12 = 1 → uses of t12 -> 1 at instr 13
+  [PROPOSE] Applying COPY_PROPAGATION at instruction 11: t9 = cnt * 2; cnt = t9 → cnt = cnt * 2
   [VERIFY]  PASS (differential: 302/302 inputs matched, symbolic: skipped (control flow))
   [COST]    Before: 42.5, After: 39.5 (reduction: 7.1%); time 149.2 → 148.2 cycles
   [ACCEPT]  ✓ Change accepted
---- Iteration 19 ---
+--- Iteration 16 ---
   [ANALYZE] Found 2 opportunities: STRENGTH_REDUCTION (priority=60), COPY_PROPAGATION (priority=50)
   [ROUTE]   Rule-based optimizer: highest-priority opportunity is STRENGTH_REDUCTION (priority 60)
   [PROPOSE] Applying STRENGTH_REDUCTION at instruction 10: cnt = cnt * 2 → cnt = cnt + cnt
   [VERIFY]  PASS (differential: 302/302 inputs matched, symbolic: skipped (control flow))
   [COST]    Before: 39.5, After: 39.5 (reduction: 0.0%); time 148.2 → 146.2 cycles
   [REJECT]  ✗ Change rejected: No cost improvement
---- Iteration 20 ---
+--- Iteration 17 ---
   [ANALYZE] Found 1 opportunity: COPY_PROPAGATION (priority=50)
   [ROUTE]   Rule-based optimizer: highest-priority opportunity is COPY_PROPAGATION (priority 50)
   [PROPOSE] Applying COPY_PROPAGATION at instruction 15: t14 = cnt + i; cnt = t14 → cnt = cnt + i
   [VERIFY]  PASS (differential: 302/302 inputs matched, symbolic: skipped (control flow))
   [COST]    Before: 39.5, After: 36.5 (reduction: 7.6%); time 148.2 → 147.7 cycles
   [ACCEPT]  ✓ Change accepted
---- Iteration 21 ---
+--- Iteration 18 ---
   [ANALYZE] Found 1 opportunity: STRENGTH_REDUCTION (priority=60)
   [ROUTE]   Rule-based optimizer: highest-priority opportunity is STRENGTH_REDUCTION (priority 60)
   [PROPOSE] Applying STRENGTH_REDUCTION at instruction 10: cnt = cnt * 2 → cnt = cnt + cnt
   [VERIFY]  PASS (differential: 302/302 inputs matched, symbolic: skipped (control flow))
   [COST]    Before: 36.5, After: 36.5 (reduction: 0.0%); time 147.7 → 145.7 cycles
   [REJECT]  ✗ Change rejected: No cost improvement
---- Iteration 22 ---
+--- Iteration 19 ---
   [ANALYZE] No more opportunities found.
-  [INFO]    LLM not consulted: unavailable (Groq daily quota used up (429): Rate limit reached for model `qwen/qwen3.8-27b` in organization `org_01m4qvej6keqr80jzd0yda90dw` service tier `on_demand` on tokens per day (TPD): Limit 200000, Used 199999, Requested 818. Please try )
+  [INFO]    LLM not consulted: call budget used up (1 per program)
 === RESULT ===
   Original cost: 82.5
   Final cost:    36.5
   Reduction:     55.8%
   Exec. time:    207.8 → 147.7 cycles (28.9% less)
-  Iterations:    22
-  Accepted:      16
-  Rejected:      5
+  Iterations:    19
+  Accepted:      15
+  Rejected:      4
   Invalid:       0
-  Routing:       hybrid (LLM: groq qwen/qwen3.8-27b)
+  Routing:       hybrid (LLM: groq openai/gpt-oss-120b)
+  LLM proposals: 1 (1 passed verification)
   Output match:  PASS ✓
   Equivalence:   tested on the verifier's inputs
 === Original TAC ===

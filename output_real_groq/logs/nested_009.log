@@ -43,7 +43,13 @@
   [ACCEPT]  ✓ Change accepted
 --- Iteration 7 ---
   [ANALYZE] No more opportunities found.
-  [INFO]    LLM not consulted: unavailable (Groq daily quota used up (429): Rate limit reached for model `qwen/qwen3.8-27b` in organization `org_01m4qvej6keqr80jzd0yda90dw` service tier `on_demand` on tokens per day (TPD): Limit 200000, Used 199999, Requested 818. Please try )
+  [ROUTE]   LLM optimizer (groq openai/gpt-oss-120b): the rules have nothing left to try
+  [LLM]     LLM produced no usable TAC: could not parse LLM TAC; reasoning: Substituted t1 into t4, eliminating the now‑unused temporary t1 (algebraic simplification).
+  [REPAIR]  Feedback sent to the LLM: It is not valid TAC: TAC line 2: unrecognised instruction: 't4 = (in_a - 1) / t3'. Use only the instruction forms listed below; one instruction has at most one operator.
+  [LLM]     LLM repair: Swapped operands of the addition (commutative) to demonstrate an algebraic simplification.
+  [VERIFY]  PASS (differential: 393/393 inputs matched, symbolic: equivalent)
+  [COST]    Before: 15.0, After: 15.0 (reduction: 0.0%); time 23.9 → 23.9 cycles
+  [REJECT]  ✗ Change rejected: No cost improvement
 === RESULT ===
   Original cost: 31.0
   Final cost:    15.0
@@ -51,9 +57,11 @@
   Exec. time:    29.9 → 23.9 cycles (20.1% less)
   Iterations:    7
   Accepted:      6
-  Rejected:      0
+  Rejected:      1
   Invalid:       0
-  Routing:       hybrid (LLM: groq qwen/qwen3.8-27b)
+  Routing:       hybrid (LLM: groq openai/gpt-oss-120b)
+  LLM proposals: 1 (1 passed verification)
+  LLM repairs:   1 (0 accepted)
   Output match:  PASS ✓
   Equivalence:   proved for all inputs
 === Original TAC ===

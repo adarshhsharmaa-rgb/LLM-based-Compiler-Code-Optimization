@@ -1025,17 +1025,73 @@
     },
     {
       "iteration": 13,
-      "phase": "info",
+      "phase": "route",
       "opportunity_type": null,
-      "description": "LLM not consulted: unavailable (Groq daily quota used up (429): Rate limit reached for model `qwen/qwen3.8-27b` in organization `org_01m4qvej6keqr80jzd0yda90dw` service tier `on_demand` on tokens per day (TPD): Limit 200000, Used 199999, Requested 818. Please try )",
+      "description": "LLM optimizer (groq openai/gpt-oss-120b): the rules have nothing left to try",
       "tac_before": null,
       "tac_after": null,
       "verification_result": null,
       "cost_before": null,
       "cost_after": null,
       "decision": null,
+      "reason": "the rules have nothing left to try",
+      "source": "llm"
+    },
+    {
+      "iteration": 13,
+      "phase": "propose",
+      "opportunity_type": "LLM",
+      "description": "LLM proposal: Replaced repeated computations with copies of already computed values (common subexpression elimination).",
+      "tac_before": "t1 = in_a >= 10\nt3 = in_a <= 999\nt4 = t1 && t3\nt6 = in_a % 2\nt8 = t6 != 0\nt9 = t4 && t8\nifFalse t9 goto L0\nprint 1000000\nL0:\nt12 = in_a >= 10\nt14 = in_a <= 999\nt15 = t12 && t14\nt17 = in_a % 2\nt19 = t17 == 0\nt20 = t15 && t19\nifFalse t20 goto L1\nprint 1000001\nL1:",
+      "tac_after": "t1 = in_a >= 10\nt3 = in_a <= 999\nt4 = t1 && t3\nt6 = in_a % 2\nt8 = t6 != 0\nt9 = t4 && t8\nifFalse t9 goto L0\nprint 1000000\nL0:\nt12 = t1\nt14 = t3\nt15 = t4\nt17 = t6\nt19 = t17 == 0\nt20 = t15 && t19\nifFalse t20 goto L1\nprint 1000001\nL1:",
+      "verification_result": null,
+      "cost_before": null,
+      "cost_after": null,
+      "decision": null,
       "reason": null,
-      "source": "rule"
+      "source": "llm"
+    },
+    {
+      "iteration": 13,
+      "phase": "verify",
+      "opportunity_type": "LLM",
+      "description": "PASS (differential: 357/357 inputs matched, SMT: proved equivalent for all inputs (8 paths))",
+      "tac_before": null,
+      "tac_after": null,
+      "verification_result": "PASS",
+      "cost_before": null,
+      "cost_after": null,
+      "decision": null,
+      "reason": "differential: 357/357 inputs matched, SMT: proved equivalent for all inputs (8 paths)",
+      "source": "llm"
+    },
+    {
+      "iteration": 13,
+      "phase": "evaluate",
+      "opportunity_type": "LLM",
+      "description": "Before: 30.0, After: 34.0 (reduction: -13.3%); time 54.5 \u2192 35.5 cycles",
+      "tac_before": null,
+      "tac_after": null,
+      "verification_result": null,
+      "cost_before": 30.0,
+      "cost_after": 34.0,
+      "decision": null,
+      "reason": null,
+      "source": "llm"
+    },
+    {
+      "iteration": 13,
+      "phase": "reject",
+      "opportunity_type": "LLM",
+      "description": "\u2717 Change rejected: No cost improvement",
+      "tac_before": null,
+      "tac_after": null,
+      "verification_result": null,
+      "cost_before": null,
+      "cost_after": null,
+      "decision": "REJECT",
+      "reason": "No cost improvement",
+      "source": "llm"
     }
   ]
 }

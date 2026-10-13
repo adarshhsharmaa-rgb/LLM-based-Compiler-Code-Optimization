@@ -253,7 +253,12 @@
   [ACCEPT]  ✓ Change accepted
 --- Iteration 37 ---
   [ANALYZE] No more opportunities found.
-  [INFO]    LLM not consulted: unavailable (Groq daily quota used up (429): Rate limit reached for model `qwen/qwen3.8-27b` in organization `org_01m4qvej6keqr80jzd0yda90dw` service tier `on_demand` on tokens per day (TPD): Limit 200000, Used 199999, Requested 818. Please try )
+  [ROUTE]   LLM optimizer (groq openai/gpt-oss-120b): the rules have nothing left to try
+  [LLM]     LLM proposal: Copy propagation: replace the recomputed b+b (t53) with the already computed i.
+  [VERIFY]  FAIL (output mismatch on inputs {'in_n': 20}: original printed [20], candidate printed [14])
+  [REJECT]  ✗ Change rejected: Verification failed: output mismatch on inputs {'in_n': 20}: original printed [20], candidate printed [14]
+  [REPAIR]  Feedback sent to the LLM: It changes what the program does: output mismatch on inputs {'in_n': 20}: original printed [20], candidate printed [14].
+  [LLM]     LLM produced no usable TAC: could not parse LLM TAC; reasoning: Replaced the temporary t53 = b + b and subsequent i = i + t53 with a single statement i = i + 2 * b (algebraic simplification), eliminating an unnecessary copy.
 === RESULT ===
   Original cost: 276.5
   Final cost:    171.0
@@ -262,8 +267,10 @@
   Iterations:    37
   Accepted:      36
   Rejected:      0
-  Invalid:       0
-  Routing:       hybrid (LLM: groq qwen/qwen3.8-27b)
+  Invalid:       1
+  Routing:       hybrid (LLM: groq openai/gpt-oss-120b)
+  LLM proposals: 1 (0 passed verification)
+  LLM repairs:   1 (0 accepted)
   Output match:  PASS ✓
   Equivalence:   tested on the verifier's inputs
 === Original TAC ===
