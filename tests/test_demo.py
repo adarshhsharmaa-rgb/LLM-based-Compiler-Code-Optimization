@@ -105,3 +105,80 @@ def test_menu_selects_a_sample_by_number(monkeypatch):
 def test_menu_quit(monkeypatch):
     monkeypatch.setattr(builtins, "input", lambda *_: "q")
     assert demo.choose_program() is None
+
+
+def test_menu_picks_a_real_program(monkeypatch):
+    monkeypatch.setattr(builtins, "input", lambda *_: "r")
+    source, name = demo.choose_program()
+    assert demo.is_real_program(name) and "main" in source
+    assert not demo.is_real_program("3_loop.c")
+
+
+def _options(**changes):
+    values = {"llm_provider": "auto", "offline": False, "cost_model": "static", "strict": False,
+              "max_iterations": 200, "llm_model": None}
+    values.update(changes)
+    return demo.argparse.Namespace(**values)
+
+
+def test_setup_menu_chooses_the_proposer_and_the_cost_model(monkeypatch):
+    monkeypatch.setattr(demo, "llm_choices", lambda: [("Groq", "groq", True, ""), ("Gemini", "gemini", False, ""),
+                                                      ("Ollama", "ollama", True, "")])
+    answers = iter(["4", "t"])                          # rules + Ollama, time cost model
+    monkeypatch.setattr(builtins, "input", lambda *_: next(answers))
+    chosen, mode, side_by_side = demo.choose_setup(_options())
+    assert (chosen.llm_provider, chosen.offline, chosen.cost_model) == ("ollama", True, "time")
+    assert mode == "hybrid" and not side_by_side
+
+    answers = iter(["", ""])                            # Enter twice: rules only, static cost
+    chosen, mode, side_by_side = demo.choose_setup(_options())
+    assert (chosen.llm_provider, chosen.cost_model, mode, side_by_side) == ("auto", "static", "rule", False)
+
+    answers = iter(["5", ""])                           # the last entry compares every proposer
+    assert demo.choose_setup(_options())[2] is True
+
+
+def test_compare_lists_every_proposer(monkeypatch, capsys):
+    monkeypatch.setattr(demo, "llm_choices", lambda: [("Groq", "groq", False, "no key")])
+    demo.Style.enabled = False
+    with open(os.path.join(ROOT, "demo_programs", "3_loop.c"), encoding="utf-8") as fh:
+        status = demo.compare(fh.read(), "3_loop.c", _options())
+    out = capsys.readouterr().out
+    assert status == 0
+    rules = next(line for line in out.splitlines() if line.strip().startswith("Rules only"))
+    assert "%" in rules and "tested" in rules
+    assert "not ready" in next(line for line in out.splitlines() if line.strip().startswith("Rules + Groq"))
+
+
+def test_time_cost_model_accepts_the_strength_reduction():
+    sample = os.path.join(ROOT, "demo_programs", "7_time_cost_model.c")
+
+    def accepted(*extra):
+        out = run_demo(sample, "--inputs", "n=5", *extra).stdout
+        row = next(line for line in out.splitlines() if line.strip().startswith("Strength reduction"))
+        return int(row.split()[-3])                     # ... Suggested Correct Accepted No-gain Wrong
+
+    assert accepted() == 0 and accepted("--cost-model", "time") >= 1
+
+
+def test_a_real_program_runs_in_strict_mode():
+    path = demo.real_files()[0]
+    proc = run_demo(path)
+    assert proc.returncode == 0, proc.stdout[-600:]
+    assert "strict C mode" in proc.stdout and "SUMMARY" in proc.stdout
+
+
+def test_wrong_suggestions_are_listed_apart(capsys):
+    class WrongLLM:
+        available, unavailable_reason = True, ""
+
+        def propose(self, program):
+            return TACProgram.from_string("print 2"), "wrong"
+
+    orch = Orchestrator(max_llm_calls=1)
+    orch.llm_optimizer = WrongLLM()
+    result = orch.optimize(TACProgram.from_string("t0 = x * 2\nprint t0"))
+    demo.Style.enabled = False
+    demo.suggestion_summary(result, llm_enabled=True, llm_note="", hidden=0)
+    out = capsys.readouterr().out
+    assert "Wrong suggestions, blocked by the verifier: 1" in out

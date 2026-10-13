@@ -814,6 +814,7 @@ AGENTS = [
      "cheaper, or no cost gain"),
 ]
 OUTPUTS = ["Optimized TAC", "Decision log", "Metrics", "7 charts"]
+SHOW_FILES = True       # name the source file of every agent on the architecture slide
 
 
 def architecture_slide(deck):
@@ -840,19 +841,22 @@ def architecture_slide(deck):
     dash = OxmlElement("a:prstDash")
     dash.set("val", "dash")
     frame.line._get_or_add_ln().append(dash)
+    file_name = [("(orchestrator.py)  ", {"font": "Consolas", "size": 10.5, "color": "a1"})] if SHOW_FILES else [" "]
     text(s, left + 2.0, top + 0.08, CW - 2.25, 0.45, [[
-        ("Orchestrator ", {"bold": True, "color": "a1"}), ("(orchestrator.py)  ", {"font": "Consolas", "size": 10.5, "color": "a1"}),
+        ("Orchestrator ", {"bold": True, "color": "a1"}), *file_name,
         ("Components: ", {"bold": True}),
         "loop controller (up to 50 iterations), memory of the opportunities already tried, decision logger, "
         "final checker"]], size=12, color="tx1")
+    up = 0.0 if SHOW_FILES else 0.17        # without the file name the lines below move up
     for i, (name, source, given, parts, result) in enumerate(AGENTS):
         x = left + 0.25 + i * (aw + agap)
         card(s, x, ay, aw, ah, fill="bg1", line="a1", line_w=1.25, radius=0.07)
         text(s, x + 0.13, ay + 0.08, aw - 0.26, 0.27, name, size=13, color="tx1", bold=True)
-        text(s, x + 0.13, ay + 0.34, aw - 0.26, 0.2, source, size=10, color="a1", font="Consolas")
-        text(s, x + 0.13, ay + 0.57, aw - 0.26, 0.22, [[("In: ", {"bold": True, "color": "a5"}), given]], size=10.5, color="tx2")
-        text(s, x + 0.13, ay + 0.82, aw - 0.26, 0.2, "Components", size=10.5, color="a1", bold=True)
-        text(s, x + 0.13, ay + 1.04, aw - 0.26, 1.1, parts, size=10.5, color="tx1", after=1.5, bullets=True)
+        if SHOW_FILES:
+            text(s, x + 0.13, ay + 0.34, aw - 0.26, 0.2, source, size=10, color="a1", font="Consolas")
+        text(s, x + 0.13, ay + 0.57 - up, aw - 0.26, 0.22, [[("In: ", {"bold": True, "color": "a5"}), given]], size=10.5, color="tx2")
+        text(s, x + 0.13, ay + 0.82 - up, aw - 0.26, 0.2, "Components", size=10.5, color="a1", bold=True)
+        text(s, x + 0.13, ay + 1.04 - up, aw - 0.26, 1.1, parts, size=10.5, color="tx1", after=1.5, bullets=True)
         text(s, x + 0.13, ay + ah - 0.3, aw - 0.26, 0.26, [[("Out: ", {"bold": True, "color": "a2"}), result]],
              size=10.5, color="tx1", anchor="b")
         if i:

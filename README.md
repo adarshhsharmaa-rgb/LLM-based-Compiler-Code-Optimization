@@ -134,11 +134,14 @@ py main.py --run-all --dataset real --output-dir output_real_rule_only   # the 5
 ## Live demo: the terminal front end
 
 `demo.py` takes a real C program and walks through the whole pipeline on
-screen, pausing between stages:
+screen, pausing between stages. [DEMO.md](DEMO.md) has the steps for a
+presentation, in order.
 
 ```bash
-py demo.py                                  # menu: pick a sample, paste code, or type a path
+py demo.py                                  # menu: pick a program, who proposes, and the cost model
 py demo.py demo_programs/3_loop.c           # run one file
+py demo.py demo_programs/3_loop.c --compare # the rules and every ready LLM on the same program, in one table
+py demo.py dataset/real_programs/loops/loops_001.c   # a real Codeforces program (strict C mode)
 py demo.py my_program.c --fast              # no pauses
 py demo.py my_program.c --inputs n=10       # values for scanf() variables
 py demo.py my_program.c --use-llm           # add the LLM proposer (Gemini or Groq; Ollama if offline)
@@ -235,7 +238,7 @@ py main.py --run-all --dataset real --quiet --output-dir output_real_rule_only
 py -m pytest tests/ -v
 ```
 
-397 tests cover every component (the SMT tests are skipped when `z3-solver` is not installed). The Ollama and Groq tests run against stand-in
+407 tests cover every component (the SMT tests are skipped when `z3-solver` is not installed). The Ollama and Groq tests run against stand-in
 local servers, so they need no Ollama, API key or network. The verifier tests inject wrong changes
 (bad folds, operand swaps, CSE across non-commutative ops, deleted live
 stores, off-by-one conditions, removed loop increments, deleted trapping

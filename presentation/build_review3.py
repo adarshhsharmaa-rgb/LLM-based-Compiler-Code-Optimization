@@ -13,6 +13,7 @@ import json
 import os
 import statistics
 import sys
+import tempfile
 
 HERE = os.path.dirname(os.path.abspath(__file__))
 if HERE not in sys.path:
@@ -37,6 +38,7 @@ from build_review2 import (  # noqa: E402
     notes_panel,
     num,
     pct,
+    picture,
     stat_card,
     table,
     text,
@@ -44,12 +46,13 @@ from build_review2 import (  # noqa: E402
 from pptx.enum.shapes import PP_PLACEHOLDER  # noqa: E402
 from pptx.oxml.ns import qn  # noqa: E402
 
+from src.visualization import suggestions as sg  # noqa: E402
 from src.visualization.report import aggregate_metrics, load_results  # noqa: E402
 
 OUTPUT = os.path.join(ROOT, "project_ppt_24bce2972_review3.pptx")
 REVIEW1_DECK = "project_ppt_24bce2972 (1).pptx"
 PENDING = "run in progress"
-TOTAL_TESTS = 397
+TOTAL_TESTS = 407
 RECHECK_TOTAL = "539,170"       # executions in the independent re-check of the runs on real programs
 CATEGORIES = r2.CATEGORIES
 
@@ -269,6 +272,7 @@ def find_review1() -> str:
 def build() -> str:
     # ------------------------------------------------------------------ the Review 2 slides
     r2.AGENTS = AGENTS
+    r2.SHOW_FILES = False        # Review 2 comment: no file names on the architecture diagram
     r2.find_base = find_review1
     held = {}
     real_save = r2.Deck.save
@@ -319,6 +323,29 @@ def build() -> str:
 
     def llm_calls(run):
         return sum(rec.get("llm_calls", 0) for rec in run["by_name"].values())
+
+    # ------------------------------------------------------------------ comments received at Review 2
+    s = deck.new("Review-02 Comments and Our Response")
+    comments = [
+        ("layers", "a1", "Remove the file references from the system architecture diagram",
+         "The architecture slide and the report figure now show only the agents and their components. The "
+         "source-file names are removed."),
+        ("list", "a4", "Add results per optimization (e.g. constant folding): correct suggestions of each model",
+         "New table of the correct suggestions for every optimization type, under the rules and under each of "
+         "the three LLMs, on both datasets, and a chart of the correct LLM suggestions per program category."),
+        ("chart", "a3", "Depict the wrong suggestions separately, in another diagram",
+         "New diagram that shows only the wrong LLM suggestions, per program category and model. Every one of "
+         "them was blocked by the verifier."),
+    ]
+    for i, (name, colour, comment, done) in enumerate(comments):
+        y = TOP + i * 1.78
+        card(s, LM, y, CW, 1.58)
+        icon(s, name, LM + 0.3, y + 0.34, d=0.7, fill=colour)
+        text(s, LM + 1.3, y + 0.2, CW - 1.6, 0.45, [[(f"Comment {i + 1}:  ", {"color": colour}), comment]],
+             size=17, color="tx1", bold=True)
+        text(s, LM + 1.3, y + 0.78, CW - 1.6, 0.7, [[("Response / action: ", {"bold": True, "color": colour}), done]],
+             size=14.5, color="tx1")
+    deck.order.insert(1, deck.order.pop())
 
     # ------------------------------------------------------------------ overview
     s = deck.new("Review 3: Four Additions to the System")
@@ -644,6 +671,77 @@ def build() -> str:
         ]
         table(s, x + 0.22, TOP + 1.1, [(cw - 0.44) * 0.65, (cw - 0.44) * 0.35], lines, size=13 if wide else 12,
               row_h=0.4, header=False)
+
+    # ------------------------------------------------------------------ correct suggestions per optimization type
+    def records(run):
+        return list(run["by_name"].values()) if run else []
+
+    generated_llm = {"Gemini": load("output"), "Groq": load("output_groq"), "Ollama": load("output_ollama")}
+    real_llm = {name: run for name, run, _, _ in llm_runs}
+    type_names = {"CONSTANT_FOLD": "Constant folding", "ALGEBRAIC_SIMPLIFY": "Algebraic simplification",
+                  "DEAD_CODE": "Dead code elimination", "CSE": "Common subexpression (CSE)",
+                  "STRENGTH_REDUCTION": "Strength reduction", "COPY_PROPAGATION": "Copy propagation",
+                  "LLM": "LLM proposal"}
+
+    def type_table(slide, x, width, heading, rules_run, llms):
+        configs = [("Rules", rules_run)] + [(f"+ {name}", run) for name, run in llms.items() if run]
+        counts = [sg.by_type(records(run)) for _, run in configs]
+        rows = [["Optimization type"] + [label for label, _ in configs]]
+        for kind, label in type_names.items():
+            rows.append([label] + ["n/a" if kind == "LLM" and i == 0 else num(c[kind]["correct"])
+                                   for i, c in enumerate(counts)])
+        rows.append([("Total correct", {"bold": True})]
+                    + [(num(sum(v["correct"] for v in c.values())), {"bold": True, "color": "a2"}) for c in counts])
+        rows.append([("Wrong (blocked)", {"bold": True})]
+                    + [(num(sum(v["wrong"] for v in c.values())), {"bold": True, "color": "a3"}) for c in counts])
+        text(slide, x, TOP, width, 0.35, heading, size=15, color="a1", bold=True)
+        first = 2.3
+        table(slide, x, TOP + 0.42, [first] + [(width - first) / len(configs)] * len(configs), rows, size=11.5, row_h=0.4)
+
+    s = deck.new("Correct Suggestions per Optimization Type and Model")
+    half = (CW - 0.25) / 2
+    type_table(s, LM, half, "Generated dataset (500 programs)", generated, generated_llm)
+    type_table(s, LM + half + 0.25, half, "Real programs (500 Codeforces submissions)", rule, real_llm)
+    card(s, LM, TOP + 4.55, CW, 0.8)
+    text(s, LM + 0.25, TOP + 4.55, CW - 0.5, 0.8, [[
+        ("Correct ", {"bold": True, "color": "a2"}), "= the suggestion passed verification (it was then accepted, or "
+        "turned down only because it was not cheaper). No rule suggestion was wrong in any run. The counts of a rule "
+        "type differ a little between the columns because an accepted LLM change alters what the rules find next."]],
+        size=12.5, color="tx1", anchor="ctr")
+
+    # ------------------------------------------------------------------ correct and wrong LLM suggestions, apart
+    charts = tempfile.mkdtemp(prefix="review3_charts_")
+    panels = [("Generated dataset (500 programs)", {k: records(v) for k, v in generated_llm.items() if v}),
+              ("Real programs (500 Codeforces submissions)", {k: records(v) for k, v in real_llm.items() if v})]
+
+    def totals(field):
+        parts = []
+        for label, runs in (("generated", generated_llm), ("real", real_llm)):
+            cells = [f"{name} {sum(v[field] for v in sg.llm_by_category(records(run)).values())}"
+                     for name, run in runs.items() if run]
+            parts.append(f"{label} programs: " + ", ".join(cells))
+        return "; ".join(parts) + "."
+
+    s = deck.new("Correct LLM Suggestions per Program Category")
+    picture(s, sg.category_chart(panels, "correct", os.path.join(charts, "correct.png"),
+                                 "Correct LLM suggestions (passed verification)"), LM, TOP, CW, 3.9)
+    card(s, LM, TOP + 4.05, CW, 1.3, fill="a2", alpha=10)
+    text(s, LM + 0.25, TOP + 4.05, CW - 0.5, 1.3, [
+        [("Totals. ", {"bold": True, "color": "a2"}), "On the " + totals("correct")],
+        "On generated programs the correct suggestions are in the loops, conditionals and mixed categories, where "
+        "a loop with constant bounds can be replaced by its result. Real programs spread them over every category.",
+    ], size=12.5, color="tx1", anchor="ctr", after=4)
+
+    s = deck.new("Wrong LLM Suggestions, Shown Separately")
+    picture(s, sg.category_chart(panels, "wrong", os.path.join(charts, "wrong.png"),
+                                 "Wrong LLM suggestions (rejected by the verifier)"), LM, TOP, CW, 3.9)
+    card(s, LM, TOP + 4.05, CW, 1.3, fill="a3", alpha=10)
+    text(s, LM + 0.25, TOP + 4.05, CW - 0.5, 1.3, [
+        [("Totals. ", {"bold": True, "color": "a3"}), "On the " + totals("wrong")],
+        [("Wrong ", {"bold": True}), "= the verifier found an input on which the suggested program prints something "
+         "else, or its symbolic check failed. ", ("None of these reached the output: 0 false positives in every run.",
+                                                  {"bold": True})],
+    ], size=12.5, color="tx1", anchor="ctr", after=4)
 
     # ------------------------------------------------------------------ the wrong change the re-check found
     s = deck.new("Validation: A Wrong Change the Tests Missed")

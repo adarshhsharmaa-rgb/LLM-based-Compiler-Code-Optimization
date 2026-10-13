@@ -20,6 +20,7 @@ ROOT = os.path.dirname(os.path.abspath(__file__))
 if ROOT not in sys.path:
     sys.path.insert(0, ROOT)
 
+from src.visualization import suggestions as sg  # noqa: E402
 from src.visualization.report import aggregate_metrics, load_results  # noqa: E402
 
 CATEGORIES = [("arithmetic", "Arithmetic-only"), ("nested", "Nested expressions"),
@@ -429,6 +430,74 @@ def build() -> str:
         if os.path.exists(os.path.join(figures, "real_comparison_gemini.png")):
             results += ("\\begin{figure}[H]\n\\centering\n\\includegraphics[width=0.9\\textwidth]{report_figures/real_comparison_gemini.png}\n"
                         "\\caption{Real programs: rule-only against rule + Gemini, per category}\n\\label{fig:realcmp}\n\\end{figure}\n\n")
+        # correct suggestions per optimization type and model; the wrong LLM suggestions in a diagram of their own
+        def records(run):
+            return list(run["by_name"].values()) if run else []
+
+        generated_llm = {name: run for name, run in (("Gemini", load("output")), ("Groq", load("output_groq")),
+                                                     ("Ollama", load("output_ollama"))) if run}
+        real_llm = dict(llm_runs)
+        type_names = {"CONSTANT_FOLD": "Constant folding", "ALGEBRAIC_SIMPLIFY": "Algebraic simplification",
+                      "DEAD_CODE": "Dead code elimination", "CSE": "Common subexpression (CSE)",
+                      "STRENGTH_REDUCTION": "Strength reduction", "COPY_PROPAGATION": "Copy propagation",
+                      "LLM": "LLM proposal"}
+
+        def type_table(caption, label, rules_run, llms):
+            configs = [("Rules", rules_run)] + [("+ " + name, run) for name, run in llms.items()]
+            counts = [sg.by_type(records(run)) for _, run in configs]
+            text = ("\\begin{table}[H]\n\\centering\n\\caption{" + caption + "}\n\\label{" + label + "}\n\\small\n"
+                    "\\begin{tabular}{|l|" + "c|" * len(configs) + "}\n\\hline\n\\textbf{Optimization type} & "
+                    + " & ".join("\\textbf{" + name + "}" for name, _ in configs) + " \\\\\n\\hline\n")
+            for key, name in type_names.items():
+                cells = ["---" if key == "LLM" and i == 0 else n(c[key]["correct"]) for i, c in enumerate(counts)]
+                text += name + " & " + " & ".join(cells) + " \\\\\n\\hline\n"
+            text += ("\\textbf{Total correct} & "
+                     + " & ".join("\\textbf{" + n(sum(v["correct"] for v in c.values())) + "}" for c in counts)
+                     + " \\\\\n\\hline\n\\textbf{Wrong (blocked)} & "
+                     + " & ".join("\\textbf{" + n(sum(v["wrong"] for v in c.values())) + "}" for c in counts)
+                     + " \\\\\n\\hline\n\\end{tabular}\n\\end{table}\n\n")
+            return text
+
+        panels = [("Generated dataset (500 programs)", {k: records(v) for k, v in generated_llm.items()}),
+                  ("Real programs (500 Codeforces submissions)", {k: records(v) for k, v in real_llm.items()})]
+        sg.category_chart(panels, "correct", os.path.join(figures, "suggestions_correct.png"),
+                          "Correct LLM suggestions (passed verification)", stacked=True)
+        sg.category_chart(panels, "wrong", os.path.join(figures, "suggestions_wrong.png"),
+                          "Wrong LLM suggestions (rejected by the verifier)", stacked=True)
+
+        def total(runs, field):
+            return ", ".join(f"{sum(v[field] for v in sg.llm_by_category(records(run)).values())} from {name}"
+                             for name, run in runs.items())
+
+        results += (
+            "\\subsubsection{Correct Suggestions per Optimization Type and Model}\n\n"
+            "Tables~\\ref{tab:typesgen} and~\\ref{tab:typesreal} count the correct suggestions for every optimization "
+            "type, under the rules alone and with each of the three LLMs. A suggestion is \\emph{correct} when it "
+            "passed verification; it was then accepted, or turned down only because it did not make the program "
+            "cheaper. No rule suggestion was wrong in any run. The counts of a rule type differ a little between "
+            "the columns, because an accepted LLM change alters what the rules find afterwards.\n\n"
+            + type_table("Correct suggestions per optimization type on the generated dataset", "tab:typesgen",
+                         generated, generated_llm)
+            + type_table("Correct suggestions per optimization type on the real programs", "tab:typesreal",
+                         rule, real_llm)
+            + "Figure~\\ref{fig:sugcorrect} shows where the correct LLM suggestions fall. On the generated programs "
+            "they are in the loops, conditionals and mixed categories, where a loop with constant bounds can be "
+            "replaced by its result. On the real programs they are spread over every category.\n\n"
+            "\\begin{figure}[H]\n\\centering\n\\includegraphics[width=0.92\\textwidth]{report_figures/suggestions_correct.png}\n"
+            "\\caption{Correct LLM suggestions per program category and model}\n\\label{fig:sugcorrect}\n\\end{figure}\n\n"
+            "\\subsubsection{Wrong Suggestions}\n\n"
+            "The wrong suggestions are shown apart in Figure~\\ref{fig:sugwrong}. A suggestion is \\emph{wrong} when "
+            "the verifier found an input on which the suggested program prints something else, or when its symbolic "
+            "check failed. On the generated dataset there were " + total(generated_llm, "wrong")
+            + "; on the real programs " + total(real_llm, "wrong")
+            + ". Every one of them was rejected before it could change the program, so no run has a false positive. "
+            "The local model is wrong most often on generated loops, which it tries to fold and gets the value "
+            "wrong; on real programs all three models are wrong at a similar rate, because a real loop or branch "
+            "depends on the input and a rewrite that looks right on small values fails on others.\n\n"
+            "\\begin{figure}[H]\n\\centering\n\\includegraphics[width=0.92\\textwidth]{report_figures/suggestions_wrong.png}\n"
+            "\\caption{Wrong LLM suggestions per program category and model, all rejected by the verifier}\n"
+            "\\label{fig:sugwrong}\n\\end{figure}\n\n")
+
         # the charts of the Groq and Ollama runs on the real programs, copied from the run folders
         charts = (("2_bar_outcomes_by_type", "outcomes", "accept, reject, and invalid counts for each optimization type", "0.85"),
                   ("4_pie_accepted_types", "accepted", "share of each optimization type among the accepted changes", "0.6"),
