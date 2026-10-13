@@ -9,6 +9,7 @@ Notes:
   * ``&&`` and ``||`` evaluate both operands (there is no short-circuiting).
   * Temporary names never collide with user identifiers: a candidate name
     ``tN`` that the program already uses is skipped.
+  * An ``ExitStmt`` becomes a jump to one label placed after the last instruction.
 """
 from __future__ import annotations
 
@@ -17,6 +18,7 @@ from ..tac.program import TACProgram
 from .ast_nodes import (
     Assignment,
     BinaryExpr,
+    ExitStmt,
     Expression,
     ForStmt,
     IfStmt,
@@ -55,15 +57,19 @@ class TACGenerator:
         self._label_counter = 0
         self._instructions: list[TACInstruction] = []
         self._reserved: set[str] = set()
+        self._exit_label: str | None = None
 
     def generate(self, program: Program) -> TACProgram:
         self._temp_counter = 0
         self._label_counter = 0
         self._instructions = []
         self._reserved = set()
+        self._exit_label = None
         _collect_identifiers(program.statements, self._reserved)
         for stmt in program.statements:
             self._gen_statement(stmt)
+        if self._exit_label is not None:
+            self._emit(TACInstruction(TACOp.LABEL, label=self._exit_label))
         return TACProgram(self._instructions)
 
     # ------------------------------------------------------------ helpers
@@ -100,6 +106,10 @@ class TACGenerator:
                 self._gen_while(stmt)
             case ForStmt():
                 self._gen_for(stmt)
+            case ExitStmt():
+                if self._exit_label is None:
+                    self._exit_label = self._new_label()
+                self._emit(TACInstruction(TACOp.GOTO, label=self._exit_label))
             case _:
                 raise TypeError(f"Unknown statement node: {type(stmt).__name__}")
 

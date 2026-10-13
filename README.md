@@ -111,6 +111,7 @@ py main.py --visualize --output-dir output        # the 6 charts, from saved res
 py main.py --run-all --use-llm                    # add the LLM proposer (Gemini or Groq; Ollama if offline)
 py main.py --run-file my.src --offline            # LLM = local Ollama model, no internet needed
 py main.py --run-file my.src --offline --optimizer llm   # route to the LLM first, the rules second
+py main.py --run-all --dataset real --output-dir output_real_rule_only   # the 500 real C programs instead
 ```
 
 | Flag | Meaning |
@@ -123,21 +124,32 @@ py main.py --run-file my.src --offline --optimizer llm   # route to the LLM firs
 | `--llm-model ID` | model for the LLM (defaults: `gemini-3.1-flash-lite`, `openai/gpt-oss-120b`, `qwen2.5-coder:7b`) |
 | `--compare-with DIR` | with `--visualize`: compare against another run (writes `comparison.csv` and chart 7) |
 | `--max-llm-calls N` | LLM proposals allowed per program (default 5) |
+| `--max-repairs N` | self-repair: second tries the LLM gets after a rejected answer (default 1, 0 turns it off); see [self-repair](#llm-self-repair) |
+| `--cost-model M` | what counts as cheaper: `static` (default) or `time`; see [execution time](#execution-time-in-the-cost-model) |
+| `--resume` | with `--run-all`: continue an interrupted run (finished programs are kept in `metrics/records_cache.jsonl`), or extend a finished one |
+| `--every K` | with `--run-all`: only every K-th program, a sample spread evenly over the categories |
 | `--quiet` | with `--run-all`, print only progress; logs are still saved |
+| `--dataset NAME` | with `--run-all`: `generated` (default) or `real`; see [real programs](#real-programs-the-codeforces-dataset) |
 
 ## Live demo: the terminal front end
 
 `demo.py` takes a real C program and walks through the whole pipeline on
-screen, pausing between stages:
+screen, pausing between stages. [DEMO.md](DEMO.md) has the steps for a
+presentation, in order.
 
 ```bash
-py demo.py                                  # menu: pick a sample, paste code, or type a path
+py demo.py                                  # menu: pick a program, who proposes, and the cost model
 py demo.py demo_programs/3_loop.c           # run one file
+py demo.py demo_programs/3_loop.c --compare # the rules and every ready LLM on the same program, in one table
+py demo.py dataset/real_programs/loops/loops_001.c   # a real Codeforces program (strict C mode)
 py demo.py my_program.c --fast              # no pauses
 py demo.py my_program.c --inputs n=10       # values for scanf() variables
 py demo.py my_program.c --use-llm           # add the LLM proposer (Gemini or Groq; Ollama if offline)
 py demo.py my_program.c --offline           # add the local Ollama model as the LLM proposer
 py demo.py my_program.c --verbose           # show every decision, including repeats and routing
+py demo.py my_program.c --cost-model time   # judge changes by measured execution time first
+ollama_demo.bat                             # offline demo with the local model, sample 6 (Windows)
+ollama_demo.bat my_program.c --inputs n=5   # the same for any C file
 ```
 
 | Stage | What it shows |
@@ -153,9 +165,10 @@ The demo accepts a subset of C (`src/frontend/c_frontend.py`):
 
 * **Supported:** `#include`, `int main()`, `int` variables with C block
   scoping, `if / else if / else`, `while`, `for`, `+= -= *= /= %= ++ --`,
-  `printf("%d", ...)` and `scanf("%d", &x)`.
-* **Not supported:** arrays, pointers, other functions, `float`/`char`,
-  `break`/`continue`. These stop with a message such as
+  `printf("%d", ...)` and `scanf("%d", &x)`, `return` anywhere in `main`,
+  character literals, `bool`, `long long` and integer `typedef`s.
+* **Not supported:** arrays, pointers, other functions, `float`/`char`
+  variables, `break`/`continue`. These stop with a message such as
   `C error at line 3: arrays are not supported`.
 * **`scanf` variables** become program inputs, which the verifier tests with
   many values.
@@ -167,13 +180,65 @@ The front end was checked against real `gcc`: random C programs were compiled
 with gcc and run, and their output had to match both the unoptimized and the
 optimized TAC.
 
+## Real programs: the Codeforces dataset
+
+The generated dataset is written to contain what the optimizer looks for. To
+see how the system does on code people actually wrote, a second dataset holds
+**500 real programs**: accepted submissions to Codeforces problems, taken from
+[`open-r1/codeforces-submissions`](https://huggingface.co/datasets/open-r1/codeforces-submissions)
+on Hugging Face (2025, CC-BY-4.0, 12.6 million submissions).
+
+```bash
+pip install pyarrow                             # only the two download steps need it
+py dataset/real_dataset.py collect              # download 6 files (about 150 MB each), keep what is usable
+py dataset/real_dataset.py select               # choose the 500 -> dataset/real_programs/
+py dataset/real_dataset.py rebuild              # or: write the same 500 again from the manifest
+py main.py --run-all --dataset real --quiet --output-dir output_real_rule_only
+```
+
+* **What is kept.** A submission is usable when the judge accepted it, the C
+  front end compiles it in strict mode, it prints something, and it finishes
+  within 20,000 steps on every input set the verifier would try. Of 469,491
+  accepted C and C++ submissions that print with `printf` or `puts`, 9,489
+  were usable (2.0 %), from
+  234 problems. The rest mostly use arrays, other functions, floating point,
+  macros, or read input inside a loop.
+* **C and C-style C++.** 86 of the 500 were submitted as C. The other 414
+  were submitted to a C++ compiler but are written in C (`scanf`/`printf`,
+  no C++ features); the front end skips `using namespace std;` and refuses
+  anything else from C++.
+* **The same proportions as the generator.** 60 arithmetic, 60 nested, 60
+  repeated_expr, 60 dead_code, 80 loops, 80 conditionals, 100 mixed. A
+  program with a stored value that is never read is `dead_code`; one with
+  the same arithmetic expression written twice is `repeated_expr`; the rest
+  go by control flow, and straight-line programs by how deep their
+  arithmetic is (`category_of` in `dataset/real_dataset.py`).
+* **Spread over problems.** Each category is filled one program per problem
+  per round, newest submission first, and programs that compile to the same
+  TAC count once. The 500 come from 207 problems. Straight-line solutions
+  are rare on Codeforces, so `arithmetic` draws on only 16 problems and
+  `nested` on 25.
+* **Strict mode.** For these programs the text a program prints counts as
+  output: `puts("YES")` becomes `print 1000000`, one code per distinct text,
+  so an optimization that changed which message is printed would fail
+  verification. `a && b` is refused when `b` divides, because TAC evaluates
+  both sides and C would not.
+* **Limits of the model.** Integers are unbounded (no 32-bit wrap-around),
+  and inputs are tested over the verifier's value ranges, which include
+  values a problem's statement rules out (negative or zero sizes).
+* **Where the files are.** The 500 programs are in `dataset/real_programs/`,
+  each with its submission id, link and the dataset's licence in a header
+  comment. The downloaded data (`dataset/real_cache/`) stays on the machine.
+  `dataset/real_manifest.json` lists the 500 submission ids, so `rebuild`
+  recreates exactly the same set.
+
 ## Running the tests
 
 ```bash
 py -m pytest tests/ -v
 ```
 
-336 tests cover every component. The Ollama and Groq tests run against stand-in
+407 tests cover every component (the SMT tests are skipped when `z3-solver` is not installed). The Ollama and Groq tests run against stand-in
 local servers, so they need no Ollama, API key or network. The verifier tests inject wrong changes
 (bad folds, operand swaps, CSE across non-commutative ops, deleted live
 stores, off-by-one conditions, removed loop increments, deleted trapping
@@ -295,6 +360,47 @@ These are the 97 strength-reduction rejections in the results. `x*4 → x<<2`
 is accepted, because a shift is not one of the arithmetic ops `+ - * / %`.
 
 ---
+
+## Execution time in the cost model
+
+The static cost counts what is in the program text. It cannot tell an
+instruction inside a loop from one outside it. The Cost Evaluator therefore
+also measures **execution time**:
+
+* The program is run on 25 fixed inputs (20 random sets, half of them
+  positive, and 5 edge cases). A variable's values depend only on its name,
+  so a program and a candidate are timed on the same data.
+* Every executed instruction adds a latency: copy 1, `+ - <<` and comparisons
+  1, multiply 3, divide and modulo 20, `goto` 1, conditional branch 2, print 1,
+  label 0. The time is the average over the runs.
+* `--cost-model static` (default) accepts a change if the static cost drops.
+  `--cost-model time` accepts it if the measured time drops, or the time is
+  equal and the static cost drops. Replacing `x * 2` by `x + x` is a tie for
+  the static model and a gain for the time model.
+* Every run reports both reductions, whichever model decides.
+
+## SMT verification with Z3
+
+Differential testing shows that two programs agree on the inputs that were
+tried. For programs with branches but **no loops**, the verifier can do
+better (`src/agents/smt_verifier.py`):
+
+1. Every path of both programs is followed symbolically. A branch splits the
+   path; a division splits off the case "the divisor is zero".
+2. The paths are folded into one description of a run: how it ends, how many
+   values it prints, and the values.
+3. Z3 is asked for an input on which the two descriptions differ.
+
+| Answer | Meaning |
+|---|---|
+| `unsat` | no such input exists: **proved equivalent for all inputs** |
+| `sat` | Z3 returns the input; it is replayed in the interpreter and the change is rejected |
+| `unknown` | no answer in 3 seconds (usually non-linear arithmetic); the tested verdict stands |
+
+The stage runs on every LLM proposal and on the end-to-end check of every
+program. If the end-to-end check ever fails, the original program is kept and
+the result is marked as reverted. Z3 is optional: `pip install z3-solver`.
+Without it the stage is skipped and everything else works as before.
 
 ## Metrics
 
@@ -435,6 +541,93 @@ with no internet connection needed. Results are in `output_ollama/`.
   the laptop's NVIDIA driver (546.18); see *Offline mode* below. With a
   working GPU the same run should be several times faster.
 
+### Results on the real programs
+
+All runs use the 500 Codeforces submissions described under
+[real programs](#real-programs-the-codeforces-dataset) and allow 200 iterations per
+program. Results are in `output_real_rule_only/`, `output_real_rule_time/`,
+`output_real_gemini/`, `output_real_groq/` and `output_real_ollama/` (one folder per LLM run that
+has been made).
+
+```bash
+py main.py --run-all --dataset real --quiet --resume --max-iterations 200 --output-dir output_real_rule_only
+py main.py --run-all --dataset real --quiet --resume --max-iterations 200 --cost-model time --output-dir output_real_rule_time
+# an LLM run, in two steps (here Groq; use --llm-provider gemini, or --offline for Ollama):
+py main.py --run-all --dataset real --every 5 --quiet --resume --require-llm --use-llm --llm-provider groq --max-llm-calls 2 --max-iterations 200 --output-dir output_real_groq
+py main.py --run-all --dataset real --quiet --resume --require-llm --use-llm --llm-provider groq --max-llm-calls 1 --max-iterations 200 --output-dir output_real_groq
+```
+
+**Rules only, all 500 programs (static cost model)**
+
+| Category | Programs | Generated dataset | Real programs | Real: time saved | Proved |
+|---|---:|---:|---:|---:|---:|
+| arithmetic | 60 | 96.03 % | 63.26 % | 21.84 % | 60 |
+| nested | 60 | 98.10 % | 51.62 % | 20.89 % | 60 |
+| repeated_expr | 60 | 80.71 % | 47.08 % | 25.59 % | 25 |
+| dead_code | 60 | 97.44 % | 56.12 % | 32.08 % | 29 |
+| loops | 80 | 65.05 % | 49.40 % | 22.69 % | 0 |
+| conditionals | 80 | 73.91 % | 53.12 % | 32.31 % | 79 |
+| mixed | 100 | 77.91 % | 48.75 % | 21.71 % | 0 |
+| **all** | 500 | 82.49 % | **52.32 %** | 25.19 % | 253 |
+
+* **Overall.** Average cost reduction 52.32 %, median 51.88 %;
+  495 of the 500 programs improve by more than 30 %.
+* **Why it is lower than on the generated set.** Nearly all real programs read
+  their values with `scanf`, so nothing folds down to a constant. Most of what
+  the rules remove is the redundancy of the naive TAC translation: 6,457
+  accepted copy propagations and 1,757 dead-code removals, against 143
+  common subexpressions and 41 constant folds.
+* **Proved.** 253 of the 500 optimized programs are proved equivalent to their
+  originals for every input: 127 by the polynomial check and 126 by the
+  SMT solver. Programs with loops stay tested. No end-to-end check failed.
+* **Re-checked independently.** Every optimized program of these runs was run
+  against its original on inputs the verifier had not used, with values up to a
+  million. This found **one wrong accepted change**, in the Groq run: the model
+  had replaced `x - 1` by `9` inside a loop where `x` is multiplied by ten each
+  time. It is right while `x` is 10, and the loop only runs again for inputs of
+  100 or more, which none of the verifier's inputs reached, so 388 tests passed.
+* **The fix.** The verifier now adds 60 wide-range input sets (values up to a
+  thousand, ten thousand, a million and a billion, signed values, powers of ten
+  and their neighbours). The wrong change is now rejected with a counterexample,
+  the program was optimized again, and the re-check of all runs (539,170
+  executions) finds **0 mismatches**. The four generated-dataset runs were
+  re-checked on the same inputs: about 72,000 executions each, 0 mismatches.
+
+**The two cost models (rules only, all 500 programs)**
+
+| Metric | Static model | Time model |
+|---|---:|---:|
+| Average static cost reduction | 52.32 % | 52.32 % |
+| Average execution-time reduction | 25.19 % | 26.45 % |
+| Median execution-time reduction | 21.44 % | 21.96 % |
+| Strength reductions accepted | 25 | 175 |
+| Strength reductions rejected (no gain) | 1,185 | 0 |
+| False positives | 0 | 0 |
+
+**LLM proposers with self-repair**
+
+| Metric | Rules + Gemini | Rules + Groq | Rules + Ollama |
+|---|---:|---:|---:|
+| Programs | 500 | 500 | 500 |
+| Programs the LLM was consulted on | 500 | 500 | 500 |
+| Rules alone on these programs | 52.32 % | 52.32 % | 52.32 % |
+| Rules + LLM | **53.60 %** | **53.18 %** | **52.42 %** |
+| Programs improved by the LLM | 113 | 127 | 9 |
+| LLM calls | 735 | 855 | 687 |
+| LLM proposals accepted / no gain / wrong | 196 / 84 / 171 | 213 / 74 / 174 | 24 / 19 / 161 |
+| LLM validity rate | 62.08 % | 62.26 % | 21.08 % |
+| Self-repairs accepted / tried | 30 / 213 | 69 / 311 | 7 / 162 |
+| False positives | 0 | 0 | 0 |
+
+* LLM budget per program: 2 fresh proposals for every fifth program and 1 for the
+  others, plus 1 repair per rejected answer. This keeps the cloud runs inside their
+  free daily quotas.
+* Gemini uses `gemini-3.1-flash-lite` and Groq its `gpt-oss` and `qwen` models; Ollama runs
+  `qwen2.5-coder:7b` on the laptop, mostly on the GPU.
+* When a free daily quota ends, the rest of a run is optimized by the rules alone
+  (the row *Programs the LLM was consulted on* shows how far the LLM got).
+  `--require-llm` stops the run at that point instead, and `--resume` continues it.
+
 ## Visualizations (`output/plots/`)
 
 Chart 7 is produced only with `--visualize --compare-with output_rule_only`.
@@ -574,6 +767,36 @@ py main.py --run-all --quiet --offline --max-llm-calls 1 --output-dir output_oll
   call on the CPU, stays there for the rest of the run and prints a note.
   `OLLAMA_NUM_GPU=0` forces the CPU from the start. Updating the NVIDIA
   driver is the real fix.
+
+### LLM self-repair
+
+When an LLM answer is rejected, the Optimization Specialist sends it back to
+the model with the reason and asks again:
+
+* **Failed verification:** the model gets the verifier's counterexample, for
+  example "output mismatch on inputs {'x': 20}: original printed [40],
+  candidate printed [2]".
+* **Not valid TAC:** the model gets the syntax error.
+
+The second answer goes through the same verification and cost gates, so a
+repair can never be accepted on trust. Unchanged answers and API errors are
+not repaired. Repairs do not count against `--max-llm-calls`; `--max-repairs`
+limits them (default 1 per rejected answer, 0 turns self-repair off).
+
+```
+  [LLM]     LLM proposal: x is probably 1
+  [VERIFY]  FAIL (output mismatch on inputs {'x': 20}: original printed [40], candidate printed [2])
+  [REJECT]  ✗ Change rejected: Verification failed: output mismatch on inputs {'x': 20}: ...
+  [REPAIR]  Feedback sent to the LLM: It changes what the program does: output mismatch on inputs {'x': 20}: ...
+  [LLM]     LLM repair: multiply by 2 is a shift
+  [VERIFY]  PASS (differential: 286/286 inputs matched, symbolic: equivalent)
+  [COST]    Before: 4.5, After: 2.5 (reduction: 44.4%)
+  [ACCEPT]  ✓ Change accepted
+```
+
+The metrics table reports repairs as "accepted / tried". The result tables
+above were produced before self-repair existed; its effect on a full run has
+not been measured yet.
 
 ### Routing: rule-based or LLM
 

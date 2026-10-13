@@ -1,0 +1,88 @@
+=== Program: conditionals_035.c ===
+--- Iteration 1 ---
+  [ANALYZE] Found 6 opportunities: DEAD_CODE (priority=80), COPY_PROPAGATIONx5 (priority=50)
+  [ROUTE]   Rule-based optimizer: highest-priority opportunity is DEAD_CODE (priority 80)
+  [PROPOSE] Applying DEAD_CODE at instruction 0: n = 0 → (removed)
+  [VERIFY]  PASS (differential: 350/350 inputs matched, symbolic: skipped (control flow))
+  [COST]    Before: 33.5, After: 31.0 (reduction: 7.5%); time 31.0 → 30.0 cycles
+  [ACCEPT]  ✓ Change accepted
+--- Iteration 2 ---
+  [ANALYZE] Found 5 opportunities: COPY_PROPAGATIONx5 (priority=50)
+  [ROUTE]   Rule-based optimizer: highest-priority opportunity is COPY_PROPAGATION (priority 50)
+  [PROPOSE] Applying COPY_PROPAGATION at instruction 0: n = in_n → uses of n -> in_n at instr 2, 5
+  [VERIFY]  PASS (differential: 349/349 inputs matched, symbolic: skipped (control flow))
+  [COST]    Before: 31.0, After: 28.5 (reduction: 8.1%); time 30.0 → 29.0 cycles
+  [ACCEPT]  ✓ Change accepted
+--- Iteration 3 ---
+  [ANALYZE] Found 4 opportunities: COPY_PROPAGATIONx4 (priority=50)
+  [ROUTE]   Rule-based optimizer: highest-priority opportunity is COPY_PROPAGATION (priority 50)
+  [PROPOSE] Applying COPY_PROPAGATION at instruction 0: t0 = 5 → uses of t0 -> 5 at instr 1
+  [VERIFY]  PASS (differential: 349/349 inputs matched, symbolic: skipped (control flow))
+  [COST]    Before: 28.5, After: 25.5 (reduction: 10.5%); time 29.0 → 28.0 cycles
+  [ACCEPT]  ✓ Change accepted
+--- Iteration 4 ---
+  [ANALYZE] Found 3 opportunities: COPY_PROPAGATIONx3 (priority=50)
+  [ROUTE]   Rule-based optimizer: highest-priority opportunity is COPY_PROPAGATION (priority 50)
+  [PROPOSE] Applying COPY_PROPAGATION at instruction 2: t2 = 3 → uses of t2 -> 3 at instr 3
+  [VERIFY]  PASS (differential: 349/349 inputs matched, symbolic: skipped (control flow))
+  [COST]    Before: 25.5, After: 22.5 (reduction: 11.8%); time 28.0 → 27.0 cycles
+  [ACCEPT]  ✓ Change accepted
+--- Iteration 5 ---
+  [ANALYZE] Found 2 opportunities: COPY_PROPAGATIONx2 (priority=50)
+  [ROUTE]   Rule-based optimizer: highest-priority opportunity is COPY_PROPAGATION (priority 50)
+  [PROPOSE] Applying COPY_PROPAGATION at instruction 3: t4 = 1 → uses of t4 -> 1 at instr 4
+  [VERIFY]  PASS (differential: 349/349 inputs matched, symbolic: skipped (control flow))
+  [COST]    Before: 22.5, After: 19.5 (reduction: 13.3%); time 27.0 → 26.0 cycles
+  [ACCEPT]  ✓ Change accepted
+--- Iteration 6 ---
+  [ANALYZE] Found 1 opportunity: COPY_PROPAGATION (priority=50)
+  [ROUTE]   Rule-based optimizer: highest-priority opportunity is COPY_PROPAGATION (priority 50)
+  [PROPOSE] Applying COPY_PROPAGATION at instruction 7: t6 = 1 → uses of t6 -> 1 at instr 8
+  [VERIFY]  PASS (differential: 349/349 inputs matched, symbolic: skipped (control flow))
+  [COST]    Before: 19.5, After: 16.5 (reduction: 15.4%); time 26.0 → 26.0 cycles
+  [ACCEPT]  ✓ Change accepted
+--- Iteration 7 ---
+  [ANALYZE] No more opportunities found.
+  [ROUTE]   LLM optimizer (gemini gemini-3.1-flash-lite): the rules have nothing left to try
+  [LLM]     LLM produced no usable TAC: could not parse LLM TAC; reasoning: Constant folding was applied to the conditional check: 'in_n != 5' is evaluated as a boolean, and since the branch destination L0 is known, the condition and jump can be simplified.
+  [REPAIR]  Feedback sent to the LLM: It is not valid TAC: TAC line 1: malformed ifFalse: 'ifFalse in_n != 5 goto L0'. Use only the instruction forms listed below; one instruction has at most one operator.
+  [LLM]     LLM produced no usable TAC: could not parse LLM TAC; reasoning: Constant folding: replaced the boolean comparison 't1 = in_n != 5' with the direct use of the expression in the conditional jump, keeping the syntax valid.
+=== RESULT ===
+  Original cost: 33.5
+  Final cost:    16.5
+  Reduction:     50.7%
+  Exec. time:    31.0 → 26.0 cycles (16.1% less)
+  Iterations:    7
+  Accepted:      6
+  Rejected:      0
+  Invalid:       0
+  Routing:       hybrid (LLM: gemini gemini-3.1-flash-lite)
+  LLM repairs:   1 (0 accepted)
+  Output match:  PASS ✓
+  Equivalence:   proved for all inputs
+=== Original TAC ===
+   0 |     n = 0
+   1 |     n = in_n
+   2 |     t0 = 5
+   3 |     t1 = n != t0
+   4 |     ifFalse t1 goto L0
+   5 |     t2 = 3
+   6 |     t3 = n % t2
+   7 |     t4 = 1
+   8 |     t5 = t3 + t4
+   9 |     print t5
+  10 |     goto L1
+  11 | L0:
+  12 |     t6 = 1
+  13 |     print t6
+  14 | L1:
+=== Optimized TAC ===
+  0 |     t1 = in_n != 5
+  1 |     ifFalse t1 goto L0
+  2 |     t3 = in_n % 3
+  3 |     t5 = t3 + 1
+  4 |     print t5
+  5 |     goto L1
+  6 | L0:
+  7 |     print 1
+  8 | L1:

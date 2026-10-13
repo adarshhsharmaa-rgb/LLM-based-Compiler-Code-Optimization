@@ -1,0 +1,131 @@
+=== Program: arithmetic_029.c ===
+--- Iteration 1 ---
+  [ANALYZE] Found 10 opportunities: DEAD_CODE (priority=80), COPY_PROPAGATIONx9 (priority=50)
+  [ROUTE]   Rule-based optimizer: highest-priority opportunity is DEAD_CODE (priority 80)
+  [PROPOSE] Applying DEAD_CODE at instruction 0: x = 0 → (removed)
+  [VERIFY]  PASS (differential: 348/348 inputs matched, symbolic: equivalent)
+  [COST]    Before: 38.5, After: 36.0 (reduction: 6.5%); time 54.0 → 53.0 cycles
+  [ACCEPT]  ✓ Change accepted
+--- Iteration 2 ---
+  [ANALYZE] Found 9 opportunities: COPY_PROPAGATIONx9 (priority=50)
+  [ROUTE]   Rule-based optimizer: highest-priority opportunity is COPY_PROPAGATION (priority 50)
+  [PROPOSE] Applying COPY_PROPAGATION at instruction 0: x = in_x → uses of x -> in_x at instr 2, 7
+  [VERIFY]  PASS (differential: 348/348 inputs matched, symbolic: equivalent)
+  [COST]    Before: 36.0, After: 33.5 (reduction: 6.9%); time 53.0 → 52.0 cycles
+  [ACCEPT]  ✓ Change accepted
+--- Iteration 3 ---
+  [ANALYZE] Found 8 opportunities: COPY_PROPAGATIONx8 (priority=50)
+  [ROUTE]   Rule-based optimizer: highest-priority opportunity is COPY_PROPAGATION (priority 50)
+  [PROPOSE] Applying COPY_PROPAGATION at instruction 0: t0 = 3 → uses of t0 -> 3 at instr 1
+  [VERIFY]  PASS (differential: 348/348 inputs matched, symbolic: equivalent)
+  [COST]    Before: 33.5, After: 30.5 (reduction: 9.0%); time 52.0 → 51.0 cycles
+  [ACCEPT]  ✓ Change accepted
+--- Iteration 4 ---
+  [ANALYZE] Found 7 opportunities: COPY_PROPAGATIONx7 (priority=50)
+  [ROUTE]   Rule-based optimizer: highest-priority opportunity is COPY_PROPAGATION (priority 50)
+  [PROPOSE] Applying COPY_PROPAGATION at instruction 1: t2 = 2 → uses of t2 -> 2 at instr 2
+  [VERIFY]  PASS (differential: 348/348 inputs matched, symbolic: equivalent)
+  [COST]    Before: 30.5, After: 27.5 (reduction: 9.8%); time 51.0 → 50.0 cycles
+  [ACCEPT]  ✓ Change accepted
+--- Iteration 5 ---
+  [ANALYZE] Found 7 opportunities: STRENGTH_REDUCTION (priority=60), COPY_PROPAGATIONx6 (priority=50)
+  [ROUTE]   Rule-based optimizer: highest-priority opportunity is STRENGTH_REDUCTION (priority 60)
+  [PROPOSE] Applying STRENGTH_REDUCTION at instruction 1: t3 = t1 * 2 → t3 = t1 + t1
+  [VERIFY]  PASS (differential: 348/348 inputs matched, symbolic: equivalent)
+  [COST]    Before: 27.5, After: 27.5 (reduction: 0.0%); time 50.0 → 48.0 cycles
+  [REJECT]  ✗ Change rejected: No cost improvement
+  [ROUTE]   LLM optimizer (ollama qwen2.5-coder:7b): the rule-based proposal was turned down
+  [LLM]     LLM produced no usable TAC: LLM returned unchanged TAC; reasoning: Constant folding: Simplify the division and multiplication operations.
+--- Iteration 6 ---
+  [ANALYZE] Found 6 opportunities: COPY_PROPAGATIONx6 (priority=50)
+  [ROUTE]   Rule-based optimizer: highest-priority opportunity is COPY_PROPAGATION (priority 50)
+  [PROPOSE] Applying COPY_PROPAGATION at instruction 2: t3 = t1 * 2; ans = t3 → ans = t1 * 2
+  [VERIFY]  PASS (differential: 348/348 inputs matched, symbolic: equivalent)
+  [COST]    Before: 27.5, After: 24.5 (reduction: 10.9%); time 50.0 → 49.0 cycles
+  [ACCEPT]  ✓ Change accepted
+--- Iteration 7 ---
+  [ANALYZE] Found 5 opportunities: STRENGTH_REDUCTION (priority=60), COPY_PROPAGATIONx4 (priority=50)
+  [ROUTE]   Rule-based optimizer: highest-priority opportunity is STRENGTH_REDUCTION (priority 60)
+  [PROPOSE] Applying STRENGTH_REDUCTION at instruction 1: ans = t1 * 2 → ans = t1 + t1
+  [VERIFY]  PASS (differential: 348/348 inputs matched, symbolic: equivalent)
+  [COST]    Before: 24.5, After: 24.5 (reduction: 0.0%); time 49.0 → 47.0 cycles
+  [REJECT]  ✗ Change rejected: No cost improvement
+--- Iteration 8 ---
+  [ANALYZE] Found 4 opportunities: COPY_PROPAGATIONx4 (priority=50)
+  [ROUTE]   Rule-based optimizer: highest-priority opportunity is COPY_PROPAGATION (priority 50)
+  [PROPOSE] Applying COPY_PROPAGATION at instruction 2: t4 = 3 → uses of t4 -> 3 at instr 3
+  [VERIFY]  PASS (differential: 348/348 inputs matched, symbolic: equivalent)
+  [COST]    Before: 24.5, After: 21.5 (reduction: 12.2%); time 49.0 → 48.0 cycles
+  [ACCEPT]  ✓ Change accepted
+--- Iteration 9 ---
+  [ANALYZE] Found 4 opportunities: STRENGTH_REDUCTION (priority=60), COPY_PROPAGATIONx3 (priority=50)
+  [ROUTE]   Rule-based optimizer: highest-priority opportunity is STRENGTH_REDUCTION (priority 60)
+  [PROPOSE] Applying STRENGTH_REDUCTION at instruction 1: ans = t1 * 2 → ans = t1 + t1
+  [VERIFY]  PASS (differential: 348/348 inputs matched, symbolic: equivalent)
+  [COST]    Before: 21.5, After: 21.5 (reduction: 0.0%); time 48.0 → 46.0 cycles
+  [REJECT]  ✗ Change rejected: No cost improvement
+--- Iteration 10 ---
+  [ANALYZE] Found 3 opportunities: COPY_PROPAGATIONx3 (priority=50)
+  [ROUTE]   Rule-based optimizer: highest-priority opportunity is COPY_PROPAGATION (priority 50)
+  [PROPOSE] Applying COPY_PROPAGATION at instruction 3: t6 = 0 → uses of t6 -> 0 at instr 4
+  [VERIFY]  PASS (differential: 348/348 inputs matched, symbolic: equivalent)
+  [COST]    Before: 21.5, After: 18.5 (reduction: 14.0%); time 48.0 → 47.0 cycles
+  [ACCEPT]  ✓ Change accepted
+--- Iteration 11 ---
+  [ANALYZE] Found 3 opportunities: STRENGTH_REDUCTION (priority=60), COPY_PROPAGATIONx2 (priority=50)
+  [ROUTE]   Rule-based optimizer: highest-priority opportunity is STRENGTH_REDUCTION (priority 60)
+  [PROPOSE] Applying STRENGTH_REDUCTION at instruction 1: ans = t1 * 2 → ans = t1 + t1
+  [VERIFY]  PASS (differential: 348/348 inputs matched, symbolic: equivalent)
+  [COST]    Before: 18.5, After: 18.5 (reduction: 0.0%); time 47.0 → 45.0 cycles
+  [REJECT]  ✗ Change rejected: No cost improvement
+--- Iteration 12 ---
+  [ANALYZE] Found 2 opportunities: COPY_PROPAGATIONx2 (priority=50)
+  [ROUTE]   Rule-based optimizer: highest-priority opportunity is COPY_PROPAGATION (priority 50)
+  [PROPOSE] Applying COPY_PROPAGATION at instruction 5: t8 = ans + t7; ans = t8 → ans = ans + t7
+  [VERIFY]  PASS (differential: 348/348 inputs matched, symbolic: equivalent)
+  [COST]    Before: 18.5, After: 15.5 (reduction: 16.2%); time 47.0 → 46.0 cycles
+  [ACCEPT]  ✓ Change accepted
+--- Iteration 13 ---
+  [ANALYZE] Found 1 opportunity: STRENGTH_REDUCTION (priority=60)
+  [ROUTE]   Rule-based optimizer: highest-priority opportunity is STRENGTH_REDUCTION (priority 60)
+  [PROPOSE] Applying STRENGTH_REDUCTION at instruction 1: ans = t1 * 2 → ans = t1 + t1
+  [VERIFY]  PASS (differential: 348/348 inputs matched, symbolic: equivalent)
+  [COST]    Before: 15.5, After: 15.5 (reduction: 0.0%); time 46.0 → 44.0 cycles
+  [REJECT]  ✗ Change rejected: No cost improvement
+--- Iteration 14 ---
+  [ANALYZE] No more opportunities found.
+  [INFO]    LLM not consulted: call budget used up (1 per program)
+=== RESULT ===
+  Original cost: 38.5
+  Final cost:    15.5
+  Reduction:     59.7%
+  Exec. time:    54.0 → 46.0 cycles (14.8% less)
+  Iterations:    14
+  Accepted:      8
+  Rejected:      5
+  Invalid:       0
+  Routing:       hybrid (LLM: ollama qwen2.5-coder:7b)
+  Output match:  PASS ✓
+  Equivalence:   proved for all inputs
+=== Original TAC ===
+   0 |     x = 0
+   1 |     x = in_x
+   2 |     t0 = 3
+   3 |     t1 = x / t0
+   4 |     t2 = 2
+   5 |     t3 = t1 * t2
+   6 |     ans = t3
+   7 |     t4 = 3
+   8 |     t5 = x % t4
+   9 |     t6 = 0
+  10 |     t7 = t5 != t6
+  11 |     t8 = ans + t7
+  12 |     ans = t8
+  13 |     print ans
+=== Optimized TAC ===
+  0 |     t1 = in_x / 3
+  1 |     ans = t1 * 2
+  2 |     t5 = in_x % 3
+  3 |     t7 = t5 != 0
+  4 |     ans = ans + t7
+  5 |     print ans

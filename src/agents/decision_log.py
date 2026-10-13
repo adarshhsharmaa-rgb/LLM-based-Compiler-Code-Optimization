@@ -26,6 +26,7 @@ class DecisionEntry:
 _TAGS = {
     "analyze": "[ANALYZE]",
     "route": "[ROUTE]  ",
+    "repair": "[REPAIR] ",
     "propose": "[PROPOSE]",
     "verify": "[VERIFY] ",
     "evaluate": "[COST]   ",
@@ -73,10 +74,16 @@ class DecisionLogger:
             tac_before=tac_before.to_string() if tac_before is not None else None,
             tac_after=candidate_tac.to_string() if candidate_tac is not None else None))
 
-    def log_llm_proposal(self, iteration, reasoning, candidate_tac, tac_before=None) -> None:
+    def log_repair(self, iteration, problem) -> None:
+        """Self-repair: what the LLM is told about its rejected answer before it tries again."""
+        self.entries.append(DecisionEntry(iteration, "repair", "LLM", f"Feedback sent to the LLM: {problem}",
+                                          reason=problem, source="llm"))
+
+    def log_llm_proposal(self, iteration, reasoning, candidate_tac, tac_before=None, repair=False) -> None:
         self._current_type = "LLM"
         self._current_source = "llm"
-        desc = f"LLM proposal: {reasoning}" if candidate_tac is not None else f"LLM produced no usable TAC: {reasoning}"
+        kind = "LLM repair" if repair else "LLM proposal"
+        desc = f"{kind}: {reasoning}" if candidate_tac is not None else f"LLM produced no usable TAC: {reasoning}"
         self.entries.append(DecisionEntry(
             iteration, "propose", "LLM", desc,
             tac_before=tac_before.to_string() if tac_before is not None else None,
@@ -94,6 +101,9 @@ class DecisionLogger:
         old_v, new_v = old_cost.weighted_total, new_cost.weighted_total
         pct = (old_v - new_v) / old_v * 100 if old_v else 0.0
         desc = f"Before: {old_v:.1f}, After: {new_v:.1f} (reduction: {pct:.1f}%)"
+        old_t, new_t = getattr(old_cost, "exec_time", 0.0), getattr(new_cost, "exec_time", 0.0)
+        if old_t or new_t:
+            desc += f"; time {old_t:.1f} → {new_t:.1f} cycles"
         self.entries.append(DecisionEntry(
             iteration, "evaluate", self._current_type, desc,
             cost_before=old_v, cost_after=new_v, source=self._current_source))

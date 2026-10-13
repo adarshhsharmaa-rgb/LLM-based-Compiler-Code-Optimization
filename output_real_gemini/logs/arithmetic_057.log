@@ -1,0 +1,89 @@
+=== Program: arithmetic_057.c ===
+--- Iteration 1 ---
+  [ANALYZE] Found 5 opportunities: DEAD_CODE (priority=80), COPY_PROPAGATIONx4 (priority=50)
+  [ROUTE]   Rule-based optimizer: highest-priority opportunity is DEAD_CODE (priority 80)
+  [PROPOSE] Applying DEAD_CODE at instruction 0: n = 0 → (removed)
+  [VERIFY]  PASS (differential: 350/350 inputs matched, symbolic: equivalent)
+  [COST]    Before: 23.0, After: 20.5 (reduction: 10.9%); time 11.0 → 10.0 cycles
+  [ACCEPT]  ✓ Change accepted
+--- Iteration 2 ---
+  [ANALYZE] Found 4 opportunities: COPY_PROPAGATIONx4 (priority=50)
+  [ROUTE]   Rule-based optimizer: highest-priority opportunity is COPY_PROPAGATION (priority 50)
+  [PROPOSE] Applying COPY_PROPAGATION at instruction 0: n = in_n → uses of n -> in_n at instr 2
+  [VERIFY]  PASS (differential: 349/349 inputs matched, symbolic: equivalent)
+  [COST]    Before: 20.5, After: 18.0 (reduction: 12.2%); time 10.0 → 9.0 cycles
+  [ACCEPT]  ✓ Change accepted
+--- Iteration 3 ---
+  [ANALYZE] Found 3 opportunities: COPY_PROPAGATIONx3 (priority=50)
+  [ROUTE]   Rule-based optimizer: highest-priority opportunity is COPY_PROPAGATION (priority 50)
+  [PROPOSE] Applying COPY_PROPAGATION at instruction 0: t0 = 2 → uses of t0 -> 2 at instr 1
+  [VERIFY]  PASS (differential: 349/349 inputs matched, symbolic: equivalent)
+  [COST]    Before: 18.0, After: 15.0 (reduction: 16.7%); time 9.0 → 8.0 cycles
+  [ACCEPT]  ✓ Change accepted
+--- Iteration 4 ---
+  [ANALYZE] Found 3 opportunities: STRENGTH_REDUCTION (priority=60), COPY_PROPAGATIONx2 (priority=50)
+  [ROUTE]   Rule-based optimizer: highest-priority opportunity is STRENGTH_REDUCTION (priority 60)
+  [PROPOSE] Applying STRENGTH_REDUCTION at instruction 0: t1 = in_n * 2 → t1 = in_n + in_n
+  [VERIFY]  PASS (differential: 349/349 inputs matched, symbolic: equivalent)
+  [COST]    Before: 15.0, After: 15.0 (reduction: 0.0%); time 8.0 → 6.0 cycles
+  [REJECT]  ✗ Change rejected: No cost improvement
+  [ROUTE]   LLM optimizer (gemini gemini-3.1-flash-lite): the rule-based proposal was turned down
+  [LLM]     LLM produced no usable TAC: LLM returned unchanged TAC; reasoning: Constant folding was applied to the literal assignment t4 = 1000000, although no further reduction was possible for the expression involving the input variable in_n.
+--- Iteration 5 ---
+  [ANALYZE] Found 2 opportunities: COPY_PROPAGATIONx2 (priority=50)
+  [ROUTE]   Rule-based optimizer: highest-priority opportunity is COPY_PROPAGATION (priority 50)
+  [PROPOSE] Applying COPY_PROPAGATION at instruction 1: t2 = 1 → uses of t2 -> 1 at instr 2
+  [VERIFY]  PASS (differential: 349/349 inputs matched, symbolic: equivalent)
+  [COST]    Before: 15.0, After: 12.0 (reduction: 20.0%); time 8.0 → 7.0 cycles
+  [ACCEPT]  ✓ Change accepted
+--- Iteration 6 ---
+  [ANALYZE] Found 2 opportunities: STRENGTH_REDUCTION (priority=60), COPY_PROPAGATION (priority=50)
+  [ROUTE]   Rule-based optimizer: highest-priority opportunity is STRENGTH_REDUCTION (priority 60)
+  [PROPOSE] Applying STRENGTH_REDUCTION at instruction 0: t1 = in_n * 2 → t1 = in_n + in_n
+  [VERIFY]  PASS (differential: 349/349 inputs matched, symbolic: equivalent)
+  [COST]    Before: 12.0, After: 12.0 (reduction: 0.0%); time 7.0 → 5.0 cycles
+  [REJECT]  ✗ Change rejected: No cost improvement
+--- Iteration 7 ---
+  [ANALYZE] Found 1 opportunity: COPY_PROPAGATION (priority=50)
+  [ROUTE]   Rule-based optimizer: highest-priority opportunity is COPY_PROPAGATION (priority 50)
+  [PROPOSE] Applying COPY_PROPAGATION at instruction 3: t4 = 1000000 → uses of t4 -> 1000000 at instr 4
+  [VERIFY]  PASS (differential: 349/349 inputs matched, symbolic: equivalent)
+  [COST]    Before: 12.0, After: 9.0 (reduction: 25.0%); time 7.0 → 6.0 cycles
+  [ACCEPT]  ✓ Change accepted
+--- Iteration 8 ---
+  [ANALYZE] Found 1 opportunity: STRENGTH_REDUCTION (priority=60)
+  [ROUTE]   Rule-based optimizer: highest-priority opportunity is STRENGTH_REDUCTION (priority 60)
+  [PROPOSE] Applying STRENGTH_REDUCTION at instruction 0: t1 = in_n * 2 → t1 = in_n + in_n
+  [VERIFY]  PASS (differential: 349/349 inputs matched, symbolic: equivalent)
+  [COST]    Before: 9.0, After: 9.0 (reduction: 0.0%); time 6.0 → 4.0 cycles
+  [REJECT]  ✗ Change rejected: No cost improvement
+--- Iteration 9 ---
+  [ANALYZE] No more opportunities found.
+  [INFO]    LLM not consulted: call budget used up (1 per program)
+=== RESULT ===
+  Original cost: 23.0
+  Final cost:    9.0
+  Reduction:     60.9%
+  Exec. time:    11.0 → 6.0 cycles (45.5% less)
+  Iterations:    9
+  Accepted:      5
+  Rejected:      3
+  Invalid:       0
+  Routing:       hybrid (LLM: gemini gemini-3.1-flash-lite)
+  Output match:  PASS ✓
+  Equivalence:   proved for all inputs
+=== Original TAC ===
+  0 |     n = 0
+  1 |     n = in_n
+  2 |     t0 = 2
+  3 |     t1 = n * t0
+  4 |     t2 = 1
+  5 |     t3 = t1 - t2
+  6 |     print t3
+  7 |     t4 = 1000000
+  8 |     print t4
+=== Optimized TAC ===
+  0 |     t1 = in_n * 2
+  1 |     t3 = t1 - 1
+  2 |     print t3
+  3 |     print 1000000

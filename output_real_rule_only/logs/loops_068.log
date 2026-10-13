@@ -1,0 +1,183 @@
+=== Program: loops_068.c ===
+--- Iteration 1 ---
+  [ANALYZE] Found 15 opportunities: DEAD_CODE (priority=80), COPY_PROPAGATIONx14 (priority=50)
+  [PROPOSE] Applying DEAD_CODE at instruction 0: n = 0 → (removed)
+  [VERIFY]  PASS (differential: 286/286 inputs matched, symbolic: skipped (control flow))
+  [COST]    Before: 106.0, After: 103.5 (reduction: 2.4%); time 1482.8 → 1481.8 cycles
+  [ACCEPT]  ✓ Change accepted
+--- Iteration 2 ---
+  [ANALYZE] Found 14 opportunities: COPY_PROPAGATIONx14 (priority=50)
+  [PROPOSE] Applying COPY_PROPAGATION at instruction 0: n = in_n → uses of n -> in_n at instr 5, 19, 25
+  [VERIFY]  PASS (differential: 286/286 inputs matched, symbolic: skipped (control flow))
+  [COST]    Before: 103.5, After: 101.0 (reduction: 2.4%); time 1481.8 → 1480.8 cycles
+  [ACCEPT]  ✓ Change accepted
+--- Iteration 3 ---
+  [ANALYZE] Found 13 opportunities: COPY_PROPAGATIONx13 (priority=50)
+  [PROPOSE] Applying COPY_PROPAGATION at instruction 0: t0 = 0 → uses of t0 -> 0 at instr 1
+  [VERIFY]  PASS (differential: 286/286 inputs matched, symbolic: skipped (control flow))
+  [COST]    Before: 101.0, After: 98.0 (reduction: 3.0%); time 1480.8 → 1479.8 cycles
+  [ACCEPT]  ✓ Change accepted
+--- Iteration 4 ---
+  [ANALYZE] Found 12 opportunities: COPY_PROPAGATIONx12 (priority=50)
+  [PROPOSE] Applying COPY_PROPAGATION at instruction 5: t3 = 1 → uses of t3 -> 1 at instr 6
+  [VERIFY]  PASS (differential: 286/286 inputs matched, symbolic: skipped (control flow))
+  [COST]    Before: 98.0, After: 95.0 (reduction: 3.1%); time 1479.8 → 1475.0 cycles
+  [ACCEPT]  ✓ Change accepted
+--- Iteration 5 ---
+  [ANALYZE] Found 11 opportunities: COPY_PROPAGATIONx11 (priority=50)
+  [PROPOSE] Applying COPY_PROPAGATION at instruction 6: t4 = s + 1; s = t4 → s = s + 1
+  [VERIFY]  PASS (differential: 286/286 inputs matched, symbolic: skipped (control flow))
+  [COST]    Before: 95.0, After: 92.0 (reduction: 3.2%); time 1475.0 → 1470.1 cycles
+  [ACCEPT]  ✓ Change accepted
+--- Iteration 6 ---
+  [ANALYZE] Found 10 opportunities: COPY_PROPAGATIONx10 (priority=50)
+  [PROPOSE] Applying COPY_PROPAGATION at instruction 8: t5 = 1 → uses of t5 -> 1 at instr 9
+  [VERIFY]  PASS (differential: 286/286 inputs matched, symbolic: skipped (control flow))
+  [COST]    Before: 92.0, After: 89.0 (reduction: 3.3%); time 1470.1 → 1469.1 cycles
+  [ACCEPT]  ✓ Change accepted
+--- Iteration 7 ---
+  [ANALYZE] Found 9 opportunities: COPY_PROPAGATIONx9 (priority=50)
+  [PROPOSE] Applying COPY_PROPAGATION at instruction 9: t6 = s - 1; i = t6 → i = s - 1
+  [VERIFY]  PASS (differential: 286/286 inputs matched, symbolic: skipped (control flow))
+  [COST]    Before: 89.0, After: 86.0 (reduction: 3.4%); time 1469.1 → 1468.1 cycles
+  [ACCEPT]  ✓ Change accepted
+--- Iteration 8 ---
+  [ANALYZE] Found 8 opportunities: COPY_PROPAGATIONx8 (priority=50)
+  [PROPOSE] Applying COPY_PROPAGATION at instruction 10: t7 = 0 → uses of t7 -> 0 at instr 11
+  [VERIFY]  PASS (differential: 286/286 inputs matched, symbolic: skipped (control flow))
+  [COST]    Before: 86.0, After: 83.0 (reduction: 3.5%); time 1468.1 → 1462.3 cycles
+  [ACCEPT]  ✓ Change accepted
+--- Iteration 9 ---
+  [ANALYZE] Found 7 opportunities: COPY_PROPAGATIONx7 (priority=50)
+  [PROPOSE] Applying COPY_PROPAGATION at instruction 14: t10 = t9 / s; j = t10 → j = t9 / s
+  [VERIFY]  PASS (differential: 286/286 inputs matched, symbolic: skipped (control flow))
+  [COST]    Before: 83.0, After: 80.0 (reduction: 3.6%); time 1462.3 → 1457.4 cycles
+  [ACCEPT]  ✓ Change accepted
+--- Iteration 10 ---
+  [ANALYZE] Found 6 opportunities: COPY_PROPAGATIONx6 (priority=50)
+  [PROPOSE] Applying COPY_PROPAGATION at instruction 15: t11 = 1 → uses of t11 -> 1 at instr 16
+  [VERIFY]  PASS (differential: 286/286 inputs matched, symbolic: skipped (control flow))
+  [COST]    Before: 80.0, After: 77.0 (reduction: 3.8%); time 1457.4 → 1420.4 cycles
+  [ACCEPT]  ✓ Change accepted
+--- Iteration 11 ---
+  [ANALYZE] Found 5 opportunities: COPY_PROPAGATIONx5 (priority=50)
+  [PROPOSE] Applying COPY_PROPAGATION at instruction 20: t16 = 1 → uses of t16 -> 1 at instr 21
+  [VERIFY]  PASS (differential: 286/286 inputs matched, symbolic: skipped (control flow))
+  [COST]    Before: 77.0, After: 74.0 (reduction: 3.9%); time 1420.4 → 1388.2 cycles
+  [ACCEPT]  ✓ Change accepted
+--- Iteration 12 ---
+  [ANALYZE] Found 4 opportunities: COPY_PROPAGATIONx4 (priority=50)
+  [PROPOSE] Applying COPY_PROPAGATION at instruction 22: t18 = 1 → uses of t18 -> 1 at instr 23
+  [VERIFY]  PASS (differential: 286/286 inputs matched, symbolic: skipped (control flow))
+  [COST]    Before: 74.0, After: 71.0 (reduction: 4.1%); time 1388.2 → 1356.0 cycles
+  [ACCEPT]  ✓ Change accepted
+--- Iteration 13 ---
+  [ANALYZE] Found 4 opportunities: CSE (priority=70), COPY_PROPAGATIONx3 (priority=50)
+  [PROPOSE] Applying CSE at instruction 22: t19 = j + 1 → t19 = t17
+  [VERIFY]  PASS (differential: 286/286 inputs matched, symbolic: skipped (control flow))
+  [COST]    Before: 71.0, After: 70.5 (reduction: 0.7%); time 1356.0 → 1356.0 cycles
+  [ACCEPT]  ✓ Change accepted
+--- Iteration 14 ---
+  [ANALYZE] Found 3 opportunities: COPY_PROPAGATIONx3 (priority=50)
+  [PROPOSE] Applying COPY_PROPAGATION at instruction 22: t19 = t17 → uses of t19 -> t17 at instr 23
+  [VERIFY]  PASS (differential: 286/286 inputs matched, symbolic: skipped (control flow))
+  [COST]    Before: 70.5, After: 67.5 (reduction: 4.3%); time 1356.0 → 1323.8 cycles
+  [ACCEPT]  ✓ Change accepted
+--- Iteration 15 ---
+  [ANALYZE] Found 2 opportunities: COPY_PROPAGATIONx2 (priority=50)
+  [PROPOSE] Applying COPY_PROPAGATION at instruction 25: t20 = 1 → uses of t20 -> 1 at instr 26
+  [VERIFY]  PASS (differential: 286/286 inputs matched, symbolic: skipped (control flow))
+  [COST]    Before: 67.5, After: 64.5 (reduction: 4.4%); time 1323.8 → 1319.0 cycles
+  [ACCEPT]  ✓ Change accepted
+--- Iteration 16 ---
+  [ANALYZE] Found 1 opportunity: COPY_PROPAGATION (priority=50)
+  [PROPOSE] Applying COPY_PROPAGATION at instruction 26: t21 = i - 1; i = t21 → i = i - 1
+  [VERIFY]  PASS (differential: 286/286 inputs matched, symbolic: skipped (control flow))
+  [COST]    Before: 64.5, After: 61.5 (reduction: 4.7%); time 1319.0 → 1314.1 cycles
+  [ACCEPT]  ✓ Change accepted
+--- Iteration 17 ---
+  [ANALYZE] No more opportunities found.
+=== RESULT ===
+  Original cost: 106.0
+  Final cost:    61.5
+  Reduction:     42.0%
+  Exec. time:    1482.8 → 1314.1 cycles (11.4% less)
+  Iterations:    17
+  Accepted:      16
+  Rejected:      0
+  Invalid:       0
+  Output match:  PASS ✓
+  Equivalence:   tested on the verifier's inputs
+=== Original TAC ===
+   0 |     n = 0
+   1 |     n = in_n
+   2 |     t0 = 0
+   3 |     s = t0
+   4 | L0:
+   5 |     t1 = s * s
+   6 |     t2 = t1 < n
+   7 |     ifFalse t2 goto L1
+   8 |     t3 = 1
+   9 |     t4 = s + t3
+  10 |     s = t4
+  11 |     goto L0
+  12 | L1:
+  13 |     t5 = 1
+  14 |     t6 = s - t5
+  15 |     i = t6
+  16 | L2:
+  17 |     t7 = 0
+  18 |     t8 = i >= t7
+  19 |     ifFalse t8 goto L3
+  20 |     t9 = n * i
+  21 |     t10 = t9 / s
+  22 |     j = t10
+  23 | L4:
+  24 |     t11 = 1
+  25 |     t12 = i + t11
+  26 |     t13 = n * t12
+  27 |     t14 = t13 / s
+  28 |     t15 = j < t14
+  29 |     ifFalse t15 goto L5
+  30 |     t16 = 1
+  31 |     t17 = j + t16
+  32 |     print t17
+  33 |     t18 = 1
+  34 |     t19 = j + t18
+  35 |     j = t19
+  36 |     goto L4
+  37 | L5:
+  38 |     t20 = 1
+  39 |     t21 = i - t20
+  40 |     i = t21
+  41 |     goto L2
+  42 | L3:
+=== Optimized TAC ===
+   0 |     s = 0
+   1 | L0:
+   2 |     t1 = s * s
+   3 |     t2 = t1 < in_n
+   4 |     ifFalse t2 goto L1
+   5 |     s = s + 1
+   6 |     goto L0
+   7 | L1:
+   8 |     i = s - 1
+   9 | L2:
+  10 |     t8 = i >= 0
+  11 |     ifFalse t8 goto L3
+  12 |     t9 = in_n * i
+  13 |     j = t9 / s
+  14 | L4:
+  15 |     t12 = i + 1
+  16 |     t13 = in_n * t12
+  17 |     t14 = t13 / s
+  18 |     t15 = j < t14
+  19 |     ifFalse t15 goto L5
+  20 |     t17 = j + 1
+  21 |     print t17
+  22 |     j = t17
+  23 |     goto L4
+  24 | L5:
+  25 |     i = i - 1
+  26 |     goto L2
+  27 | L3:

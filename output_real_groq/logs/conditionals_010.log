@@ -1,0 +1,86 @@
+=== Program: conditionals_010.c ===
+--- Iteration 1 ---
+  [ANALYZE] Found 6 opportunities: DEAD_CODE (priority=80), COPY_PROPAGATIONx5 (priority=50)
+  [ROUTE]   Rule-based optimizer: highest-priority opportunity is DEAD_CODE (priority 80)
+  [PROPOSE] Applying DEAD_CODE at instruction 0: n = 0 → (removed)
+  [VERIFY]  PASS (differential: 351/351 inputs matched, symbolic: skipped (control flow))
+  [COST]    Before: 30.0, After: 27.5 (reduction: 8.3%); time 29.4 → 28.4 cycles
+  [ACCEPT]  ✓ Change accepted
+--- Iteration 2 ---
+  [ANALYZE] Found 5 opportunities: COPY_PROPAGATIONx5 (priority=50)
+  [ROUTE]   Rule-based optimizer: highest-priority opportunity is COPY_PROPAGATION (priority 50)
+  [PROPOSE] Applying COPY_PROPAGATION at instruction 0: n = in_n → uses of n -> in_n at instr 2
+  [VERIFY]  PASS (differential: 351/351 inputs matched, symbolic: skipped (control flow))
+  [COST]    Before: 27.5, After: 25.0 (reduction: 9.1%); time 28.4 → 27.4 cycles
+  [ACCEPT]  ✓ Change accepted
+--- Iteration 3 ---
+  [ANALYZE] Found 4 opportunities: COPY_PROPAGATIONx4 (priority=50)
+  [ROUTE]   Rule-based optimizer: highest-priority opportunity is COPY_PROPAGATION (priority 50)
+  [PROPOSE] Applying COPY_PROPAGATION at instruction 0: t0 = 2 → uses of t0 -> 2 at instr 1
+  [VERIFY]  PASS (differential: 351/351 inputs matched, symbolic: skipped (control flow))
+  [COST]    Before: 25.0, After: 22.0 (reduction: 12.0%); time 27.4 → 26.4 cycles
+  [ACCEPT]  ✓ Change accepted
+--- Iteration 4 ---
+  [ANALYZE] Found 3 opportunities: COPY_PROPAGATIONx3 (priority=50)
+  [ROUTE]   Rule-based optimizer: highest-priority opportunity is COPY_PROPAGATION (priority 50)
+  [PROPOSE] Applying COPY_PROPAGATION at instruction 1: t2 = 0 → uses of t2 -> 0 at instr 2
+  [VERIFY]  PASS (differential: 351/351 inputs matched, symbolic: skipped (control flow))
+  [COST]    Before: 22.0, After: 19.0 (reduction: 13.6%); time 26.4 → 25.4 cycles
+  [ACCEPT]  ✓ Change accepted
+--- Iteration 5 ---
+  [ANALYZE] Found 2 opportunities: COPY_PROPAGATIONx2 (priority=50)
+  [ROUTE]   Rule-based optimizer: highest-priority opportunity is COPY_PROPAGATION (priority 50)
+  [PROPOSE] Applying COPY_PROPAGATION at instruction 3: t4 = 1000000 → uses of t4 -> 1000000 at instr 4
+  [VERIFY]  PASS (differential: 351/351 inputs matched, symbolic: skipped (control flow))
+  [COST]    Before: 19.0, After: 16.0 (reduction: 15.8%); time 25.4 → 25.0 cycles
+  [ACCEPT]  ✓ Change accepted
+--- Iteration 6 ---
+  [ANALYZE] Found 1 opportunity: COPY_PROPAGATION (priority=50)
+  [ROUTE]   Rule-based optimizer: highest-priority opportunity is COPY_PROPAGATION (priority 50)
+  [PROPOSE] Applying COPY_PROPAGATION at instruction 6: t5 = 1000001 → uses of t5 -> 1000001 at instr 7
+  [VERIFY]  PASS (differential: 351/351 inputs matched, symbolic: skipped (control flow))
+  [COST]    Before: 16.0, After: 13.0 (reduction: 18.8%); time 25.0 → 24.4 cycles
+  [ACCEPT]  ✓ Change accepted
+--- Iteration 7 ---
+  [ANALYZE] No more opportunities found.
+  [ROUTE]   LLM optimizer (groq qwen/qwen3.8-27b): the rules have nothing left to try
+  [LLM]     LLM produced no usable TAC: could not parse LLM TAC; reasoning: Strength reduction: replace the modulo operation (in_n % 2) with a bitwise AND (in_n & 1) for the evenness check, which is semantically equivalent for integers and typically faster.
+  [REPAIR]  Feedback sent to the LLM: It is not valid TAC: TAC line 1: unrecognised instruction: 't1 = in_n & 1'. Use only the instruction forms listed below; one instruction has at most one operator.
+  [LLM]     LLM produced no usable TAC: could not parse LLM TAC; reasoning: Dead code elimination: the variable t1 is only used to compute t3, and t3 is only used in the branch condition; since t1 is not used elsewhere, we can eliminate the temporary t1 by inlining its value into the comparison, reducing the number of instructions while preserving semantics.
+=== RESULT ===
+  Original cost: 30.0
+  Final cost:    13.0
+  Reduction:     56.7%
+  Exec. time:    29.4 → 24.4 cycles (17.0% less)
+  Iterations:    7
+  Accepted:      6
+  Rejected:      0
+  Invalid:       0
+  Routing:       hybrid (LLM: groq qwen/qwen3.8-27b)
+  LLM repairs:   1 (0 accepted)
+  Output match:  PASS ✓
+  Equivalence:   proved for all inputs
+=== Original TAC ===
+   0 |     n = 0
+   1 |     n = in_n
+   2 |     t0 = 2
+   3 |     t1 = n % t0
+   4 |     t2 = 0
+   5 |     t3 = t1 == t2
+   6 |     ifFalse t3 goto L0
+   7 |     t4 = 1000000
+   8 |     print t4
+   9 |     goto L1
+  10 | L0:
+  11 |     t5 = 1000001
+  12 |     print t5
+  13 | L1:
+=== Optimized TAC ===
+  0 |     t1 = in_n % 2
+  1 |     t3 = t1 == 0
+  2 |     ifFalse t3 goto L0
+  3 |     print 1000000
+  4 |     goto L1
+  5 | L0:
+  6 |     print 1000001
+  7 | L1:

@@ -1,0 +1,77 @@
+=== Program: nested_043.c ===
+--- Iteration 1 ---
+  [ANALYZE] Found 5 opportunities: DEAD_CODEx2 (priority=80), COPY_PROPAGATIONx3 (priority=50)
+  [ROUTE]   Rule-based optimizer: highest-priority opportunity is DEAD_CODE (priority 80)
+  [PROPOSE] Applying DEAD_CODE at instruction 0: n = 0 → (removed)
+  [VERIFY]  PASS (differential: 400/400 inputs matched, symbolic: equivalent)
+  [COST]    Before: 24.5, After: 22.0 (reduction: 10.2%); time 29.8 → 28.8 cycles
+  [ACCEPT]  ✓ Change accepted
+--- Iteration 2 ---
+  [ANALYZE] Found 4 opportunities: DEAD_CODE (priority=80), COPY_PROPAGATIONx3 (priority=50)
+  [ROUTE]   Rule-based optimizer: highest-priority opportunity is DEAD_CODE (priority 80)
+  [PROPOSE] Applying DEAD_CODE at instruction 0: k = 0 → (removed)
+  [VERIFY]  PASS (differential: 400/400 inputs matched, symbolic: equivalent)
+  [COST]    Before: 22.0, After: 19.5 (reduction: 11.4%); time 28.8 → 27.8 cycles
+  [ACCEPT]  ✓ Change accepted
+--- Iteration 3 ---
+  [ANALYZE] Found 3 opportunities: COPY_PROPAGATIONx3 (priority=50)
+  [ROUTE]   Rule-based optimizer: highest-priority opportunity is COPY_PROPAGATION (priority 50)
+  [PROPOSE] Applying COPY_PROPAGATION at instruction 0: n = in_n → uses of n -> in_n at instr 2
+  [VERIFY]  PASS (differential: 393/393 inputs matched, symbolic: equivalent)
+  [COST]    Before: 19.5, After: 17.0 (reduction: 12.8%); time 27.8 → 26.8 cycles
+  [ACCEPT]  ✓ Change accepted
+--- Iteration 4 ---
+  [ANALYZE] Found 2 opportunities: COPY_PROPAGATIONx2 (priority=50)
+  [ROUTE]   Rule-based optimizer: highest-priority opportunity is COPY_PROPAGATION (priority 50)
+  [PROPOSE] Applying COPY_PROPAGATION at instruction 0: k = in_k → uses of k -> in_k at instr 1, 4
+  [VERIFY]  PASS (differential: 393/393 inputs matched, symbolic: equivalent)
+  [COST]    Before: 17.0, After: 14.5 (reduction: 14.7%); time 26.8 → 25.8 cycles
+  [ACCEPT]  ✓ Change accepted
+--- Iteration 5 ---
+  [ANALYZE] Found 1 opportunity: COPY_PROPAGATION (priority=50)
+  [ROUTE]   Rule-based optimizer: highest-priority opportunity is COPY_PROPAGATION (priority 50)
+  [PROPOSE] Applying COPY_PROPAGATION at instruction 1: t1 = 1 → uses of t1 -> 1 at instr 2
+  [VERIFY]  PASS (differential: 393/393 inputs matched, symbolic: equivalent)
+  [COST]    Before: 14.5, After: 11.5 (reduction: 20.7%); time 25.8 → 24.8 cycles
+  [ACCEPT]  ✓ Change accepted
+--- Iteration 6 ---
+  [ANALYZE] No more opportunities found.
+  [ROUTE]   LLM optimizer (groq openai/gpt-oss-120b): the rules have nothing left to try
+  [LLM]     LLM produced no usable TAC: could not parse LLM TAC; reasoning: Copy‑propagation: replace use of t0 with its defining expression and remove the now‑unused assignment.
+  [REPAIR]  Feedback sent to the LLM: It is not valid TAC: TAC line 1: unrecognised instruction: 't2 = in_n / in_k + 1'. Use only the instruction forms listed below; one instruction has at most one operator.
+  [LLM]     LLM repair: Algebraic simplification: replace t2 and the multiplication with two separate operations, removing the temporary t2.
+  [VERIFY]  PASS (differential: 393/393 inputs matched, symbolic: equivalent)
+  [COST]    Before: 11.5, After: 11.0 (reduction: 4.3%); time 24.8 → 24.8 cycles
+  [ACCEPT]  ✓ Change accepted
+--- Iteration 7 ---
+  [ANALYZE] No more opportunities found.
+  [INFO]    LLM not consulted: call budget used up (1 per program)
+=== RESULT ===
+  Original cost: 24.5
+  Final cost:    11.0
+  Reduction:     55.1%
+  Exec. time:    29.8 → 24.8 cycles (16.7% less)
+  Iterations:    7
+  Accepted:      6
+  Rejected:      0
+  Invalid:       0
+  Routing:       hybrid (LLM: groq openai/gpt-oss-120b)
+  LLM proposals: 1 (1 passed verification)
+  LLM repairs:   1 (1 accepted)
+  Output match:  PASS ✓
+  Equivalence:   proved for all inputs
+=== Original TAC ===
+  0 |     n = 0
+  1 |     k = 0
+  2 |     n = in_n
+  3 |     k = in_k
+  4 |     t0 = n / k
+  5 |     t1 = 1
+  6 |     t2 = t0 + t1
+  7 |     t3 = k * t2
+  8 |     print t3
+=== Optimized TAC ===
+  0 |     t0 = in_n / in_k
+  1 |     t3 = in_k * t0
+  2 |     t3 = t3 + in_k
+  3 |     print t3

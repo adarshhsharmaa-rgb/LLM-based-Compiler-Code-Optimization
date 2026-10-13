@@ -4,6 +4,7 @@ from __future__ import annotations
 import argparse
 import glob
 import importlib.util
+import json
 import os
 import sys
 import time
@@ -16,6 +17,7 @@ from src.agents.optimization_specialist import MODE_SUMMARIES, MODES  # noqa: E4
 from src.agents.optimizer_llm import DEFAULT_MODELS, PROVIDERS, load_key_files  # noqa: E402
 from src.agents.orchestrator import Orchestrator  # noqa: E402
 from src.frontend import LexerError, ParseError, compile_source  # noqa: E402
+from src.frontend.c_frontend import CFrontendError, compile_c  # noqa: E402
 from src.visualization.report import (  # noqa: E402
     aggregate_metrics,
     format_metrics_table,
@@ -27,6 +29,12 @@ from src.visualization.report import (  # noqa: E402
 )
 
 DATASET_DIR = os.path.join(PROJECT_ROOT, "dataset", "programs")
+REAL_DATASET_DIR = os.path.join(PROJECT_ROOT, "dataset", "real_programs")
+DATASETS = {
+    # name: (folder, file pattern, what to do when it is empty)
+    "generated": (DATASET_DIR, "*.src", "Run with --generate-dataset first."),
+    "real": (REAL_DATASET_DIR, "*.c", "Build it with dataset/real_dataset.py (collect, then select)."),
+}
 
 
 def _configure_console() -> None:
@@ -64,8 +72,11 @@ def process_file(path: str, orchestrator: Orchestrator, out_dir: str, echo: bool
     with open(path, encoding="utf-8") as fh:
         source = fh.read()
     try:
-        tac = compile_source(source)
-    except (LexerError, ParseError) as exc:
+        if name.endswith(".c"):
+            tac, _ = compile_c(source, strict=True)     # a C program: strict mode keeps its printed text
+        else:
+            tac = compile_source(source)
+    except (LexerError, ParseError, CFrontendError) as exc:
         print(f"  ! {name}: {exc}")
         return None
     result = orchestrator.optimize(tac, name)
@@ -81,23 +92,87 @@ def process_file(path: str, orchestrator: Orchestrator, out_dir: str, echo: bool
     return result_to_record(result, infer_category(name, path))
 
 
-def run_all(orchestrator: Orchestrator, out_dir: str, quiet: bool) -> list[dict]:
-    files = sorted(glob.glob(os.path.join(DATASET_DIR, "*", "*.src")))
+def _load_cache(path: str) -> dict[str, dict]:
+    """Results a previous, interrupted run already saved (a half-written last line is ignored)."""
+    done: dict[str, dict] = {}
+    if os.path.exists(path):
+        with open(path, encoding="utf-8") as fh:
+            for line in fh:
+                try:
+                    record = json.loads(line)
+                except ValueError:
+                    continue
+                done[record["program_name"]] = record
+    return done
+
+
+def run_all(orchestrator: Orchestrator, out_dir: str, quiet: bool, dataset: str = "generated",
+            every: int = 1, resume: bool = False, require_llm: bool = False, part: str = "") -> list[dict]:
+    """Optimize the whole dataset. Every finished program is appended to a cache file at
+    once, so a run that is interrupted (hours in, with an LLM) can be continued with
+    ``--resume`` instead of starting again. The cache is removed when the run completes.
+
+    ``require_llm`` stops the run as soon as the LLM becomes unavailable (a daily quota is
+    spent), instead of finishing the remaining programs with the rules alone."""
+    folder, pattern, hint = DATASETS[dataset]
+    files = sorted(glob.glob(os.path.join(folder, "*", pattern)))[::max(every, 1)]
+    if part:                                    # "2/5": the second of five interleaved slices
+        index, count = (int(x) for x in part.split("/"))
+        files = files[index - 1::count]
+    cache_path = os.path.join(out_dir, "metrics", "records_cache.jsonl")
+    cached = _load_cache(cache_path) if resume else {}
+    if resume and not cached:
+        # A run that finished (for example on a sample made with --every) can be extended:
+        # its saved results count as done.
+        try:
+            cached = {r["program_name"]: r for r in load_results(out_dir)}
+        except FileNotFoundError:
+            pass
+    if cached:
+        print(f"Resuming: {len(cached)} programs are already done in {_display(cache_path)}")
     if not files:
-        print(f"No .src files found under {DATASET_DIR}. Run with --generate-dataset first.")
+        print(f"No {pattern[1:]} files found under {folder}. {hint}")
         return []
     records = []
     start = time.time()
     llm = orchestrator.llm_optimizer
     llm_was_available = llm is not None and llm.available
-    for idx, path in enumerate(files, start=1):
-        print(f"Processing [{idx}/{len(files)}]: {os.path.basename(path)}", flush=True)
+    cache = open(cache_path, "w", encoding="utf-8")
+    for record in cached.values():          # so the cache alone is enough if this run is interrupted too
+        cache.write(json.dumps(record) + "\n")
+    stopped = require_llm and not llm_was_available
+    if stopped:
+        reason = getattr(llm, "unavailable_reason", "") or "no LLM is attached"
+        print(f"The LLM is not available ({reason}), so nothing was run (--require-llm).")
+    for idx, path in enumerate(files if not stopped else [], start=1):
+        name = os.path.basename(path)
+        if name in cached:
+            records.append(cached[name])
+            continue
+        print(f"Processing [{idx}/{len(files)}]: {name}", flush=True)
+        skipped_before = getattr(llm, "rate_limit_skips", 0)
         record = process_file(path, orchestrator, out_dir, echo=not quiet)
+        if require_llm and (not llm.available or getattr(llm, "rate_limit_skips", 0) > skipped_before):
+            # The LLM gave out during this program (quota spent, or a rate limit that would not
+            # clear), so its result is not an LLM result: drop it.
+            why = llm.unavailable_reason if not llm.available else "its rate limit did not clear"
+            print(f"  ! LLM unavailable: {why}. Stopped before {name}; continue later with --resume.", flush=True)
+            stopped = True
+            break
         if record is not None:
             records.append(record)
+            cache.write(json.dumps(record) + "\n")
+            cache.flush()
+            os.fsync(cache.fileno())
         if llm_was_available and not llm.available:
             print(f"  ! LLM switched off after {idx} programs: {llm.unavailable_reason}", flush=True)
             llm_was_available = False
+    cache.close()
+    if stopped:
+        seen = {r["program_name"] for r in records}
+        records += [r for name, r in cached.items() if name not in seen]   # done earlier, further down the list
+    else:
+        os.remove(cache_path)       # the caller writes the complete results next
     print(f"\nProcessed {len(records)} programs in {time.time() - start:.1f}s")
     return records
 
@@ -116,7 +191,22 @@ def main() -> int:
     parser = argparse.ArgumentParser(description="Automated Compiler Code Optimization Agent")
     parser.add_argument("--generate-dataset", action="store_true", help="Generate the 500-program dataset")
     parser.add_argument("--run-all", action="store_true", help="Run optimization on all dataset programs")
-    parser.add_argument("--run-file", type=str, help="Run optimization on a single .src file")
+    parser.add_argument("--run-file", type=str, help="Run optimization on a single .src or .c file")
+    parser.add_argument("--resume", action="store_true",
+                        help="With --run-all: continue an interrupted run, skipping the programs whose "
+                             "results are already in <output-dir>/metrics/records_cache.jsonl")
+    parser.add_argument("--part", type=str, default="", metavar="I/N",
+                        help="With --run-all: only the I-th of N interleaved slices of the dataset, so that N "
+                             "runs with different output folders can work side by side")
+    parser.add_argument("--require-llm", action="store_true",
+                        help="With --run-all and an LLM: stop when the LLM becomes unavailable (quota spent) "
+                             "instead of finishing with the rules alone; continue later with --resume")
+    parser.add_argument("--every", type=int, default=1, metavar="K",
+                        help="With --run-all: optimize only every K-th program, a sample spread evenly over "
+                             "the categories (for slow runs such as a local model on the CPU)")
+    parser.add_argument("--dataset", choices=sorted(DATASETS), default="generated",
+                        help="Which programs --run-all optimizes: the generated 500, or the 500 real "
+                             "Codeforces submissions built by dataset/real_dataset.py")
     parser.add_argument("--optimizer", choices=MODES, default=None,
                         help="How the Optimization Specialist routes each step: "
                              + "; ".join(f"{m} = {MODE_SUMMARIES[m]}" for m in MODES)
@@ -129,6 +219,9 @@ def main() -> int:
     parser.add_argument("--visualize", action="store_true", help="Generate all 6 visualization charts")
     parser.add_argument("--quiet", action="store_true",
                         help="With --run-all: print only progress, not every decision log (logs are still saved)")
+    parser.add_argument("--cost-model", choices=["static", "time"], default="static",
+                        help="What counts as cheaper: static = weighted instruction counts (default); "
+                             "time = measured execution time first, static cost second")
     parser.add_argument("--max-iterations", type=int, default=50, help="Agent iteration cap per program")
     parser.add_argument("--llm-provider", choices=["auto", *sorted(PROVIDERS)], default="auto",
                         help="LLM backend: gemini (Google), groq (Groq), ollama (local model), or "
@@ -137,6 +230,9 @@ def main() -> int:
                         help="Model ID for the LLM (default: "
                              + ", ".join(f"{p}={m}" for p, m in DEFAULT_MODELS.items()) + ")")
     parser.add_argument("--max-llm-calls", type=int, default=5, help="LLM proposals allowed per program")
+    parser.add_argument("--max-repairs", type=int, default=1,
+                        help="Self-repair: second tries the LLM gets after a rejected answer, with the "
+                             "verifier's counterexample as feedback (default 1, 0 turns it off)")
     parser.add_argument("--compare-with", type=str, default=None,
                         help="With --visualize: another output dir (e.g. a rule-only run) to compare against")
     args = parser.parse_args()
@@ -160,9 +256,10 @@ def main() -> int:
         use_llm = mode != "rule"
         if use_llm and not args.offline:
             load_key_files(PROJECT_ROOT)      # .gemini_key / .groq_key
-        orchestrator = Orchestrator(optimizer_mode=mode, max_iterations=args.max_iterations,
+        orchestrator = Orchestrator(optimizer_mode=mode, max_iterations=args.max_iterations, cost_model=args.cost_model,
                                     llm_model=args.llm_model, max_llm_calls=args.max_llm_calls,
-                                    llm_provider=args.llm_provider, offline=args.offline)
+                                    llm_provider=args.llm_provider, offline=args.offline,
+                                    max_repairs=args.max_repairs)
         llm = orchestrator.llm_optimizer
         if llm is not None:
             why = f" - {llm.selected_because}" if llm.selected_because else ""
@@ -182,7 +279,8 @@ def main() -> int:
             print(f"Decision log saved to {_display(os.path.join(out_dir, 'logs'))}")
 
         if args.run_all:
-            records = run_all(orchestrator, out_dir, args.quiet)
+            records = run_all(orchestrator, out_dir, args.quiet, args.dataset, args.every, args.resume,
+                              args.require_llm, args.part)
             if records:
                 report_metrics(records, out_dir, llm_used=use_llm)
             if llm is not None and not llm.available:

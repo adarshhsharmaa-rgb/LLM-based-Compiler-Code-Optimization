@@ -1,0 +1,58 @@
+=== Program: arithmetic_033.c ===
+--- Iteration 1 ---
+  [ANALYZE] Found 4 opportunities: DEAD_CODE (priority=80), COPY_PROPAGATIONx3 (priority=50)
+  [PROPOSE] Applying DEAD_CODE at instruction 0: n = 0 → (removed)
+  [VERIFY]  PASS (differential: 287/287 inputs matched, symbolic: equivalent)
+  [COST]    Before: 22.5, After: 20.0 (reduction: 11.1%); time 29.0 → 28.0 cycles
+  [ACCEPT]  ✓ Change accepted
+--- Iteration 2 ---
+  [ANALYZE] Found 3 opportunities: COPY_PROPAGATIONx3 (priority=50)
+  [PROPOSE] Applying COPY_PROPAGATION at instruction 0: n = in_n → uses of n -> in_n at instr 2, 4
+  [VERIFY]  PASS (differential: 285/285 inputs matched, symbolic: equivalent)
+  [COST]    Before: 20.0, After: 17.5 (reduction: 12.5%); time 28.0 → 27.0 cycles
+  [ACCEPT]  ✓ Change accepted
+--- Iteration 3 ---
+  [ANALYZE] Found 2 opportunities: COPY_PROPAGATIONx2 (priority=50)
+  [PROPOSE] Applying COPY_PROPAGATION at instruction 0: t0 = 2 → uses of t0 -> 2 at instr 1
+  [VERIFY]  PASS (differential: 285/285 inputs matched, symbolic: equivalent)
+  [COST]    Before: 17.5, After: 14.5 (reduction: 17.1%); time 27.0 → 26.0 cycles
+  [ACCEPT]  ✓ Change accepted
+--- Iteration 4 ---
+  [ANALYZE] Found 2 opportunities: STRENGTH_REDUCTION (priority=60), COPY_PROPAGATION (priority=50)
+  [PROPOSE] Applying STRENGTH_REDUCTION at instruction 0: t1 = 2 * in_n → t1 = in_n + in_n
+  [VERIFY]  PASS (differential: 285/285 inputs matched, symbolic: equivalent)
+  [COST]    Before: 14.5, After: 14.5 (reduction: 0.0%); time 26.0 → 24.0 cycles
+  [ACCEPT]  ✓ Change accepted
+--- Iteration 5 ---
+  [ANALYZE] Found 1 opportunity: COPY_PROPAGATION (priority=50)
+  [PROPOSE] Applying COPY_PROPAGATION at instruction 1: t2 = 2 → uses of t2 -> 2 at instr 2
+  [VERIFY]  PASS (differential: 285/285 inputs matched, symbolic: equivalent)
+  [COST]    Before: 14.5, After: 11.5 (reduction: 20.7%); time 24.0 → 23.0 cycles
+  [ACCEPT]  ✓ Change accepted
+--- Iteration 6 ---
+  [ANALYZE] No more opportunities found.
+=== RESULT ===
+  Original cost: 22.5
+  Final cost:    11.5
+  Reduction:     48.9%
+  Exec. time:    29.0 → 23.0 cycles (20.7% less)
+  Iterations:    6
+  Accepted:      5
+  Rejected:      0
+  Invalid:       0
+  Output match:  PASS ✓
+  Equivalence:   proved for all inputs
+=== Original TAC ===
+  0 |     n = 0
+  1 |     n = in_n
+  2 |     t0 = 2
+  3 |     t1 = t0 * n
+  4 |     t2 = 2
+  5 |     t3 = n / t2
+  6 |     t4 = t1 - t3
+  7 |     print t4
+=== Optimized TAC ===
+  0 |     t1 = in_n + in_n
+  1 |     t3 = in_n / 2
+  2 |     t4 = t1 - t3
+  3 |     print t4

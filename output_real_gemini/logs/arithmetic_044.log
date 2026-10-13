@@ -1,0 +1,79 @@
+=== Program: arithmetic_044.c ===
+--- Iteration 1 ---
+  [ANALYZE] Found 7 opportunities: DEAD_CODEx2 (priority=80), COPY_PROPAGATIONx5 (priority=50)
+  [ROUTE]   Rule-based optimizer: highest-priority opportunity is DEAD_CODE (priority 80)
+  [PROPOSE] Applying DEAD_CODE at instruction 0: n = 0 → (removed)
+  [VERIFY]  PASS (differential: 348/348 inputs matched, symbolic: equivalent)
+  [COST]    Before: 24.0, After: 21.5 (reduction: 10.4%); time 30.0 → 29.0 cycles
+  [ACCEPT]  ✓ Change accepted
+--- Iteration 2 ---
+  [ANALYZE] Found 6 opportunities: DEAD_CODE (priority=80), COPY_PROPAGATIONx5 (priority=50)
+  [ROUTE]   Rule-based optimizer: highest-priority opportunity is DEAD_CODE (priority 80)
+  [PROPOSE] Applying DEAD_CODE at instruction 0: ans = 0 → (removed)
+  [VERIFY]  PASS (differential: 348/348 inputs matched, symbolic: equivalent)
+  [COST]    Before: 21.5, After: 19.0 (reduction: 11.6%); time 29.0 → 28.0 cycles
+  [ACCEPT]  ✓ Change accepted
+--- Iteration 3 ---
+  [ANALYZE] Found 5 opportunities: COPY_PROPAGATIONx5 (priority=50)
+  [ROUTE]   Rule-based optimizer: highest-priority opportunity is COPY_PROPAGATION (priority 50)
+  [PROPOSE] Applying COPY_PROPAGATION at instruction 0: n = in_n → uses of n -> in_n at instr 2
+  [VERIFY]  PASS (differential: 346/346 inputs matched, symbolic: equivalent)
+  [COST]    Before: 19.0, After: 16.5 (reduction: 13.2%); time 28.0 → 27.0 cycles
+  [ACCEPT]  ✓ Change accepted
+--- Iteration 4 ---
+  [ANALYZE] Found 4 opportunities: COPY_PROPAGATIONx4 (priority=50)
+  [ROUTE]   Rule-based optimizer: highest-priority opportunity is COPY_PROPAGATION (priority 50)
+  [PROPOSE] Applying COPY_PROPAGATION at instruction 0: t0 = 3 → uses of t0 -> 3 at instr 1
+  [VERIFY]  PASS (differential: 346/346 inputs matched, symbolic: equivalent)
+  [COST]    Before: 16.5, After: 13.5 (reduction: 18.2%); time 27.0 → 26.0 cycles
+  [ACCEPT]  ✓ Change accepted
+--- Iteration 5 ---
+  [ANALYZE] Found 3 opportunities: COPY_PROPAGATIONx3 (priority=50)
+  [ROUTE]   Rule-based optimizer: highest-priority opportunity is COPY_PROPAGATION (priority 50)
+  [PROPOSE] Applying COPY_PROPAGATION at instruction 1: t2 = 2 → uses of t2 -> 2 at instr 2
+  [VERIFY]  PASS (differential: 346/346 inputs matched, symbolic: equivalent)
+  [COST]    Before: 13.5, After: 10.5 (reduction: 22.2%); time 26.0 → 25.0 cycles
+  [ACCEPT]  ✓ Change accepted
+--- Iteration 6 ---
+  [ANALYZE] Found 2 opportunities: COPY_PROPAGATIONx2 (priority=50)
+  [ROUTE]   Rule-based optimizer: highest-priority opportunity is COPY_PROPAGATION (priority 50)
+  [PROPOSE] Applying COPY_PROPAGATION at instruction 2: t3 = t1 / 2; ans = t3 → ans = t1 / 2
+  [VERIFY]  PASS (differential: 346/346 inputs matched, symbolic: equivalent)
+  [COST]    Before: 10.5, After: 7.5 (reduction: 28.6%); time 25.0 → 24.0 cycles
+  [ACCEPT]  ✓ Change accepted
+--- Iteration 7 ---
+  [ANALYZE] No more opportunities found.
+  [ROUTE]   LLM optimizer (gemini gemini-3.1-flash-lite): the rules have nothing left to try
+  [LLM]     LLM proposal: Algebraic simplification: Multiplying by 3 and dividing by 2 is equivalent to multiplying by 1.5, or more simply using a single expression to reduce operations.
+  [VERIFY]  FAIL (output mismatch on inputs {'in_n': 20}: original printed [30], candidate printed [20])
+  [REJECT]  ✗ Change rejected: Verification failed: output mismatch on inputs {'in_n': 20}: original printed [30], candidate printed [20]
+  [REPAIR]  Feedback sent to the LLM: It changes what the program does: output mismatch on inputs {'in_n': 20}: original printed [30], candidate printed [20].
+  [LLM]     LLM produced no usable TAC: could not parse LLM TAC; reasoning: Using the distributive property of multiplication and division, the expression (in_n * 3) / 2 is mathematically equivalent to (in_n * 1.5), but since we must perform integer arithmetic, we apply strength reduction by replacing the multiplication and division with a single bitwise shift operation for efficiency: (in_n * 3) / 2 is equivalent to (in_n + (in_n << 1)) / 2, or simply (in_n * 3) >> 1.
+=== RESULT ===
+  Original cost: 24.0
+  Final cost:    7.5
+  Reduction:     68.8%
+  Exec. time:    30.0 → 24.0 cycles (20.0% less)
+  Iterations:    7
+  Accepted:      6
+  Rejected:      0
+  Invalid:       1
+  Routing:       hybrid (LLM: gemini gemini-3.1-flash-lite)
+  LLM proposals: 1 (0 passed verification)
+  LLM repairs:   1 (0 accepted)
+  Output match:  PASS ✓
+  Equivalence:   proved for all inputs
+=== Original TAC ===
+  0 |     n = 0
+  1 |     ans = 0
+  2 |     n = in_n
+  3 |     t0 = 3
+  4 |     t1 = n * t0
+  5 |     t2 = 2
+  6 |     t3 = t1 / t2
+  7 |     ans = t3
+  8 |     print ans
+=== Optimized TAC ===
+  0 |     t1 = in_n * 3
+  1 |     ans = t1 / 2
+  2 |     print ans

@@ -1,7 +1,10 @@
 """Terminal front end: optimize a real C program step by step.
 
-    py demo.py                                   # menu: pick a sample, paste code or give a path
+    py demo.py                                   # menu: pick a program, then who proposes and the cost model
     py demo.py demo_programs/3_loop.c            # pauses between stages (press Enter)
+    py demo.py demo_programs/3_loop.c --compare  # the same program under the rules and every LLM that is ready
+    py demo.py my_program.c --cost-model time    # judge changes by measured execution time, not the static count
+    py demo.py dataset/real_programs/loops/loops_001.c   # a real Codeforces program (strict C mode)
     py demo.py my_program.c --fast               # no pauses
     py demo.py my_program.c --step               # also pause after every agent decision
     py demo.py my_program.c --inputs n=10,k=3    # values for scanf() variables
@@ -20,6 +23,7 @@ from __future__ import annotations
 import argparse
 import glob
 import os
+import random
 import re
 import sys
 import textwrap
@@ -31,6 +35,7 @@ if PROJECT_ROOT not in sys.path:
     sys.path.insert(0, PROJECT_ROOT)
 
 from src.agents.cost_evaluator import CostEvaluator  # noqa: E402
+from src.agents.smt_verifier import z3_available  # noqa: E402
 from src.agents.optimization_specialist import MODE_SUMMARIES, MODES  # noqa: E402
 from src.agents.optimizer_llm import KEY_FILES, PROVIDERS, load_key_files, ollama_running  # noqa: E402
 from src.agents.orchestrator import Orchestrator  # noqa: E402
@@ -39,6 +44,10 @@ from src.tac.interpreter import ExecutionTimeout, TACInterpreter, TACRuntimeErro
 
 WIDTH = 78
 SAMPLES_DIR = os.path.join(PROJECT_ROOT, "demo_programs")
+REAL_DIR = os.path.join(PROJECT_ROOT, "dataset", "real_programs")
+PROOF_LABELS = {"identical": "the optimized program is identical to the original",
+                "both": "proved for all inputs by the symbolic polynomial check",
+                "smt": "proved for all inputs by the Z3 SMT solver"}
 TYPE_LABELS = {
     "CONSTANT_FOLD": "Constant folding",
     "ALGEBRAIC_SIMPLIFY": "Algebraic simplification",
@@ -143,6 +152,59 @@ def sample_files() -> list[str]:
     return sorted(glob.glob(os.path.join(SAMPLES_DIR, "*.c")))
 
 
+def real_files() -> list[str]:
+    """The real-program dataset; short programs only, so that one fits on the screen."""
+    return [path for path in sorted(glob.glob(os.path.join(REAL_DIR, "*", "*.c")))
+            if os.path.getsize(path) < 900]
+
+
+def is_real_program(name: str) -> bool:
+    """Real programs print text and leave early, so they are compiled in the front end's strict mode."""
+    return bool(glob.glob(os.path.join(REAL_DIR, "*", os.path.basename(name))))
+
+
+def llm_choices() -> list[tuple[str, str, bool, str]]:
+    """(name, provider, ready, note) for every LLM the demo can use."""
+    choices = []
+    for provider, variable in (("groq", "GROQ_API_KEY"), ("gemini", "GEMINI_API_KEY")):
+        ready = bool(os.environ.get(variable)) or os.path.exists(os.path.join(PROJECT_ROOT, KEY_FILES[variable]))
+        choices.append((LLM_NAMES[provider], provider, ready,
+                        "cloud, key found" if ready else f"cloud, no key: save one in {KEY_FILES[variable]}"))
+    ready = ollama_running()
+    choices.append(("Ollama", "ollama", ready,
+                    "local model, no internet needed" if ready else "local model: Ollama is not running"))
+    return choices
+
+
+def with_llm(args, provider: str | None):
+    """A copy of the command-line options with the LLM set to ``provider`` (None = rules only)."""
+    chosen = argparse.Namespace(**vars(args))
+    if provider:
+        chosen.llm_provider, chosen.offline = provider, provider == "ollama"
+    return chosen
+
+
+def choose_setup(args) -> tuple[argparse.Namespace, str, bool] | None:
+    """Ask who proposes and what counts as cheaper. Returns (options, routing mode, compare all)."""
+    choices = llm_choices()
+    print()
+    print(c("  Who proposes the optimizations?", "bold"))
+    print(f"    {c('1', 'cyan', 'bold')}  rules only")
+    for i, (name, _, ready, note) in enumerate(choices, start=2):
+        print(f"    {c(str(i), 'cyan', 'bold')}  rules + {name:<7} " + c(f"({note})", "grey" if ready else "yellow"))
+    last = len(choices) + 2
+    print(f"    {c(str(last), 'cyan', 'bold')}  compare: the rules and every LLM that is ready, side by side")
+    try:
+        answer = input(c("  > [1] ", "cyan")).strip() or "1"
+        number = int(answer) if answer.isdigit() and 1 <= int(answer) <= last else 1
+        timed = input(c("  Cost model: Enter = static count, t = measured execution time > ", "cyan")).strip().lower()
+    except EOFError:
+        return None
+    chosen = with_llm(args, None if number in (1, last) else choices[number - 2][1])
+    chosen.cost_model = "time" if timed.startswith("t") else args.cost_model
+    return chosen, "rule" if number in (1, last) else "hybrid", number == last
+
+
 def first_comment(path: str) -> str:
     try:
         with open(path, encoding="utf-8") as fh:
@@ -169,6 +231,9 @@ def choose_program() -> tuple[str, str] | None:
     print(c("  Choose a program to optimize:", "bold"))
     for i, path in enumerate(samples, start=1):
         print(f"    {c(str(i), 'cyan', 'bold')}  {os.path.basename(path):<18} {c(first_comment(path), 'grey')}")
+    real = real_files()
+    if real:
+        print(f"    {c('r', 'cyan', 'bold')}  a real program, picked at random from the {len(real)} Codeforces submissions")
     print(f"    {c('p', 'cyan', 'bold')}  paste my own C program")
     print(f"    {c('q', 'cyan', 'bold')}  quit")
     print(c("    ...or type the path of a .c file", "grey"))
@@ -181,7 +246,9 @@ def choose_program() -> tuple[str, str] | None:
             return None
         if choice.lower() == "p":
             return read_pasted(), "pasted_program.c"
-        if choice.isdigit() and 1 <= int(choice) <= len(samples):
+        if choice.lower() == "r" and real:
+            path = random.choice(real)
+        elif choice.isdigit() and 1 <= int(choice) <= len(samples):
             path = samples[int(choice) - 1]
         elif choice:
             path = choice
@@ -241,7 +308,9 @@ def choose_inputs(input_names: list[str], c_names: dict[str, str], given: dict[s
 def describe(entry) -> str:
     text = entry.description
     if entry.source == "llm":
-        return text.replace("LLM proposal: ", "").replace("LLM produced no usable TAC: ", "")
+        for prefix in ("LLM proposal: ", "LLM repair: ", "LLM produced no usable TAC: "):
+            text = text.replace(prefix, "")
+        return text
     return text.split(": ", 1)[1] if ": " in text else text
 
 
@@ -296,9 +365,15 @@ def replay(result, pacer: Pacer, verbose: bool) -> int:
         if e.phase in ("analyze", "route") and verbose:
             flush()
             print(c(f"       {'route to ' if e.phase == 'route' else ''}{e.description}", "grey"))
+        elif e.phase == "repair":
+            flush()
+            print(c("         self-repair: the LLM is told what was wrong and asked again", "magenta"))
+            print(c(f"         {clip(e.reason or '', 66)}", "grey"))
         elif e.phase == "propose":
             flush()
             kind = llm_label(result) if e.source == "llm" else e.opportunity_type
+            if e.description.startswith("LLM repair: "):
+                kind += " repair"
             current = {"it": e.iteration, "kind": kind, "source": e.source, "what": describe(e),
                        "outcome": None, "before": 0.0, "after": 0.0, "reason": None}
         elif current is not None and e.phase == "verify":
@@ -337,8 +412,8 @@ def suggestion_summary(result, llm_enabled: bool, llm_note: str, hidden: int) ->
             (llm_label(result), count_outcomes(llm), "magenta"),
             ("Total", count_outcomes(result.proposals), "bold")]
 
-    print("  " + c(f"{'Source':<16}{'Suggested':>10}{'Verified':>10}{'Accepted':>10}"
-                   f"{'No gain':>9}{'Invalid':>9}", "bold"))
+    print("  " + c(f"{'Source':<16}{'Suggested':>10}{'Correct':>10}{'Accepted':>10}"
+                   f"{'No gain':>9}{'Wrong':>9}", "bold"))
     print("  " + c("-" * 64, "grey"))
     for label, n, colour in rows:
         if label == "Total":
@@ -347,8 +422,8 @@ def suggestion_summary(result, llm_enabled: bool, llm_note: str, hidden: int) ->
                 f"{n['no_gain']:>9}{n['invalid']:>9}")
         print("  " + c(line, colour))
     print()
-    print(c("  Suggested = proposals made   Verified = passed the correctness check", "grey"))
-    print(c("  No gain   = correct but not cheaper   Invalid = failed the correctness check", "grey"))
+    print(c("  Suggested = proposals made   Correct = passed the correctness check", "grey"))
+    print(c("  No gain   = correct but not cheaper   Wrong = failed the correctness check, so it was blocked", "grey"))
 
     if llm_enabled:
         unusable = result.llm_calls - len(llm)
@@ -357,6 +432,9 @@ def suggestion_summary(result, llm_enabled: bool, llm_note: str, hidden: int) ->
             text += f"  ({len(llm)} usable suggestion{'s' if len(llm) != 1 else ''}"
             text += f", {unusable} unusable repl{'ies' if unusable != 1 else 'y'})" if unusable else ")"
         print(c(text, "magenta"))
+        if result.llm_repairs:
+            print(c(f"  Self-repair: {result.llm_repairs} second tr{'ies' if result.llm_repairs != 1 else 'y'} "
+                    f"after a rejected answer, {result.llm_repairs_accepted} accepted", "magenta"))
         if not result.llm_calls:
             print(c("  The LLM was not needed: the rules left nothing more to improve.", "grey"))
     else:
@@ -370,14 +448,29 @@ def suggestion_summary(result, llm_enabled: bool, llm_note: str, hidden: int) ->
         by_type.setdefault(p["type"], Counter())[p["outcome"]] += 1
     if by_type:
         print()
-        print("  " + c(f"{'By optimization type':<30}{'Suggested':>10}{'Accepted':>10}"
-                       f"{'No gain':>9}{'Invalid':>9}", "bold"))
-        print("  " + c("-" * 68, "grey"))
+        print("  " + c(f"{'By optimization type':<30}{'Suggested':>10}{'Correct':>9}{'Accepted':>10}"
+                       f"{'No gain':>9}{'Wrong':>7}", "bold"))
+        print("  " + c("-" * 75, "grey"))
         for key in TYPE_LABELS:
             if key in by_type:
                 n = by_type[key]
-                print(f"  {TYPE_LABELS[key]:<30}{sum(n.values()):>10}{n['accepted']:>10}"
-                      f"{n['rejected']:>9}{n['invalid']:>9}")
+                print(f"  {TYPE_LABELS[key]:<30}{sum(n.values()):>10}{n['accepted'] + n['rejected']:>9}"
+                      f"{n['accepted']:>10}{n['rejected']:>9}{n['invalid']:>7}")
+
+    # the wrong suggestions on their own, each with what the verifier found
+    wrong = [e for e in result.log.entries if e.phase == "reject" and "Verification failed" in (e.reason or "")]
+    if wrong:
+        print()
+        print("  " + c(f"Wrong suggestions, blocked by the verifier: {len(wrong)}", "red", "bold"))
+        for e in wrong[:5]:
+            who = llm_label(result) if e.source == "llm" else "rule"
+            found = (e.reason or "").replace("Verification failed: ", "")
+            print(c(f"    [{e.iteration:>2}] {who}: {clip(found, 58)}", "grey"))
+        if len(wrong) > 5:
+            print(c(f"    ... and {len(wrong) - 5} more (all in the decision log)", "grey"))
+    elif result.proposals:
+        print()
+        print(c("  Wrong suggestions: none in this run.", "grey"))
 
 
 # ---------------------------------------------------------------------- #
@@ -396,11 +489,11 @@ def make_orchestrator(mode: str, args) -> tuple[Orchestrator, bool, str]:
     ``mode`` is the Optimization Specialist's routing policy: "rule", "llm" or "hybrid".
     """
     if mode == "rule":
-        return (Orchestrator(max_iterations=args.max_iterations), False,
+        return (Orchestrator(max_iterations=args.max_iterations, cost_model=args.cost_model), False,
                 "not used (add --use-llm, or --offline for a local Ollama model)")
     if not args.offline:
         load_key_files(PROJECT_ROOT)      # .gemini_key / .groq_key
-    orchestrator = Orchestrator(optimizer_mode=mode, max_iterations=args.max_iterations,
+    orchestrator = Orchestrator(optimizer_mode=mode, max_iterations=args.max_iterations, cost_model=args.cost_model,
                                 llm_provider=args.llm_provider, llm_model=args.llm_model,
                                 offline=args.offline, max_llm_calls=3)
     llm = orchestrator.llm_optimizer
@@ -411,14 +504,72 @@ def make_orchestrator(mode: str, args) -> tuple[Orchestrator, bool, str]:
     return orchestrator, True, ""
 
 
-def run_demo(source: str, name: str, args, pacer: Pacer, mode: str) -> int:
-    # ------------------------------------------------------------ stage 1
+def compare(source: str, name: str, args) -> int:
+    """Optimize one program under the rules and under every LLM that is ready, and show the runs side by side."""
+    strict = args.strict or is_real_program(name)
     stage(1, f"The C program  ({name})")
     for line in numbered(source.rstrip().splitlines(), start=1):
         print(line)
+    try:
+        tac, _ = compile_c(source, strict=strict)
+    except CFrontendError as exc:
+        print(c(f"\n  {exc}", "red", "bold"))
+        return 1
+    cost0 = CostEvaluator().evaluate(tac)
+    stage(2, "Comparison: the same program under every proposer")
+    print(f"  {len(tac)} TAC instructions, weighted cost {cost0.weighted_total:.1f}, cost model: {args.cost_model}")
+    print()
+    rows, status = [], 0
+    for label, provider, ready in [("Rules only", None, True)] + [(f"Rules + {n}", p, r) for n, p, r, _ in llm_choices()]:
+        if not ready:
+            rows.append((label, None, "not ready"))
+            continue
+        orchestrator, enabled, note = make_orchestrator("hybrid" if provider else "rule", with_llm(args, provider))
+        if provider and not enabled:
+            rows.append((label, None, clip(note, 50)))
+            continue
+        print(c(f"  running: {label} ...", "grey"), flush=True)
+        started = time.time()
+        result = orchestrator.optimize(compile_c(source, strict=strict)[0], name)
+        if result.stopped_reason:
+            rows.append((label, None, clip(result.stopped_reason, 50)))
+            status = 1
+            continue
+        rows.append((label, result, f"{time.time() - started:.1f}s"))
+        status = status or (0 if result.output_match else 1)
+    print()
+    print("  " + c(f"{'Proposer':<16}{'Cost':>14}{'Less':>8}{'Time less':>11}{'LLM correct':>13}"
+                   f"{'LLM wrong':>11}  {'Equivalence':<12}{'Took':>7}", "bold"))
+    print("  " + c("-" * 94, "grey"))
+    for label, result, note in rows:
+        if result is None:
+            print("  " + c(f"{label:<16}{note}", "grey"))
+            continue
+        llm = count_outcomes([p for p in result.proposals if p["source"] == "llm"])
+        used = label != "Rules only"
+        cost = f"{result.original_cost.weighted_total:.1f} → {result.final_cost.weighted_total:.1f}"
+        check = "FAILED" if not result.output_match else "proved" if result.proved else "tested"
+        line = (f"{label:<16}{cost:>14}{result.cost_reduction_pct:>7.1f}%{result.time_reduction_pct:>10.1f}%"
+                f"{llm['verified'] if used else '-':>13}{llm['invalid'] if used else '-':>11}  {check:<12}{note:>7}")
+        print("  " + c(line, "green" if result.output_match else "red"))
+    print()
+    print(c("  Less = static cost removed   Time less = execution time removed", "grey"))
+    print(c("  LLM correct = LLM suggestions that passed verification   LLM wrong = blocked by the verifier", "grey"))
+    print(c("  Equivalence: proved = for every input (symbolic check or Z3), tested = on the verifier's inputs", "grey"))
+    return status
+
+
+def run_demo(source: str, name: str, args, pacer: Pacer, mode: str) -> int:
+    # ------------------------------------------------------------ stage 1
+    strict = args.strict or is_real_program(name)
+    stage(1, f"The C program  ({name})")
+    for line in numbered(source.rstrip().splitlines(), start=1):
+        print(line)
+    if strict:
+        print(c("  strict C mode: printed text and early returns are kept, so every output is checked", "cyan"))
 
     try:
-        tac, cprog = compile_c(source)
+        tac, cprog = compile_c(source, strict=strict)
     except CFrontendError as exc:
         print()
         print(c(f"  {exc}", "red", "bold"))
@@ -443,7 +594,8 @@ def run_demo(source: str, name: str, args, pacer: Pacer, mode: str) -> int:
     print()
     print(f"  {c(str(cost0.instruction_count), 'bold')} instructions, {cost0.arithmetic_ops} arithmetic, "
           f"{cost0.temp_vars} temporaries, {cost0.memory_ops} copies, {cost0.branch_ops} branches")
-    print("  weighted cost = " + c(f"{cost0.weighted_total:.1f}", "bold", "yellow"))
+    print("  weighted cost = " + c(f"{cost0.weighted_total:.1f}", "bold", "yellow")
+          + f"    execution time = {cost0.exec_time:.1f} cycles (average over the profile inputs)")
     if input_names:
         shown = ", ".join(c_names.get(n, n) for n in input_names)
         print(c(f"  inputs (scanf): {shown} - the verifier will test many different values", "cyan"))
@@ -504,9 +656,31 @@ def run_demo(source: str, name: str, args, pacer: Pacer, mode: str) -> int:
     print(f"  optimized: {after}")
     same = before == after
     print("  " + (c("identical output", "green", "bold") if same else c("OUTPUT DIFFERS", "red", "bold")))
+    print(f"  execution time: {result.original_cost.exec_time:.1f} → {result.final_cost.exec_time:.1f} cycles "
+          f"({result.time_reduction_pct:.1f}% less)")
+    proof = PROOF_LABELS.get(result.final_check_method, "proved for all inputs") if result.proved else \
+        "tested on the verifier's inputs"
+    if result.output_match:
+        print("  equivalence: " + (c(proof, "green") if result.proved else proof))
+        if not result.proved and not z3_available():
+            print(c("    (pip install z3-solver to have programs without loops proved by the SMT solver)", "grey"))
     verdict = c("PASS", "green", "bold") if result.output_match else c("FAIL", "red", "bold")
     print(f"  verifier, final check against the original: {verdict}")
     print(c(f"    {clip(result.final_check_reason, 70)}", "grey"))
+
+    counts = count_outcomes(result.proposals)
+    print()
+    print(c("  " + "-" * (WIDTH - 2), "blue"))
+    print(c("  SUMMARY", "bold", "blue") + c(f"   {name}, cost model: {args.cost_model}", "grey"))
+    print(f"    weighted cost    {cost0.weighted_total:.1f} → {f.weighted_total:.1f}"
+          + c(f"   {result.cost_reduction_pct:.1f}% less", "green", "bold"))
+    print(f"    execution time   {result.original_cost.exec_time:.1f} → {result.final_cost.exec_time:.1f} cycles"
+          + c(f"   {result.time_reduction_pct:.1f}% less", "green", "bold"))
+    print(f"    suggestions      {counts['suggested']} made: {counts['verified']} correct "
+          f"({counts['accepted']} accepted), " + c(f"{counts['invalid']} wrong and blocked",
+                                                   "red" if counts["invalid"] else "grey"))
+    print(f"    equivalence      {proof if result.output_match else 'FAILED'}")
+    print(c("  " + "-" * (WIDTH - 2), "blue"))
 
     out_dir = os.path.join(PROJECT_ROOT, "output", "demo")
     os.makedirs(out_dir, exist_ok=True)
@@ -541,6 +715,12 @@ def main() -> int:
                     help="auto = gemini or groq when online and a key is set, otherwise ollama")
     ap.add_argument("--llm-model", default=None, help="model ID for the LLM")
     ap.add_argument("--max-iterations", type=int, default=200, help="agent iteration cap (default 200)")
+    ap.add_argument("--cost-model", choices=["static", "time"], default="static",
+                    help="what counts as cheaper: static cost (default), or measured execution time first")
+    ap.add_argument("--compare", action="store_true",
+                    help="run the program under the rules and under every LLM that is ready, and compare the runs")
+    ap.add_argument("--strict", action="store_true",
+                    help="strict C mode: keep printed text and early returns (always on for the real-program dataset)")
     ap.add_argument("--delay", type=float, default=0.12, help="seconds between decisions")
     ap.add_argument("--no-color", action="store_true")
     args = ap.parse_args()
@@ -559,25 +739,31 @@ def main() -> int:
         except OSError as exc:
             print(c(f"  Cannot read '{args.file}': {exc.strerror or exc}", "red"))
             return 1
+        if args.compare:
+            return compare(source, os.path.basename(args.file), args)
         return run_demo(source, os.path.basename(args.file), args, pacer, mode)
 
     if not sys.stdin.isatty():            # piped input: treat it as a pasted program
         return run_demo(sys.stdin.read(), "pasted_program.c", args, pacer, mode)
 
-    # Offer the LLM in the menu only if one is ready: a saved API key or a running Ollama.
-    llm_on_offer = mode == "rule" and args.optimizer is None and (
-        any(os.path.exists(os.path.join(PROJECT_ROOT, name)) for name in KEY_FILES.values())
-        or ollama_running())
+    # The menu asks who proposes, unless the command line already said so.
+    ask_setup = mode == "rule" and args.optimizer is None and not args.compare
     status = 0
     while True:
         chosen = choose_program()
         if chosen is None:
             return status
         source, name = chosen
-        run_mode = mode
-        if llm_on_offer and ask_yes_no("Also use the LLM proposer?", default=False):
-            run_mode = "hybrid"
-        status = run_demo(source, name, args, pacer, run_mode)
+        run_args, run_mode, side_by_side_runs = args, mode, args.compare
+        if ask_setup:
+            setup = choose_setup(args)
+            if setup is None:
+                return status
+            run_args, run_mode, side_by_side_runs = setup
+        if side_by_side_runs:
+            status = compare(source, name, run_args)
+        else:
+            status = run_demo(source, name, run_args, pacer, run_mode)
         if not ask_yes_no("Run another program?", default=True):
             return status
 

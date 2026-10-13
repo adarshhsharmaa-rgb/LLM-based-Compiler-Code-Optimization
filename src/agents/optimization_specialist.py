@@ -21,6 +21,12 @@ With no LLM attached every mode routes to the rules, so the program is always
 optimized. Whatever the route, a proposal is only a suggestion: the
 Orchestrator still sends it through the Verification Module and the Cost
 Evaluator.
+
+Self-repair: when an LLM answer is rejected (it failed verification, or was
+not valid TAC), the specialist can send it back to the model together with the
+reason -- the verifier's counterexample, or the syntax error -- and get a
+second answer. ``max_repairs`` limits how often that happens per rejected
+answer.
 """
 from __future__ import annotations
 
@@ -30,6 +36,7 @@ from enum import Enum
 from ..tac.instruction import TACOp, is_literal
 from ..tac.program import TACProgram
 from .code_analyzer import Opportunity
+from .optimizer_llm import tac_parse_error
 from .optimizer_rule import RuleBasedOptimizer
 
 MODES = ("rule", "llm", "hybrid")
@@ -60,6 +67,14 @@ class Proposal:
     candidate: TACProgram | None            # None: the LLM returned no usable TAC
     reasoning: str
     opportunity: Opportunity | None = None  # set for rule-based proposals
+    repair: bool = False                    # True if this is the LLM's second try after feedback
+    failure: str = ""                       # why an LLM answer cannot be used ("" if it can)
+    problem: str = ""                       # that reason in words, as told to the LLM for a repair
+    rejected_tac: str = ""                  # the TAC text of a rejected answer
+
+
+# What is wrong with an LLM answer that can be explained to the model and tried again.
+_REPAIRABLE = ("invalid", "unparseable", "no_tac")
 
 
 def is_provably_minimal(program: TACProgram) -> bool:
@@ -73,13 +88,15 @@ def is_provably_minimal(program: TACProgram) -> bool:
 
 
 class OptimizationSpecialist:
-    def __init__(self, mode: str = DEFAULT_MODE, llm_optimizer=None, max_llm_calls: int = 5):
+    def __init__(self, mode: str = DEFAULT_MODE, llm_optimizer=None, max_llm_calls: int = 5,
+                 max_repairs: int = 1):
         if mode not in MODES:
             raise ValueError(f"unknown optimizer mode {mode!r}; choose from {list(MODES)}")
         self.mode = mode
         self.rule_optimizer = RuleBasedOptimizer()
         self.llm_optimizer = llm_optimizer
         self.max_llm_calls = max_llm_calls
+        self.max_repairs = max_repairs      # second tries allowed after one rejected LLM answer
 
     @property
     def llm_attached(self) -> bool:
@@ -149,4 +166,31 @@ class OptimizationSpecialist:
             candidate = self.rule_optimizer.propose(program, opportunity)
             return Proposal("rule", opportunity.type.value, candidate, opportunity.description, opportunity)
         candidate, reasoning = self.llm_optimizer.propose(program)
-        return Proposal("llm", "LLM", candidate, reasoning)
+        return self._llm_proposal(candidate, reasoning)
+
+    def _llm_proposal(self, candidate, reasoning, repair: bool = False) -> Proposal:
+        """Wrap an LLM answer; if it is unusable, note why in a form the model can act on."""
+        llm = self.llm_optimizer
+        proposal = Proposal("llm", "LLM", candidate, reasoning, repair=repair)
+        if candidate is None:
+            proposal.failure = getattr(llm, "last_failure", "error")
+            proposal.rejected_tac = getattr(llm, "last_tac", "")
+            if proposal.failure == "unparseable":
+                proposal.problem = (f"It is not valid TAC: {tac_parse_error(proposal.rejected_tac)}. Use only the "
+                                    "instruction forms listed below; one instruction has at most one operator.")
+            elif proposal.failure == "no_tac":
+                proposal.problem = "The reply had no <tac>...</tac> block."
+        return proposal
+
+    # ------------------------------------------------------------------ #
+    def can_repair(self, proposal: Proposal, repairs_done: int) -> bool:
+        """True if a rejected LLM answer is worth sending back to the model with feedback."""
+        llm = self.llm_optimizer
+        return (proposal.source == "llm" and proposal.failure in _REPAIRABLE
+                and repairs_done < self.max_repairs and self.llm_attached
+                and llm.available and hasattr(llm, "repair"))
+
+    def repair(self, program: TACProgram, rejected: Proposal) -> Proposal:
+        """Self-repair: show the LLM its rejected answer and the reason, and ask again."""
+        candidate, reasoning = self.llm_optimizer.repair(program, rejected.rejected_tac, rejected.problem)
+        return self._llm_proposal(candidate, reasoning, repair=True)

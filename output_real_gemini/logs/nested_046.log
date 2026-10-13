@@ -1,0 +1,81 @@
+=== Program: nested_046.c ===
+--- Iteration 1 ---
+  [ANALYZE] Found 7 opportunities: DEAD_CODE (priority=80), COPY_PROPAGATIONx6 (priority=50)
+  [ROUTE]   Rule-based optimizer: highest-priority opportunity is DEAD_CODE (priority 80)
+  [PROPOSE] Applying DEAD_CODE at instruction 0: n = 0 → (removed)
+  [VERIFY]  PASS (differential: 351/351 inputs matched, symbolic: equivalent)
+  [COST]    Before: 28.0, After: 25.5 (reduction: 8.9%); time 31.0 → 30.0 cycles
+  [ACCEPT]  ✓ Change accepted
+--- Iteration 2 ---
+  [ANALYZE] Found 6 opportunities: COPY_PROPAGATIONx6 (priority=50)
+  [ROUTE]   Rule-based optimizer: highest-priority opportunity is COPY_PROPAGATION (priority 50)
+  [PROPOSE] Applying COPY_PROPAGATION at instruction 0: n = in_n → uses of n -> in_n at instr 2
+  [VERIFY]  PASS (differential: 348/348 inputs matched, symbolic: equivalent)
+  [COST]    Before: 25.5, After: 23.0 (reduction: 9.8%); time 30.0 → 29.0 cycles
+  [ACCEPT]  ✓ Change accepted
+--- Iteration 3 ---
+  [ANALYZE] Found 5 opportunities: COPY_PROPAGATIONx5 (priority=50)
+  [ROUTE]   Rule-based optimizer: highest-priority opportunity is COPY_PROPAGATION (priority 50)
+  [PROPOSE] Applying COPY_PROPAGATION at instruction 0: t0 = 5 → uses of t0 -> 5 at instr 1
+  [VERIFY]  PASS (differential: 348/348 inputs matched, symbolic: equivalent)
+  [COST]    Before: 23.0, After: 20.0 (reduction: 13.0%); time 29.0 → 28.0 cycles
+  [ACCEPT]  ✓ Change accepted
+--- Iteration 4 ---
+  [ANALYZE] Found 4 opportunities: COPY_PROPAGATIONx4 (priority=50)
+  [ROUTE]   Rule-based optimizer: highest-priority opportunity is COPY_PROPAGATION (priority 50)
+  [PROPOSE] Applying COPY_PROPAGATION at instruction 1: t2 = 10 → uses of t2 -> 10 at instr 2
+  [VERIFY]  PASS (differential: 348/348 inputs matched, symbolic: equivalent)
+  [COST]    Before: 20.0, After: 17.0 (reduction: 15.0%); time 28.0 → 27.0 cycles
+  [ACCEPT]  ✓ Change accepted
+--- Iteration 5 ---
+  [ANALYZE] Found 3 opportunities: COPY_PROPAGATIONx3 (priority=50)
+  [ROUTE]   Rule-based optimizer: highest-priority opportunity is COPY_PROPAGATION (priority 50)
+  [PROPOSE] Applying COPY_PROPAGATION at instruction 2: t4 = 10 → uses of t4 -> 10 at instr 3
+  [VERIFY]  PASS (differential: 348/348 inputs matched, symbolic: equivalent)
+  [COST]    Before: 17.0, After: 14.0 (reduction: 17.6%); time 27.0 → 26.0 cycles
+  [ACCEPT]  ✓ Change accepted
+--- Iteration 6 ---
+  [ANALYZE] Found 2 opportunities: COPY_PROPAGATIONx2 (priority=50)
+  [ROUTE]   Rule-based optimizer: highest-priority opportunity is COPY_PROPAGATION (priority 50)
+  [PROPOSE] Applying COPY_PROPAGATION at instruction 3: t5 = t3 * 10; n = t5 → n = t3 * 10
+  [VERIFY]  PASS (differential: 348/348 inputs matched, symbolic: equivalent)
+  [COST]    Before: 14.0, After: 11.0 (reduction: 21.4%); time 26.0 → 25.0 cycles
+  [ACCEPT]  ✓ Change accepted
+--- Iteration 7 ---
+  [ANALYZE] No more opportunities found.
+  [ROUTE]   LLM optimizer (gemini gemini-3.1-flash-lite): the rules have nothing left to try
+  [LLM]     LLM proposal: Applied algebraic simplification by replacing the integer division-multiplication sequence with a direct logic reduction, noting that (in_n + 5) / 10 * 10 is equivalent to (in_n + 5) - ((in_n + 5) % 10).
+  [VERIFY]  FAIL (print #1 is not symbolically equivalent)
+  [REJECT]  ✗ Change rejected: Verification failed: print #1 is not symbolically equivalent
+  [REPAIR]  Feedback sent to the LLM: It changes what the program does: print #1 is not symbolically equivalent.
+  [LLM]     LLM produced no usable TAC: LLM returned unchanged TAC; reasoning: No optimizations are valid because the original TAC performs integer division, which inherently discards the remainder; algebraic simplification would change the result for inputs where (in_n + 5) is not a multiple of 10.
+=== RESULT ===
+  Original cost: 28.0
+  Final cost:    11.0
+  Reduction:     60.7%
+  Exec. time:    31.0 → 25.0 cycles (19.4% less)
+  Iterations:    7
+  Accepted:      6
+  Rejected:      0
+  Invalid:       1
+  Routing:       hybrid (LLM: gemini gemini-3.1-flash-lite)
+  LLM proposals: 1 (0 passed verification)
+  LLM repairs:   1 (0 accepted)
+  Output match:  PASS ✓
+  Equivalence:   proved for all inputs
+=== Original TAC ===
+  0 |     n = 0
+  1 |     n = in_n
+  2 |     t0 = 5
+  3 |     t1 = n + t0
+  4 |     t2 = 10
+  5 |     t3 = t1 / t2
+  6 |     t4 = 10
+  7 |     t5 = t3 * t4
+  8 |     n = t5
+  9 |     print n
+=== Optimized TAC ===
+  0 |     t1 = in_n + 5
+  1 |     t3 = t1 / 10
+  2 |     n = t3 * 10
+  3 |     print n

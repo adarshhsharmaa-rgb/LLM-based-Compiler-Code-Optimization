@@ -105,7 +105,6 @@ def test_global_declaration_before_main():
     ('printf("%f", 1);', "only %d"),
     ('printf("%d %d", 1);', "expected ','"),
     ("int x = 1; while (x < 3) { scanf(\"%d\", &x); }", "scanf inside a loop"),
-    ("int x = 1; if (x) { return 1; } x = 2;", "'return' is only supported as the last statement"),
     ("int x = 5", "expected ';'"),
     ("int a; int b; a = b = 3;", "chained assignment"),
 ])

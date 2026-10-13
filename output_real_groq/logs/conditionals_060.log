@@ -1,0 +1,136 @@
+=== Program: conditionals_060.c ===
+--- Iteration 1 ---
+  [ANALYZE] Found 11 opportunities: DEAD_CODEx3 (priority=80), COPY_PROPAGATIONx8 (priority=50)
+  [ROUTE]   Rule-based optimizer: highest-priority opportunity is DEAD_CODE (priority 80)
+  [PROPOSE] Applying DEAD_CODE at instruction 0: n = 0 → (removed)
+  [VERIFY]  PASS (differential: 465/465 inputs matched, symbolic: skipped (control flow))
+  [COST]    Before: 43.5, After: 41.0 (reduction: 5.7%); time 52.2 → 51.2 cycles
+  [ACCEPT]  ✓ Change accepted
+--- Iteration 2 ---
+  [ANALYZE] Found 10 opportunities: DEAD_CODEx2 (priority=80), COPY_PROPAGATIONx8 (priority=50)
+  [ROUTE]   Rule-based optimizer: highest-priority opportunity is DEAD_CODE (priority 80)
+  [PROPOSE] Applying DEAD_CODE at instruction 0: k = 0 → (removed)
+  [VERIFY]  PASS (differential: 465/465 inputs matched, symbolic: skipped (control flow))
+  [COST]    Before: 41.0, After: 38.5 (reduction: 6.1%); time 51.2 → 50.2 cycles
+  [ACCEPT]  ✓ Change accepted
+--- Iteration 3 ---
+  [ANALYZE] Found 9 opportunities: DEAD_CODE (priority=80), COPY_PROPAGATIONx8 (priority=50)
+  [ROUTE]   Rule-based optimizer: highest-priority opportunity is DEAD_CODE (priority 80)
+  [PROPOSE] Applying DEAD_CODE at instruction 0: div = 0 → (removed)
+  [VERIFY]  PASS (differential: 465/465 inputs matched, symbolic: skipped (control flow))
+  [COST]    Before: 38.5, After: 36.0 (reduction: 6.5%); time 50.2 → 49.2 cycles
+  [ACCEPT]  ✓ Change accepted
+--- Iteration 4 ---
+  [ANALYZE] Found 8 opportunities: COPY_PROPAGATIONx8 (priority=50)
+  [ROUTE]   Rule-based optimizer: highest-priority opportunity is COPY_PROPAGATION (priority 50)
+  [PROPOSE] Applying COPY_PROPAGATION at instruction 0: n = in_n → uses of n -> in_n at instr 2
+  [VERIFY]  PASS (differential: 465/465 inputs matched, symbolic: skipped (control flow))
+  [COST]    Before: 36.0, After: 33.5 (reduction: 6.9%); time 49.2 → 48.2 cycles
+  [ACCEPT]  ✓ Change accepted
+--- Iteration 5 ---
+  [ANALYZE] Found 7 opportunities: COPY_PROPAGATIONx7 (priority=50)
+  [ROUTE]   Rule-based optimizer: highest-priority opportunity is COPY_PROPAGATION (priority 50)
+  [PROPOSE] Applying COPY_PROPAGATION at instruction 0: k = in_k → uses of k -> in_k at instr 1
+  [VERIFY]  PASS (differential: 465/465 inputs matched, symbolic: skipped (control flow))
+  [COST]    Before: 33.5, After: 31.0 (reduction: 7.5%); time 48.2 → 47.2 cycles
+  [ACCEPT]  ✓ Change accepted
+--- Iteration 6 ---
+  [ANALYZE] Found 6 opportunities: COPY_PROPAGATIONx6 (priority=50)
+  [ROUTE]   Rule-based optimizer: highest-priority opportunity is COPY_PROPAGATION (priority 50)
+  [PROPOSE] Applying COPY_PROPAGATION at instruction 1: t0 = in_n / in_k; div = t0 → div = in_n / in_k
+  [VERIFY]  PASS (differential: 465/465 inputs matched, symbolic: skipped (control flow))
+  [COST]    Before: 31.0, After: 28.0 (reduction: 9.7%); time 47.2 → 46.3 cycles
+  [ACCEPT]  ✓ Change accepted
+--- Iteration 7 ---
+  [ANALYZE] Found 4 opportunities: COPY_PROPAGATIONx4 (priority=50)
+  [ROUTE]   Rule-based optimizer: highest-priority opportunity is COPY_PROPAGATION (priority 50)
+  [PROPOSE] Applying COPY_PROPAGATION at instruction 1: t1 = 2 → uses of t1 -> 2 at instr 2
+  [VERIFY]  PASS (differential: 465/465 inputs matched, symbolic: skipped (control flow))
+  [COST]    Before: 28.0, After: 25.0 (reduction: 10.7%); time 46.3 → 45.3 cycles
+  [ACCEPT]  ✓ Change accepted
+--- Iteration 8 ---
+  [ANALYZE] Found 3 opportunities: COPY_PROPAGATIONx3 (priority=50)
+  [ROUTE]   Rule-based optimizer: highest-priority opportunity is COPY_PROPAGATION (priority 50)
+  [PROPOSE] Applying COPY_PROPAGATION at instruction 2: t3 = 0 → uses of t3 -> 0 at instr 3
+  [VERIFY]  PASS (differential: 465/465 inputs matched, symbolic: skipped (control flow))
+  [COST]    Before: 25.0, After: 22.0 (reduction: 12.0%); time 45.3 → 44.4 cycles
+  [ACCEPT]  ✓ Change accepted
+--- Iteration 9 ---
+  [ANALYZE] Found 2 opportunities: COPY_PROPAGATIONx2 (priority=50)
+  [ROUTE]   Rule-based optimizer: highest-priority opportunity is COPY_PROPAGATION (priority 50)
+  [PROPOSE] Applying COPY_PROPAGATION at instruction 4: t5 = 1000000 → uses of t5 -> 1000000 at instr 5
+  [VERIFY]  PASS (differential: 465/465 inputs matched, symbolic: skipped (control flow))
+  [COST]    Before: 22.0, After: 19.0 (reduction: 13.6%); time 44.4 → 44.0 cycles
+  [ACCEPT]  ✓ Change accepted
+--- Iteration 10 ---
+  [ANALYZE] Found 1 opportunity: COPY_PROPAGATION (priority=50)
+  [ROUTE]   Rule-based optimizer: highest-priority opportunity is COPY_PROPAGATION (priority 50)
+  [PROPOSE] Applying COPY_PROPAGATION at instruction 7: t6 = 1000001 → uses of t6 -> 1000001 at instr 8
+  [VERIFY]  PASS (differential: 465/465 inputs matched, symbolic: skipped (control flow))
+  [COST]    Before: 19.0, After: 16.0 (reduction: 15.8%); time 44.0 → 43.4 cycles
+  [ACCEPT]  ✓ Change accepted
+--- Iteration 11 ---
+  [ANALYZE] No more opportunities found.
+  [ROUTE]   LLM optimizer (groq qwen/qwen3.8-27b): the rules have nothing left to try
+  [LLM]     LLM produced no usable TAC: could not parse LLM TAC; reasoning: Constant folding: The print statements use literal constants, but more importantly, the condition `t2 != 0` where `t2 = div % 2` is equivalent to checking if `div` is odd; however, the most direct constant folding opportunity is recognizing that `print 1000000` and `print 1000001` are already constants. Let's look for algebraic simplification or strength reduction. Actually, `t2 = div % 2` followed by `t4 = t2 != 0` is equivalent to `t4 = div % 2 != 0`. But a clearer optimization is **Common Subexpression Elimination** or **Algebraic Simplification**. Wait, `t2` is only used once. `t4` is only used once. Let's look at the structure. `ifFalse t4 goto L0` means if `t4` is false (0), go to L0. If true, fall through. This is a standard branch. Is there a constant folding? No. Is there dead code? No. Let's look at `t2 = div % 2` and `t4 = t2 != 0`. We can eliminate `t2` by substituting it into `t4`, making `t4 = div % 2 != 0`. This is **Copy Propagation** (or variable elimination). Then `ifFalse t4 goto L0` becomes `ifFalse (div % 2 != 0) goto L0`. However, the syntax requires `ifFalse a goto L0` where `a` is a variable. So we must keep a variable for the condition. We can eliminate `t2` by renaming or just using `t4` directly if we compute `t4 = div % 2 != 0`. This removes one instruction. This is a valid optimization (eliminating a temporary variable).
+
+Let's verify:
+Original:
+1. `div = in_n / in_k`
+2. `t2 = div % 2`
+3. `t4 = t2 != 0`
+4. `ifFalse t4 goto L0`
+
+Optimized:
+1. `div = in_n / in_k`
+2. `t4 = div % 2 != 0`  (Eliminated `t2`)
+3. `ifFalse t4 goto L0`
+
+This preserves semantics. `t2` was a temporary holding `div % 2`. `t4` holds the boolean result. By computing `t4` directly from `div`, we remove the need for `t2`.
+
+<reasoning>Eliminated temporary variable t2 by substituting its value directly into the computation of t4 (copy propagation/variable elimination).
+  [REPAIR]  Feedback sent to the LLM: It is not valid TAC: TAC line 2: unrecognised instruction: 't4 = div % 2 != 0'. Use only the instruction forms listed below; one instruction has at most one operator.
+  [LLM]     LLM produced no usable TAC: could not parse LLM TAC; reasoning: Dead code elimination: variable t2 is only used to compute t4, so it can be removed by inlining its value into the comparison.
+=== RESULT ===
+  Original cost: 43.5
+  Final cost:    16.0
+  Reduction:     63.2%
+  Exec. time:    52.2 → 43.4 cycles (16.9% less)
+  Iterations:    11
+  Accepted:      10
+  Rejected:      0
+  Invalid:       0
+  Routing:       hybrid (LLM: groq qwen/qwen3.8-27b)
+  LLM repairs:   1 (0 accepted)
+  Output match:  PASS ✓
+  Equivalence:   proved for all inputs
+=== Original TAC ===
+   0 |     n = 0
+   1 |     k = 0
+   2 |     div = 0
+   3 |     n = in_n
+   4 |     k = in_k
+   5 |     t0 = n / k
+   6 |     div = t0
+   7 |     t1 = 2
+   8 |     t2 = div % t1
+   9 |     t3 = 0
+  10 |     t4 = t2 != t3
+  11 |     ifFalse t4 goto L0
+  12 |     t5 = 1000000
+  13 |     print t5
+  14 |     goto L1
+  15 | L0:
+  16 |     t6 = 1000001
+  17 |     print t6
+  18 | L1:
+=== Optimized TAC ===
+  0 |     div = in_n / in_k
+  1 |     t2 = div % 2
+  2 |     t4 = t2 != 0
+  3 |     ifFalse t4 goto L0
+  4 |     print 1000000
+  5 |     goto L1
+  6 | L0:
+  7 |     print 1000001
+  8 | L1:
