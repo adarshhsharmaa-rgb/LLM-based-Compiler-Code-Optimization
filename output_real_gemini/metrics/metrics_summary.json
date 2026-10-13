@@ -1,0 +1,167 @@
+{
+  "total_programs": 500,
+  "total_proposals": 10022,
+  "passed_verification": 9851,
+  "accepted": 8226,
+  "rejected_no_cost_gain": 1625,
+  "invalid_failed_verification": 171,
+  "verification_pass_rate_pct": 98.29,
+  "acceptance_rate_pct": 83.5,
+  "avg_cost_reduction_pct": 53.6,
+  "median_cost_reduction_pct": 52.66,
+  "min_cost_reduction_pct": 25.67,
+  "max_cost_reduction_pct": 84.95,
+  "programs_with_reduction_over_30pct": 496,
+  "cost_model": "static",
+  "avg_time_reduction_pct": 26.5,
+  "median_time_reduction_pct": 22.67,
+  "programs_proved_equivalent": 253,
+  "programs_proved_by_smt": 126,
+  "programs_reverted": 0,
+  "steps_to_convergence_mean": 20.32,
+  "steps_to_convergence_median": 15.0,
+  "steps_to_convergence_min": 5,
+  "steps_to_convergence_max": 200,
+  "steps_to_convergence_stdev": 19.33,
+  "steps_distribution": {
+    "1-10": 134,
+    "11-20": 203,
+    "21-30": 91,
+    "31-40": 32,
+    "41-50": 16,
+    "51-60": 8,
+    "61-70": 5,
+    "71-80": 4,
+    "81-90": 3,
+    "121-130": 1,
+    "161-170": 1,
+    "191-200": 2
+  },
+  "programs_hitting_iteration_cap": 1,
+  "llm_used": true,
+  "llm_proposals": 451,
+  "llm_valid": 280,
+  "llm_validity_rate_pct": 62.08,
+  "llm_repairs": 213,
+  "llm_repairs_accepted": 30,
+  "false_positive_count": 0,
+  "false_positive_rate_pct": 0.0,
+  "per_category": {
+    "arithmetic": {
+      "programs": 60,
+      "avg_reduction_pct": 63.29,
+      "avg_time_reduction_pct": 21.84,
+      "programs_proved": 60,
+      "avg_iterations": 10.62,
+      "accepted": 551
+    },
+    "nested": {
+      "programs": 60,
+      "avg_reduction_pct": 52.51,
+      "avg_time_reduction_pct": 21.27,
+      "programs_proved": 60,
+      "avg_iterations": 11.57,
+      "accepted": 603
+    },
+    "repeated_expr": {
+      "programs": 60,
+      "avg_reduction_pct": 51.05,
+      "avg_time_reduction_pct": 30.03,
+      "programs_proved": 25,
+      "avg_iterations": 33.67,
+      "accepted": 1453
+    },
+    "dead_code": {
+      "programs": 60,
+      "avg_reduction_pct": 57.95,
+      "avg_time_reduction_pct": 34.47,
+      "programs_proved": 29,
+      "avg_iterations": 28.58,
+      "accepted": 1335
+    },
+    "loops": {
+      "programs": 80,
+      "avg_reduction_pct": 49.91,
+      "avg_time_reduction_pct": 23.03,
+      "programs_proved": 0,
+      "avg_iterations": 15.01,
+      "accepted": 1036
+    },
+    "conditionals": {
+      "programs": 80,
+      "avg_reduction_pct": 54.28,
+      "avg_time_reduction_pct": 32.7,
+      "programs_proved": 79,
+      "avg_iterations": 22.61,
+      "accepted": 1472
+    },
+    "mixed": {
+      "programs": 100,
+      "avg_reduction_pct": 49.78,
+      "avg_time_reduction_pct": 23.34,
+      "programs_proved": 0,
+      "avg_iterations": 20.82,
+      "accepted": 1776
+    }
+  },
+  "by_optimization_type": {
+    "CONSTANT_FOLD": {
+      "accepted": 39,
+      "rejected": 0,
+      "invalid": 0
+    },
+    "ALGEBRAIC_SIMPLIFY": {
+      "accepted": 26,
+      "rejected": 0,
+      "invalid": 0
+    },
+    "DEAD_CODE": {
+      "accepted": 1766,
+      "rejected": 0,
+      "invalid": 0
+    },
+    "CSE": {
+      "accepted": 140,
+      "rejected": 0,
+      "invalid": 0
+    },
+    "STRENGTH_REDUCTION": {
+      "accepted": 25,
+      "rejected": 823,
+      "invalid": 0
+    },
+    "COPY_PROPAGATION": {
+      "accepted": 6034,
+      "rejected": 718,
+      "invalid": 0
+    },
+    "LLM": {
+      "accepted": 196,
+      "rejected": 84,
+      "invalid": 171
+    }
+  },
+  "by_source": {
+    "Rule-based": {
+      "suggested": 9571,
+      "verified": 9571,
+      "accepted": 8030,
+      "rejected": 1541,
+      "invalid": 0
+    },
+    "LLM": {
+      "suggested": 451,
+      "verified": 280,
+      "accepted": 196,
+      "rejected": 84,
+      "invalid": 171
+    },
+    "Total": {
+      "suggested": 10022,
+      "verified": 9851,
+      "accepted": 8226,
+      "rejected": 1625,
+      "invalid": 171
+    }
+  }
+}

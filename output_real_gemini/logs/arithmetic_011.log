@@ -1,0 +1,81 @@
+=== Program: arithmetic_011.c ===
+--- Iteration 1 ---
+  [ANALYZE] Found 8 opportunities: DEAD_CODE (priority=80), COPY_PROPAGATIONx7 (priority=50)
+  [ROUTE]   Rule-based optimizer: highest-priority opportunity is DEAD_CODE (priority 80)
+  [PROPOSE] Applying DEAD_CODE at instruction 0: n = 0 → (removed)
+  [VERIFY]  PASS (differential: 349/349 inputs matched, symbolic: equivalent)
+  [COST]    Before: 27.5, After: 25.0 (reduction: 9.1%); time 31.0 → 30.0 cycles
+  [ACCEPT]  ✓ Change accepted
+--- Iteration 2 ---
+  [ANALYZE] Found 7 opportunities: COPY_PROPAGATIONx7 (priority=50)
+  [ROUTE]   Rule-based optimizer: highest-priority opportunity is COPY_PROPAGATION (priority 50)
+  [PROPOSE] Applying COPY_PROPAGATION at instruction 0: n = in_n → uses of n -> in_n at instr 2
+  [VERIFY]  PASS (differential: 348/348 inputs matched, symbolic: equivalent)
+  [COST]    Before: 25.0, After: 22.5 (reduction: 10.0%); time 30.0 → 29.0 cycles
+  [ACCEPT]  ✓ Change accepted
+--- Iteration 3 ---
+  [ANALYZE] Found 6 opportunities: COPY_PROPAGATIONx6 (priority=50)
+  [ROUTE]   Rule-based optimizer: highest-priority opportunity is COPY_PROPAGATION (priority 50)
+  [PROPOSE] Applying COPY_PROPAGATION at instruction 0: t0 = 1 → uses of t0 -> 1 at instr 1
+  [VERIFY]  PASS (differential: 348/348 inputs matched, symbolic: equivalent)
+  [COST]    Before: 22.5, After: 19.5 (reduction: 13.3%); time 29.0 → 28.0 cycles
+  [ACCEPT]  ✓ Change accepted
+--- Iteration 4 ---
+  [ANALYZE] Found 5 opportunities: COPY_PROPAGATIONx5 (priority=50)
+  [ROUTE]   Rule-based optimizer: highest-priority opportunity is COPY_PROPAGATION (priority 50)
+  [PROPOSE] Applying COPY_PROPAGATION at instruction 1: t1 = in_n + 1; n = t1 → n = in_n + 1
+  [VERIFY]  PASS (differential: 348/348 inputs matched, symbolic: equivalent)
+  [COST]    Before: 19.5, After: 16.5 (reduction: 15.4%); time 28.0 → 27.0 cycles
+  [ACCEPT]  ✓ Change accepted
+--- Iteration 5 ---
+  [ANALYZE] Found 3 opportunities: COPY_PROPAGATIONx3 (priority=50)
+  [ROUTE]   Rule-based optimizer: highest-priority opportunity is COPY_PROPAGATION (priority 50)
+  [PROPOSE] Applying COPY_PROPAGATION at instruction 2: t3 = 4 → uses of t3 -> 4 at instr 3
+  [VERIFY]  PASS (differential: 348/348 inputs matched, symbolic: equivalent)
+  [COST]    Before: 16.5, After: 13.5 (reduction: 18.2%); time 27.0 → 26.0 cycles
+  [ACCEPT]  ✓ Change accepted
+--- Iteration 6 ---
+  [ANALYZE] Found 2 opportunities: COPY_PROPAGATIONx2 (priority=50)
+  [ROUTE]   Rule-based optimizer: highest-priority opportunity is COPY_PROPAGATION (priority 50)
+  [PROPOSE] Applying COPY_PROPAGATION at instruction 3: t4 = t2 / 4; ans = t4 → ans = t2 / 4
+  [VERIFY]  PASS (differential: 348/348 inputs matched, symbolic: equivalent)
+  [COST]    Before: 13.5, After: 10.5 (reduction: 22.2%); time 26.0 → 25.0 cycles
+  [ACCEPT]  ✓ Change accepted
+--- Iteration 7 ---
+  [ANALYZE] No more opportunities found.
+  [ROUTE]   LLM optimizer (gemini gemini-3.1-flash-lite): the rules have nothing left to try
+  [LLM]     LLM produced no usable TAC: could not parse LLM TAC; reasoning: Algebraic simplification: Dividing by 4 is equivalent to right-shifting by 2 bits, which is a strength reduction optimization (assuming integer inputs).
+  [REPAIR]  Feedback sent to the LLM: It is not valid TAC: TAC line 3: unrecognised instruction: 'ans = t2 >> 2'. Use only the instruction forms listed below; one instruction has at most one operator.
+  [LLM]     LLM repair: I performed algebraic simplification by replacing the integer division by a constant with a multiplication by the inverse, but since I am restricted to the provided instruction set and cannot use bitwise shifts, I will apply strength reduction by replacing the division with a multiplication if a constant reciprocal exists, however, given the constraints, I will instead apply constant folding if applicable (not here), so I will use algebraic simplification to transform the expression to a equivalent valid form: t2 / 4 is equivalent to ((t2 / 2) / 2).
+  [VERIFY]  FAIL (print #1 is not symbolically equivalent)
+  [REJECT]  ✗ Change rejected: Verification failed: print #1 is not symbolically equivalent
+=== RESULT ===
+  Original cost: 27.5
+  Final cost:    10.5
+  Reduction:     61.8%
+  Exec. time:    31.0 → 25.0 cycles (19.4% less)
+  Iterations:    7
+  Accepted:      6
+  Rejected:      0
+  Invalid:       1
+  Routing:       hybrid (LLM: gemini gemini-3.1-flash-lite)
+  LLM proposals: 1 (0 passed verification)
+  LLM repairs:   1 (0 accepted)
+  Output match:  PASS ✓
+  Equivalence:   proved for all inputs
+=== Original TAC ===
+  0 |     n = 0
+  1 |     n = in_n
+  2 |     t0 = 1
+  3 |     t1 = n + t0
+  4 |     n = t1
+  5 |     t2 = n * n
+  6 |     t3 = 4
+  7 |     t4 = t2 / t3
+  8 |     ans = t4
+  9 |     print ans
+=== Optimized TAC ===
+  0 |     n = in_n + 1
+  1 |     t2 = n * n
+  2 |     ans = t2 / 4
+  3 |     print ans
