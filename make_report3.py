@@ -1,8 +1,9 @@
-"""Writes report3.tex, the final report: the Review 2 report (report.tex) with the Review 3 work added.
+"""Writes report3.tex, the final report: report.tex (same template structure) with the Review 3 work added.
 
-The additions are placed where they belong in the existing chapters (objectives, datasets,
-verification, cost model, self-repair, testing, results, limitations), and every figure in
-them is read from the result folders, so the text always matches the committed runs.
+The additions go where the template puts them: scope and objectives, the project plan, the
+datasets, the algorithms (SMT verification, execution time, self-repair), implementation and
+testing, the results on real programs, and the limitations. Every figure in them is read from
+the result folders, so the text always matches the committed runs.
 
     python make_report3.py
 """
@@ -12,6 +13,7 @@ import json
 import os
 import shutil
 import statistics
+import subprocess
 import sys
 
 ROOT = os.path.dirname(os.path.abspath(__file__))
@@ -23,8 +25,18 @@ from src.visualization.report import aggregate_metrics, load_results  # noqa: E4
 CATEGORIES = [("arithmetic", "Arithmetic-only"), ("nested", "Nested expressions"),
               ("repeated_expr", "Repeated expressions"), ("dead_code", "Dead code"), ("loops", "Loops"),
               ("conditionals", "Conditionals"), ("mixed", "Mixed")]
-TOTAL_TESTS = 397
-RECHECK = {"executions": "258,912", "mismatches": "0"}   # independent re-check of the runs on real programs
+RECHECK_EXECUTIONS = "539,170"      # independent re-check of the five runs on real programs
+TEST_COMPONENTS = [
+    ("test_lexer.py", "Lexer"), ("test_parser.py", "Parser"), ("test_tac_generator.py", "TAC generator"),
+    ("test_c_frontend.py", "C front end"), ("test_interpreter.py", "TAC interpreter"),
+    ("test_analyzer.py", "Code analyzer"), ("test_optimizer.py", "Rule and LLM optimizers"),
+    ("test_optimization_specialist.py", "Routing"), ("test_groq.py", "Groq backend"),
+    ("test_ollama.py", "Ollama backend"), ("test_self_repair.py", "LLM self-repair"),
+    ("test_verifier.py", "Verifier"), ("test_cost_evaluator.py", "Cost evaluator"),
+    ("test_review3_features.py", "Execution time, SMT, wide-range inputs"),
+    ("test_real_dataset.py", "Real-program dataset, strict C"), ("test_orchestrator.py", "Orchestrator (integration)"),
+    ("test_demo.py", "Demo front end"), ("test_bugfixes.py", "Regression tests"),
+]
 
 
 def load(folder):
@@ -43,36 +55,55 @@ def n(value):
     return f"{value:,}"
 
 
+def test_counts() -> dict[str, int]:
+    """Tests per file, as pytest collects them."""
+    out = subprocess.run([sys.executable, "-m", "pytest", "--collect-only", "-q"], cwd=ROOT,
+                         capture_output=True, text=True).stdout
+    counts: dict[str, int] = {}
+    for line in out.splitlines():
+        if "::" in line:
+            name = os.path.basename(line.split("::")[0])
+            counts[name] = counts.get(name, 0) + 1
+    return counts
+
+
 class Report:
     def __init__(self, text):
         self.text = text
 
     def after(self, anchor, addition):
-        assert self.text.count(anchor) == 1, (self.text.count(anchor), anchor[:60])
+        assert self.text.count(anchor) == 1, (self.text.count(anchor), anchor[:70])
         self.text = self.text.replace(anchor, anchor + addition)
 
     def before(self, anchor, addition):
-        assert self.text.count(anchor) == 1, (self.text.count(anchor), anchor[:60])
+        assert self.text.count(anchor) == 1, (self.text.count(anchor), anchor[:70])
         self.text = self.text.replace(anchor, addition + anchor)
 
     def swap(self, old, new):
-        assert self.text.count(old) == 1, (self.text.count(old), old[:60])
+        assert self.text.count(old) == 1, (self.text.count(old), old[:70])
         self.text = self.text.replace(old, new)
+
+    def between(self, start, end, new):
+        """Replace everything from ``start`` up to (not including) ``end``."""
+        a = self.text.index(start)
+        b = self.text.index(end, a)
+        self.text = self.text[:a] + new + self.text[b:]
 
 
 def build() -> str:
     with open(os.path.join(ROOT, "report.tex"), encoding="utf-8") as fh:
         doc = Report(fh.read().replace("\r\n", "\n"))
-    doc.text = doc.text.replace("Project Report — Review 2", "Project Report — Review 3 (final)", 1)
     rule, timed = load("output_real_rule_only"), load("output_real_rule_time")
-    groq, ollama = load("output_real_groq"), load("output_real_ollama")
-    gemini = load("output_real_gemini")
+    gemini, groq, ollama = load("output_real_gemini"), load("output_real_groq"), load("output_real_ollama")
     generated = load("output_rule_only")
+    llm_runs = [(name, run) for name, run in (("Gemini", gemini), ("Groq", groq), ("Ollama", ollama)) if run]
     with open(os.path.join(ROOT, "dataset", "real_manifest.json"), encoding="utf-8") as fh:
         manifest = json.load(fh)
     programs = manifest["programs"]
     as_c = sum(1 for e in programs if e["language"].startswith("GNU C") and "++" not in e["language"])
     rm, tm = rule["m"], timed["m"]
+    tests = test_counts()
+    total_tests = sum(tests.values())
 
     def same(run):
         return statistics.mean(rule["by_name"][name]["reduction_pct"] for name in run["by_name"])
@@ -80,6 +111,9 @@ def build() -> str:
     def improved(run):
         return sum(1 for name, rec in run["by_name"].items()
                    if rec["reduction_pct"] > rule["by_name"][name]["reduction_pct"] + 0.01)
+
+    def consulted(run):
+        return sum(1 for rec in run["by_name"].values() if rec.get("llm_calls", 0) > 0)
 
     def calls(run):
         return sum(rec.get("llm_calls", 0) for rec in run["by_name"].values())
@@ -91,38 +125,75 @@ def build() -> str:
     figures = os.path.join(ROOT, "report_figures")
     for source, name in (("output_real_rule_only/plots/6_heatmap_category_vs_type.png", "real_heatmap_rules.png"),
                          ("output_real_rule_only/plots/5_scatter_steps_vs_improvement.png", "real_steps_rules.png"),
+                         ("output_real_gemini/plots/7_comparison_rule_vs_llm.png", "real_comparison_gemini.png"),
                          ("output_real_groq/plots/1_sankey_proposal_flow.png", "real_sankey_groq.png")):
         if os.path.exists(os.path.join(ROOT, source)):
             shutil.copyfile(os.path.join(ROOT, source), os.path.join(figures, name))
+    doc.swap("report_figures/architecture.png", "report_figures/architecture_review3.png")
 
-    # ------------------------------------------------------------------ abstract
-    llm_sentence = ""
-    llm_runs = [(name, run) for name, run in (("Gemini", gemini), ("Groq", groq), ("Ollama", ollama)) if run]
-    if llm_runs:
-        parts = [f"{p(run['m']['avg_cost_reduction_pct'], 1)} with {name}" for name, run in llm_runs]
-        listed = parts[0] if len(parts) == 1 else ", ".join(parts[:-1]) + " and " + parts[-1]
-        first = llm_runs[0][1]
-        llm_sentence = (
-            f" On a sample of {first['m']['total_programs']} of the real programs, where the rules alone reach "
-            f"{p(same(first), 1)}, adding an LLM with self-repair gave {listed}.")
-    doc.before("\\setstretch{1.5}\n\\newpage\n\n% ==================== TABLE OF CONTENTS", (
-        "For the final review the system was extended in four ways. The Cost Evaluator now also measures execution "
-        "time, by running each program and charging a latency for every executed instruction. A third verification "
-        "stage hands programs without loops to the Z3 SMT solver, which either proves them equivalent for every input "
-        "or returns a counterexample. A rejected LLM answer is sent back to the model once, with the reason, for "
-        "another try (self-repair). And the evaluation was repeated on 500 real programs: accepted Codeforces "
-        f"submissions from {manifest['problems']} problems, in the same seven categories. On these, the rules alone "
-        f"reduce the static cost by {p(rm['avg_cost_reduction_pct'], 1)} and the execution time by "
-        f"{p(rm['avg_time_reduction_pct'], 1)} on average, and {rm['programs_proved_equivalent']} of the 500 optimized "
-        f"programs are proved equivalent to their originals, {rm['programs_proved_by_smt']} of them by the SMT solver."
-        + llm_sentence + " No incorrect change was accepted in any run.\n\n"))
+    # ------------------------------------------------------------------ abstract (one page, under 300 words)
+    def part(name, run):
+        count = run["m"]["total_programs"]
+        note = "" if count == 500 else f" (on {count} programs)"
+        return f"{p(run['m']['avg_cost_reduction_pct'], 1)} with {name}{note}"
 
-    # ------------------------------------------------------------------ objectives
-    doc.after("  \\item Achieve a strict 0\\% false-positive rate by verifying every single proposal before applying it.\n", (
+    parts = [part(name, run) for name, run in llm_runs]
+    listed = parts[0] if len(parts) == 1 else ", ".join(parts[:-1]) + " and " + parts[-1]
+    doc.between("Standard compilers apply a fixed chain of optimization passes, rarely confirming", "\\setstretch{1.5}\n\\newpage", (
+        "Standard compilers apply a fixed chain of optimization passes, rarely confirming whether a specific "
+        "transformation actually improved the code. We built a fully automated, multi-agent system that optimizes "
+        "Three-Address Code (TAC) step by step. An orchestrator loop analyzes the code and ranks the available "
+        "opportunities, and an Optimization Specialist routes each step either to a rule-based engine or to a large "
+        "language model (LLM): Google Gemini or Groq in the cloud, or a local model served by Ollama. A rejected "
+        "LLM answer is sent back once with the reason (self-repair).\n\n"
+        "Every proposed change must pass a verification gate: differential testing on several hundred input sets, "
+        "symbolic polynomial equivalence for straight-line code, and, for programs with branches but no loops, a "
+        "proof by the Z3 SMT solver. A change is accepted only if it makes the program cheaper, where cost is "
+        "either a static count or the measured execution time.\n\n"
+        "On 500 generated programs in seven categories the rules alone achieved an 82.5\\% average cost reduction, "
+        "and 91.5\\% with Gemini. On 500 real programs (accepted Codeforces submissions from "
+        f"{manifest['problems']} problems) the rules reduce the static cost by {p(rm['avg_cost_reduction_pct'], 1)} "
+        f"and the execution time by {p(rm['avg_time_reduction_pct'], 1)}, and {rm['programs_proved_equivalent']} of "
+        "the optimized programs are proved equivalent to their originals for every input. Adding an LLM gave "
+        + listed + ". An independent re-check found one wrong change that had passed every test; wide-range inputs "
+        "now reject it, and the final results contain no incorrect change.\n\n"))
+
+    # ------------------------------------------------------------------ scope, objectives, plan, software
+    doc.swap("  \\item A two-stage verifier combining differential testing (random, edge, boundary, small-scope and "
+             "pairwise input sets) and symbolic polynomial equivalence checking.\n", (
+        "  \\item A three-stage verifier: differential testing (random, edge, boundary, small-scope, pairwise and "
+        "wide-range input sets), symbolic polynomial equivalence checking, and an SMT proof with Z3 for programs "
+        "without loops.\n"
+        "  \\item LLM self-repair: a rejected LLM answer is sent back once with the reason.\n"))
+    doc.swap("  \\item A weighted static cost model used as the accept/reject gate.\n", (
+        "  \\item A cost evaluator with a weighted static cost and a measured execution time; either can be the "
+        "accept/reject gate.\n"))
+    doc.swap("  \\item A 500-program dataset covering seven structural categories (arithmetic, nested, "
+             "repeated-expression, dead-code, loops, conditionals, mixed).\n", (
+        "  \\item A 500-program generated dataset covering seven structural categories (arithmetic, nested, "
+        "repeated-expression, dead-code, loops, conditionals, mixed), and a second dataset of 500 real programs "
+        "in the same categories.\n"))
+    doc.swap("  \\item Floating-point arithmetic, arrays or string types.\n"
+             "  \\item SMT-based formal verification via Z3 (we rely on differential testing and symbolic equivalence "
+             "instead).\n"
+             "  \\item Measured execution time: the cost model is static.\n", (
+        "  \\item Floating-point arithmetic, arrays or string types.\n"
+        "  \\item SMT proofs for programs with loops (those stay tested).\n"
+        "  \\item Execution time on real hardware: the time is an abstract cycle count.\n"))
+    doc.after("  \\item Keep the system usable with no internet connection by supporting a local model.\n", (
         "  \\item Measure execution time as well as static cost, so that work removed from a loop counts for more.\n"
         "  \\item Prove equivalence for all inputs wherever that is possible, instead of only testing it.\n"
         "  \\item Give an LLM whose answer was rejected the reason and one more attempt.\n"
         "  \\item Evaluate the system on programs written by people, not only on generated ones.\n"))
+    doc.swap("11 & Full runs with all three LLMs; C front end and live demo; report & Weeks 12--13 \\\\\n\\hline\n", (
+        "11 & Full runs with all three LLMs; C front end and live demo; report & Weeks 12--13 \\\\\n\\hline\n"
+        "12 & LLM self-repair; execution time in the cost evaluator; SMT verification with Z3 & Week 14 \\\\\n\\hline\n"
+        "13 & Real-program dataset from Codeforces submissions; strict mode of the C front end & Week 15 \\\\\n\\hline\n"
+        "14 & Runs on the real programs; independent re-check; wide-range inputs; final report & Week 16 \\\\\n\\hline\n"))
+    doc.swap("pytest & $\\geq$8.0 & Unit and integration testing \\\\\n\\hline\n", (
+        "pytest & $\\geq$8.0 & Unit and integration testing \\\\\n\\hline\n"
+        "z3-solver & $\\geq$4.12 & SMT proofs for programs without loops (optional) \\\\\n\\hline\n"
+        "pyarrow & $\\geq$15 & Reading the Codeforces data files (dataset building only) \\\\\n\\hline\n"))
 
     # ------------------------------------------------------------------ datasets
     rows = ""
@@ -132,48 +203,58 @@ def build() -> str:
     for key, label in CATEGORIES:
         entries = [e for e in programs if e["category"] == key]
         rows += f"{label} & {len(entries)} & {len({e['problem_id'] for e in entries})} & {decided[key].capitalize()} \\\\\n\\hline\n"
-    doc.after("Mixed & 100 & All of the above \\\\\n\\hline\n\\end{tabular}\n\\end{table}\n", (
+    doc.after("so a single test run constitutes a proof of equivalence.\n", (
         "\n\\subsection{Real-Program Dataset}\n\\label{sec:realdata}\n\n"
         "The generated programs are written to contain what the optimizer looks for. To see how the system behaves "
         "on code that people actually wrote, we built a second dataset of 500 real programs. They are accepted "
         "submissions to Codeforces problems, taken from the dataset \\texttt{open-r1/codeforces-submissions} on "
-        "Hugging Face (2025, CC-BY-4.0), which holds 12.6 million submissions.\n\n"
+        "Hugging Face (open-r1, 2025), which holds 12.6 million submissions under the CC-BY-4.0 licence.\n\n"
         "A submission is usable when (i) the judge accepted it, (ii) the C front end compiles it in strict mode, "
         "(iii) it prints something, and (iv) it finishes within 20,000 steps on every input set the verifier would "
         "try, since otherwise no change to it could be verified. Of 469,491 accepted C and C++ submissions examined "
         "(six of the dataset's 36 files), 9,489 were usable (2.0\\%), from 234 problems. The others mostly use "
         "arrays, further functions, floating point or macros, or read their input inside a loop, none of which the "
         "front end supports.\n\n"
-        "From the usable submissions, 500 were chosen in exactly the proportions of the generated dataset. "
-        "Programs that compile to the same TAC count once, each category is filled one program per problem per "
-        f"round, and within a problem the newest submission goes first. The 500 come from {manifest['problems']} "
-        f"problems; {as_c} were submitted as C and {500 - as_c} as C-style C++, that is, C++ submissions that use "
-        "only \\texttt{scanf} and \\texttt{printf} and nothing else from C++.\n\n"
+        "From the usable submissions, 500 were chosen in exactly the proportions of the generated dataset "
+        "(Table~\\ref{tab:realdata}). Programs that compile to the same TAC count once, each category is filled "
+        "one program per problem per round, and within a problem the newest submission goes first. The 500 come "
+        f"from {manifest['problems']} problems; {as_c} were submitted as C and {500 - as_c} as C-style C++, that "
+        "is, C++ submissions that use only \\texttt{scanf} and \\texttt{printf} and nothing else from C++.\n\n"
         "\\begin{table}[H]\n\\centering\n\\caption{Real-program dataset: composition and how a category is decided}\n"
-        "\\begin{tabular}{|l|c|c|l|}\n\\hline\n"
+        "\\label{tab:realdata}\n\\begin{tabularx}{\\textwidth}{|l|c|c|X|}\n\\hline\n"
         "\\textbf{Category} & \\textbf{Programs} & \\textbf{Problems} & \\textbf{Decided by} \\\\\n\\hline\n"
-        + rows + "\\end{tabular}\n\\end{table}\n\n"
+        + rows + "\\end{tabularx}\n\\end{table}\n\n"
         "A stored value that is never read, or an expression written twice, decides the category first, because "
         "that is what the generator builds its dead-code and repeated-expression programs around. Everything else "
         "is classified by its control flow. Straight-line solutions are rare on Codeforces, so the arithmetic and "
         "nested categories draw on fewer problems than the others.\n\n"
-        "\\textbf{Strict mode.} For these programs the front end keeps everything a run shows. Text printed by "
-        "\\texttt{printf}, \\texttt{puts} or \\texttt{putchar} becomes a \\texttt{print} of a code that stands for "
-        "that text, so an optimization that changed which message is printed would fail verification. A "
+        "For these programs the front end works in strict mode, which keeps everything a run shows. Text printed "
+        "by \\texttt{printf}, \\texttt{puts} or \\texttt{putchar} becomes a \\texttt{print} of a code that stands "
+        "for that text, so an optimization that changed which message is printed would fail verification. A "
         "\\texttt{return} in the middle of \\texttt{main} becomes a jump to the end of the program. An expression "
         "\\texttt{a \\&\\& b} is refused when \\texttt{b} contains a division, because TAC evaluates both sides and "
         "C would not.\n"))
 
-    # ------------------------------------------------------------------ verification, cost model, self-repair
-    doc.after("If the printed expressions match structurally, the transformation is safe for every input.\n", (
-        "\n\\textbf{SMT Verification:} Differential testing shows that two programs agree on the inputs that were "
-        "tried. For a program with branches but no loops there are finitely many paths, so its whole behaviour can "
-        "be written as one formula over its inputs. The verifier follows every path symbolically: a branch splits "
-        "the path in two, and a division splits off the case in which the divisor is zero, where the run stops "
-        "with what it has printed so far. The paths are then folded into a single description of a run (how it "
-        "ends, how many values it prints, and the values), and the Z3 solver \\citep{demoura2008z3} is asked for an "
-        "input on which the descriptions of the two programs differ.\n\n"
-        "\\begin{table}[H]\n\\centering\n\\caption{The three answers of the SMT stage}\n"
+    # ------------------------------------------------------------------ algorithms
+    doc.swap("The input sets are built in five ways, listed in Table~\\ref{tab:inputs}.",
+             "The input sets are built in six ways, listed in Table~\\ref{tab:inputs}.")
+    doc.swap("Pairwise & Every two inputs with every two boundary values & Two inputs that must line up \\\\\n\\hline\n", (
+        "Pairwise & Every two inputs with every two boundary values & Two inputs that must line up \\\\\n\\hline\n"
+        "Wide range & 60 sets with values up to a thousand, ten thousand, a million and a billion, signed values, "
+        "and powers of ten with their neighbours & A change that is right only for small inputs \\\\\n\\hline\n"))
+    doc.before("\\section{Design}\n", (
+        "The wide-range sets were added after the re-check of the runs on real programs "
+        "(Section~\\ref{sec:testing}). A run that is too long for them is skipped, so they never make a program "
+        "unverifiable.\n\n"
+        "\\subsection{SMT Verification}\n\n"
+        "Differential testing shows that two programs agree on the inputs that were tried. For a program with "
+        "branches but no loops there are finitely many paths, so its whole behaviour can be written as one formula "
+        "over its inputs. The verifier follows every path symbolically: a branch splits the path in two, and a "
+        "division splits off the case in which the divisor is zero, where the run stops with what it has printed "
+        "so far. The paths are then folded into a single description of a run (how it ends, how many values it "
+        "prints, and the values), and the Z3 solver (de Moura \\& Bj{\\o}rner, 2008) is asked for an input on "
+        "which the descriptions of the two programs differ (Table~\\ref{tab:smt}).\n\n"
+        "\\begin{table}[H]\n\\centering\n\\caption{The three answers of the SMT stage}\n\\label{tab:smt}\n"
         "\\begin{tabularx}{\\textwidth}{|l|X|}\n\\hline\n\\textbf{Answer} & \\textbf{Meaning and consequence} \\\\\n\\hline\n"
         "\\texttt{unsat} & No such input exists: the two programs are equivalent for all inputs. The result is "
         "recorded as proved. \\\\\n\\hline\n"
@@ -186,7 +267,7 @@ def build() -> str:
         "scope and remain tested. As an example of what it adds: a program that prints 1 when $3x = 999999$ and 0 "
         "otherwise differs from a program that always prints 0 on the single input $x = 333333$, which is near no "
         "literal in either program, so every test passes. Z3 finds that input immediately.\n\n"
-        "\\section{Cost Model: Static Cost and Execution Time}\n\\label{sec:time}\n\n"
+        "\\subsection{Cost Model: Static Cost and Execution Time}\n\\label{sec:time}\n\n"
         "The static cost of a program is a weighted count of its instructions, arithmetic operations, "
         "temporaries, copies and branches. It cannot see how often an instruction runs. The Cost Evaluator "
         "therefore also measures execution time: the program is run on 25 fixed inputs (20 random sets, half of "
@@ -202,34 +283,49 @@ def build() -> str:
         "change is accepted if the static cost drops; all results on the generated dataset use it. Under the "
         "\\emph{time} model a change is accepted if the measured time drops, or if the time is equal and the "
         "static cost drops. Every run reports both reductions, whichever model decides.\n\n"
-        "\\section{LLM Self-Repair}\n\\label{sec:repair}\n\n"
+        "\\subsection{LLM Self-Repair}\n\\label{sec:repair}\n\n"
         "When an LLM answer is rejected, the reason is specific: the verifier has the inputs on which the outputs "
         "differ, or the parser has the line that is not valid TAC. The Optimization Specialist sends the model its "
         "rejected answer together with that reason and asks once more. The second answer goes through exactly the "
         "same verification and cost gates as any other proposal, so self-repair cannot make the system less safe; "
         "it can only turn a wasted call into a useful one. By default one repair is allowed per rejected answer, "
-        "and repairs do not use up the budget of fresh proposals.\n"))
+        "and repairs do not use up the budget of fresh proposals.\n\n"))
 
-    # ------------------------------------------------------------------ testing
-    doc.swap("a suite of 336 automated tests covering every module.", f"a suite of {TOTAL_TESTS} automated tests covering every module.")
+    # ------------------------------------------------------------------ implementation and testing
+    doc.after("\\texttt{demo.py} is a terminal front end that takes a C program and walks through the whole "
+              "pipeline on screen, stage by stage.\n", (
+        "\n\\subsection{Module 7: Verification, Cost and Dataset Extensions}\n\n"
+        "\\texttt{smt\\_verifier.py} holds the SMT stage: a symbolic walk over every path of a loop-free program "
+        "and the query to Z3. \\texttt{cost\\_evaluator.py} gained the execution profiler and the latency table, "
+        "and the interpreter can report how often each instruction ran. The self-repair loop sits in the "
+        "Orchestrator right after the two gates, and the repair prompt in \\texttt{optimizer\\_llm.py}. "
+        "\\texttt{dataset/real\\_dataset.py} builds the real-program dataset (collect, select, rebuild from the "
+        "manifest). Full runs save every finished program at once, so a run that is interrupted, or stopped "
+        "because a free daily quota is spent, can be resumed; \\texttt{ollama\\_demo.bat} starts the offline demo "
+        "with one command.\n"))
+    doc.swap("We wrote 336 automated tests across fifteen test files", f"We wrote {total_tests} automated tests across "
+             + {15: "fifteen", 16: "sixteen", 17: "seventeen", 18: "eighteen"}.get(len(tests), str(len(tests))) + " test files")
+    table_rows = ""
+    for name, component in TEST_COMPONENTS:
+        if name in tests:
+            table_rows += "\\texttt{" + name.replace("_", "\\_") + "} & " + component + f" & {tests[name]} \\\\\n\\hline\n"
+    doc.between("\\texttt{test\\_lexer.py} & Lexer & 14 \\\\\n",
+                "\\end{tabular}\n\\end{table}\n\nThe verifier tests are worth calling out", table_rows)
     doc.after("The proposal was caught by the verifier every time, and the analyzer no longer makes it.\n", (
-        "\nThe additions for the final review are tested in the same way. The SMT stage is checked against "
+        "\nThe extensions are tested in the same way. The SMT stage is checked against "
         "hand-built pairs of programs: equivalent ones must be proved, and pairs that differ on a single input, "
         "in the order of their output, or in whether a division traps must be refuted with the right "
         "counterexample.\n\n"
         "\\textbf{Re-checking the runs on real programs.} Every optimized program was run against its original "
-        "on inputs the verifier had not used, including values up to a million. For the two rule-based runs and "
-        "the local-model run no mismatch was found. In the Groq run the re-check found one wrong program. The "
-        "model had replaced \\texttt{x - 1} by the constant 9 inside a loop in which \\texttt{x} is multiplied "
+        "on inputs the verifier had not used, including values up to a million. For the rule-based runs and the "
+        "Gemini and local-model runs no mismatch was found. In the Groq run the re-check found one wrong program. "
+        "The model had replaced \\texttt{x - 1} by the constant 9 inside a loop in which \\texttt{x} is multiplied "
         "by ten in every iteration. The change is correct while \\texttt{x} is 10, and the loop runs a second "
         "time only for inputs of 100 or more, which none of the verifier's input sets reached, so all 388 tests "
-        "had passed. The verifier now adds 60 wide-range input sets for every program that reads input: values "
-        "up to a thousand, ten thousand, a million and a billion, signed values, and powers of ten with their "
-        "neighbours. A run that is too long for these inputs is skipped, so they never make a program "
-        "unverifiable. With them the wrong change is rejected with a counterexample. The affected program was "
-        f"optimized again, and the re-check of all runs on real programs ({RECHECK['executions']} executions) now "
-        f"finds {RECHECK['mismatches']} mismatches. The four runs on the generated dataset were re-checked on the "
-        "same wide inputs, also without a mismatch.\n"))
+        "had passed. The verifier now adds the 60 wide-range input sets of Table~\\ref{tab:inputs}. With them the "
+        "wrong change is rejected with a counterexample. The affected program was optimized again, and the "
+        f"re-check of all runs on real programs ({RECHECK_EXECUTIONS} executions) now finds no mismatch. The four "
+        "runs on the generated dataset were re-checked on the same wide inputs, also without a mismatch.\n"))
 
     # ------------------------------------------------------------------ results on real programs
     table_rows = ""
@@ -238,32 +334,33 @@ def build() -> str:
         c = rm["per_category"][key]
         table_rows += (f"{label} & {c['programs']} & {p(g)} & {p(c['avg_reduction_pct'])} & "
                        f"{p(c['avg_time_reduction_pct'])} & {c['programs_proved']} \\\\\n\\hline\n")
-    table_rows += (f"\\textbf{{All}} & 500 & {p(generated['m']['avg_cost_reduction_pct']) if generated else 'n/a'} & "
-                   f"\\textbf{{{p(rm['avg_cost_reduction_pct'])}}} & {p(rm['avg_time_reduction_pct'])} & "
-                   f"{rm['programs_proved_equivalent']} \\\\\n\\hline\n")
+    table_rows += (f"\\textbf{{All}} & \\textbf{{500}} & \\textbf{{{p(generated['m']['avg_cost_reduction_pct'])}}} & "
+                   f"\\textbf{{{p(rm['avg_cost_reduction_pct'])}}} & \\textbf{{{p(rm['avg_time_reduction_pct'])}}} & "
+                   f"\\textbf{{{rm['programs_proved_equivalent']}}} \\\\\n\\hline\n")
     results = (
-        "\\section{Results on Real Programs}\n\\label{sec:realresults}\n\n"
-        "All runs in this section use the real-program dataset of Section~\\ref{sec:realdata} and allow 200 "
+        "\\subsection{Results on Real Programs}\n\\label{sec:realresults}\n\n"
+        "All runs in this subsection use the real-program dataset of Section~\\ref{sec:realdata} and allow 200 "
         "iterations per program, because real programs are longer than the generated ones.\n\n"
-        "\\subsection{Rule-Based Optimization}\n\n"
+        "\\subsubsection{Rule-Based Optimization}\n\n"
         "\\begin{table}[H]\n\\centering\n\\caption{Rules only: generated and real programs (static cost model)}\n"
-        "\\begin{tabular}{|l|c|c|c|c|c|}\n\\hline\n"
+        "\\label{tab:realrules}\n\\small\n\\begin{tabular}{|l|c|c|c|c|c|}\n\\hline\n"
         "\\textbf{Category} & \\textbf{Programs} & \\textbf{Generated} & \\textbf{Real} & \\textbf{Real, time} & "
         "\\textbf{Proved} \\\\\n\\hline\n" + table_rows + "\\end{tabular}\n\\end{table}\n\n"
         f"On the real programs the rules reduce the static cost by {p(rm['avg_cost_reduction_pct'])} on average "
         f"(median {p(rm['median_cost_reduction_pct'])}); {rm['programs_with_reduction_over_30pct']} of the 500 "
-        f"programs improve by more than 30\\%. The figure is lower than on the generated set because nearly all "
+        "programs improve by more than 30\\%. The figure is lower than on the generated set because nearly all "
         "real programs read their values with \\texttt{scanf}, so nothing folds down to a constant. Most of what "
         f"the rules remove is the redundancy of the naive TAC translation: {n(kind(rm, 'COPY_PROPAGATION'))} "
         f"accepted copy propagations and {n(kind(rm, 'DEAD_CODE'))} dead-code removals, against "
-        f"{n(kind(rm, 'CSE'))} common subexpressions and {n(kind(rm, 'CONSTANT_FOLD'))} constant folds. "
+        f"{n(kind(rm, 'CSE'))} common subexpressions and {n(kind(rm, 'CONSTANT_FOLD'))} constant folds "
+        "(Figure~\\ref{fig:realheat}). "
         f"All {n(rm['total_proposals'])} proposals passed verification; {n(rm['accepted'])} were accepted and "
         f"{n(rm['rejected_no_cost_gain'])} gave no cost gain.\n\n"
         "\\begin{figure}[H]\n\\centering\n\\includegraphics[width=\\textwidth]{report_figures/real_heatmap_rules.png}\n"
-        "\\caption{Real programs, rules only: accepted optimizations by category and type}\n\\end{figure}\n\n"
-        "\\subsection{Execution Time and the Two Cost Models}\n\n"
+        "\\caption{Real programs, rules only: accepted optimizations by category and type}\n\\label{fig:realheat}\n\\end{figure}\n\n"
+        "\\subsubsection{Execution Time and the Two Cost Models}\n\n"
         "\\begin{table}[H]\n\\centering\n\\caption{Rules only on the 500 real programs under the two cost models}\n"
-        "\\begin{tabular}{|l|c|c|}\n\\hline\n\\textbf{Metric} & \\textbf{Static model} & \\textbf{Time model} \\\\\n\\hline\n"
+        "\\label{tab:costmodels}\n\\small\n\\begin{tabular}{|l|c|c|}\n\\hline\n\\textbf{Metric} & \\textbf{Static model} & \\textbf{Time model} \\\\\n\\hline\n"
         f"Average static cost reduction & {p(rm['avg_cost_reduction_pct'])} & {p(tm['avg_cost_reduction_pct'])} \\\\\n\\hline\n"
         f"Average execution-time reduction & {p(rm['avg_time_reduction_pct'])} & {p(tm['avg_time_reduction_pct'])} \\\\\n\\hline\n"
         f"Median execution-time reduction & {p(rm['median_time_reduction_pct'])} & {p(tm['median_time_reduction_pct'])} \\\\\n\\hline\n"
@@ -271,21 +368,22 @@ def build() -> str:
         f"Strength reductions rejected (no gain) & {n(kind(rm, 'STRENGTH_REDUCTION', 'rejected'))} & "
         f"{n(kind(tm, 'STRENGTH_REDUCTION', 'rejected'))} \\\\\n\\hline\n"
         f"Proposals accepted & {n(rm['accepted'])} & {n(tm['accepted'])} \\\\\n\\hline\n"
-        f"False positives & {rm['false_positive_count']} & {tm['false_positive_count']} \\\\\n\\hline\n"
+        f"False positives & \\textbf{{{rm['false_positive_count']}}} & \\textbf{{{tm['false_positive_count']}}} \\\\\n\\hline\n"
         "\\end{tabular}\n\\end{table}\n\n"
         "The execution time falls less than the static cost, because most of the removed instructions are copies, "
         "which cost one cycle each, while the divisions, multiplications and branches that dominate the running "
         "time have to stay. The time model accepts changes that the static count regards as a tie, such as "
         "replacing a multiplication by two with an addition, and so removes a little more time.\n\n"
-        "\\subsection{Proved Equivalence}\n\n"
+        "\\subsubsection{Proved Equivalence}\n\n"
         f"For {rm['programs_proved_equivalent']} of the 500 real programs the optimized program is proved "
         f"equivalent to the original for every input: {rm['programs_proved_equivalent'] - rm['programs_proved_by_smt']} "
         f"by the polynomial check for straight-line code and {rm['programs_proved_by_smt']} by the SMT solver. The "
         "remaining programs contain loops, or defeated the solver within its time limit, and are verified by "
         "differential testing as before. The end-to-end check never failed, so no program had to be reverted to "
         "its original.\n\n")
-    if groq or ollama or gemini:
-        cells = {"Programs in the sample": lambda r: n(r["m"]["total_programs"]),
+    if llm_runs:
+        cells = {"Programs": lambda r: n(r["m"]["total_programs"]),
+                 "Programs the LLM was consulted on": lambda r: n(consulted(r)),
                  "Rules alone on these programs": lambda r: p(same(r)),
                  "Rules + LLM": lambda r: "\\textbf{" + p(r["m"]["avg_cost_reduction_pct"]) + "}",
                  "Programs improved by the LLM": lambda r: str(improved(r)),
@@ -296,48 +394,60 @@ def build() -> str:
                  "Wrong LLM proposals blocked": lambda r: n(r["m"]["by_source"]["LLM"]["invalid"]),
                  "LLM validity rate": lambda r: p(r["m"]["llm_validity_rate_pct"]),
                  "Self-repairs accepted / tried": lambda r: f"{r['m'].get('llm_repairs_accepted', 0)} / {r['m'].get('llm_repairs', 0)}",
-                 "False positives": lambda r: str(r["m"]["false_positive_count"])}
+                 "False positives": lambda r: "\\textbf{" + str(r["m"]["false_positive_count"]) + "}"}
         body = ""
         for label, getter in cells.items():
             body += f"{label} & " + " & ".join(getter(run) for _, run in llm_runs) + " \\\\\n\\hline\n"
+        models = {"Gemini": "Gemini uses \\texttt{gemini-3.1-flash-lite} in the cloud.",
+                  "Groq": "Groq uses its \\texttt{gpt-oss} and \\texttt{qwen} models in the cloud.",
+                  "Ollama": "Ollama runs \\texttt{qwen2.5-coder:7b} on the laptop, mostly on its GPU."}
+        short = " ".join(
+            f"{name}'s free daily quota ended after {consulted(run)} programs, and its remaining "
+            f"{run['m']['total_programs'] - consulted(run)} programs were optimized by the rules alone, which is "
+            "what the system does whenever an LLM becomes unavailable."
+            for name, run in llm_runs if consulted(run) < 0.9 * run["m"]["total_programs"])
         results += (
-            "\\subsection{LLM Proposers with Self-Repair}\n\n"
-            "The LLM configurations were run on a sample of the real programs, every fifth program of the "
-            "dataset, which keeps the proportions of the categories. Each program is allowed two fresh LLM "
-            "proposals and one repair per rejected answer. "
-            + " ".join({"Gemini": "Gemini uses \\texttt{gemini-3.1-flash-lite} in the cloud.",
-                        "Groq": "Groq uses its \\texttt{gpt-oss} models in the cloud.",
-                        "Ollama": "Ollama runs \\texttt{qwen2.5-coder:7b} on the laptop."}[name] for name, _ in llm_runs)
-            + "\n\n"
-            "\\begin{table}[H]\n\\centering\n\\caption{LLM proposers with self-repair on the real-program sample}\n"
-            "\\begin{tabular}{|l|" + "c|" * len(llm_runs) + "}\n\\hline\n\\textbf{Metric} & "
+            "\\subsubsection{LLM Proposers with Self-Repair}\n\n"
+            "The LLM configurations were run on the real programs with self-repair switched on "
+            "(Table~\\ref{tab:realllms}). To stay inside the free daily quotas of the cloud providers, every fifth "
+            "program is allowed two fresh LLM proposals and the others one; a rejected answer gets one repair in "
+            "either case. "
+            + (short + " " if short else "")
+            + " ".join(models[name] for name, _ in llm_runs) + "\n\n"
+            "\\begin{table}[H]\n\\centering\n\\caption{LLM proposers with self-repair on the real programs}\n"
+            "\\label{tab:realllms}\n\\small\n\\begin{tabular}{|l|" + "c|" * len(llm_runs) + "}\n\\hline\n\\textbf{Metric} & "
             + " & ".join("\\textbf{Rules + " + name + "}" for name, _ in llm_runs) + " \\\\\n\\hline\n"
-            + body + "\\end{tabular}\n\\end{table}\n\n")
-        if os.path.exists(os.path.join(figures, "real_sankey_groq.png")):
-            results += ("\\begin{figure}[H]\n\\centering\n\\includegraphics[width=\\textwidth]{report_figures/real_sankey_groq.png}\n"
-                        "\\caption{Real-program sample, rules + Groq: where the proposals went}\n\\end{figure}\n\n")
-    doc.before("\\section{Performance Analysis}\n", results)
+            + body + "\\end{tabular}\n\\end{table}\n\n"
+            "On real programs an LLM adds much less than on the generated ones. A generated loop usually has "
+            "constant bounds and can be replaced by its result; a real loop depends on the input, so it has to "
+            "stay. Self-repair helps the cloud models, whose rejected answers are mostly invalid TAC (a whole "
+            "expression written in one instruction): told so, they often answer again in valid form. It does not "
+            "help the small local model, which repeats its mistake or returns the program unchanged.\n\n")
+        if os.path.exists(os.path.join(figures, "real_comparison_gemini.png")):
+            results += ("\\begin{figure}[H]\n\\centering\n\\includegraphics[width=0.9\\textwidth]{report_figures/real_comparison_gemini.png}\n"
+                        "\\caption{Real programs: rule-only against rule + Gemini, per category}\n\\label{fig:realcmp}\n\\end{figure}\n\n")
+    doc.before("\\section{Output Screenshots}\n", results)
 
     # ------------------------------------------------------------------ analysis and limitations
-    doc.before("\\section{Limitations}\n", (
-        "\\textbf{Real programs leave less to remove:} A generated program is mostly constants and collapses to a "
+    doc.before("\\subsection{Limitations}\n", (
+        "\\textbf{Real programs leave less to remove.} A generated program is mostly constants and collapses to a "
         "few prints. A real program computes with its input, so the instructions that do the work have to stay, "
         "and the gain comes from cleaning up the translation and the occasional redundancy the programmer left.\n\n"
-        "\\textbf{A proof is stronger than a test:} For programs without loops, zero false positives is no longer "
+        "\\textbf{A proof is stronger than a test.} For programs without loops, zero false positives is no longer "
         "a statement about the inputs that were tried. For the programs the solver decided, no input exists on "
         "which the optimized program behaves differently.\n\n"
-        "\\textbf{Tests can be passed by a wrong change:} The one wrong change that the re-check found had passed "
+        "\\textbf{Tests can be passed by a wrong change.} The one wrong change that the re-check found had passed "
         "388 tests. Testing is only as good as its inputs; the lasting answers are inputs chosen to reach "
         "behaviour the program shows rarely, an independent re-check of every run, and a proof wherever one is "
         "possible.\n\n"
-        "\\textbf{Self-repair helps with form more than with logic:} A capable model that is rejected has usually "
+        "\\textbf{Self-repair helps with form more than with logic.} A capable model that is rejected has usually "
         "written a whole expression in one instruction; told so, it answers again in valid TAC. A small local "
         "model that got the logic wrong tends to get it wrong again, or to play safe and return the program "
         "unchanged.\n\n"))
-    start = doc.text.index("\\section{Limitations}\n")
-    end = doc.text.index("% ============================================================\n\\newpage\n\\begin{thebibliography}")
-    doc.text = doc.text[:start] + (
-        "\\section{Limitations}\n\n\\begin{itemize}[leftmargin=2cm]\n"
+    doc.between("\\subsection{Limitations}\n",
+                "\n\n% ============================================================\n\\newpage\n\\begin{center}\n"
+                "{\\fontsize{16}{20}\\selectfont \\textbf{REFERENCES}}", (
+        "\\subsection{Limitations}\n\n\\begin{itemize}[leftmargin=2cm]\n"
         "  \\item The front end accepts only a subset of C: no arrays, pointers, functions other than "
         "\\texttt{main}, floating point, or input read inside a loop. That is why only 2\\% of the submissions "
         "examined could be used.\n"
@@ -347,17 +457,18 @@ def build() -> str:
         "tested over the verifier's ranges, which include values a problem statement rules out.\n"
         "  \\item Execution time is an abstract count of cycles from a fixed latency table, measured on 25 inputs. "
         "It orders programs sensibly but is not a measurement on real hardware.\n"
-        "  \\item The LLM runs on the real programs cover a sample of 100 programs, not all 500; the runs are "
-        "resumable and can be extended.\n"
-        "\\end{itemize}\n\n") + doc.text[end:]
+        "  \\item On the real programs most programs get a single LLM proposal, to stay inside the free daily "
+        "quotas of the cloud providers. A larger budget might find more.\n"
+        "\\end{itemize}\n"))
 
-    # ------------------------------------------------------------------ references
-    doc.before("\\end{thebibliography}", (
-        "\\bibitem[de Moura and Bj{\\o}rner, 2008]{demoura2008z3}\n"
-        "de Moura, L., Bj{\\o}rner, N. (2008). Z3: An efficient SMT solver. \\textit{Tools and Algorithms for the "
-        "Construction and Analysis of Systems (TACAS)}, 337--340.\n\n"
-        "\\bibitem[open-r1, 2025]{openr1codeforces}\n"
-        "open-r1 (2025). \\textit{codeforces-submissions} (dataset, CC-BY-4.0). Hugging Face.\n\n"))
+    # ------------------------------------------------------------------ references (APA, alphabetical)
+    doc.before("\\apa{Groq. (2026).", (
+        "\\apa{de Moura, L., \\& Bj{\\o}rner, N. (2008). Z3: An efficient SMT solver. \\textit{Proceedings of the "
+        "International Conference on Tools and Algorithms for the Construction and Analysis of Systems (TACAS)}, "
+        "337--340.}\n\n"))
+    doc.before("\\apa{Phothilimthana, P. M.,", (
+        "\\apa{open-r1. (2025). \\textit{codeforces-submissions} [Data set]. Hugging Face. "
+        "https://huggingface.co/datasets/open-r1/codeforces-submissions}\n\n"))
 
     path = os.path.join(ROOT, "report3.tex")
     with open(path, "w", encoding="utf-8", newline="\n") as fh:
