@@ -290,31 +290,31 @@ Given a program written in a C-like source language, automatically lower it to T
 \hline
 1 & Literature survey; define source language grammar; design TAC instruction set & Weeks 1--2 \\
 \hline
-2 & Implement lexer, parser, AST, TAC generator, and TAC interpreter & Weeks 3--4 \\
+2 & Implement lexer, parser, AST, TAC generator, and TAC interpreter & Week 1 \\
 \hline
-3 & Implement dataflow analyses (CFG, liveness, available copies, definite assignment) & Week 5 \\
+3 & Implement dataflow analyses (CFG, liveness, available copies, definite assignment) & Week 2 \\
 \hline
-4 & Build the five agent components (analyzer, rule optimizer, verifier, cost evaluator, decision logger) & Weeks 5--7 \\
+4 & Build the five agent components (analyzer, rule optimizer, verifier, cost evaluator, decision logger) & Week 3 \\
 \hline
-5 & Wire agents into the orchestrator loop; run on small test programs; debug & Week 7 \\
+5 & Wire agents into the orchestrator loop; run on small test programs; debug & Week 3 \\
 \hline
-6 & Generate the 500-program dataset; run the rule-based agent on all programs; collect metrics & Week 8 \\
+6 & Generate the 500-program dataset; run the rule-based agent on all programs; collect metrics & Week 4 \\
 \hline
-7 & Integrate Google Gemini LLM proposer; run the combined agent; compare with rule-only baseline & Week 9 \\
+7 & Integrate Google Gemini LLM proposer; run the combined agent; compare with rule-only baseline & Week 4 \\
 \hline
-8 & Build visualization charts; write decision-log exporter & Weeks 9--10 \\
+8 & Build visualization charts; write decision-log exporter & Week 4 \\
 \hline
-9 & Add the Optimization Specialist router; add the Groq and Ollama backends and the offline mode & Week 11 \\
+9 & Add the Optimization Specialist router; add the Groq and Ollama backends and the offline mode & Week 5 \\
 \hline
-10 & Test the verifier itself (fuzzing, mutation testing); add small-scope and pairwise input sets & Week 12 \\
+10 & Test the verifier itself (fuzzing, mutation testing); add small-scope and pairwise input sets & Week 5 \\
 \hline
-11 & Full runs with all three LLMs; C front end and live demo; report & Weeks 12--13 \\
+11 & Full runs with all three LLMs; C front end and live demo; report & Week 5 \\
 \hline
-12 & LLM self-repair; execution time in the cost evaluator; SMT verification with Z3 & Week 14 \\
+12 & LLM self-repair; execution time in the cost evaluator; SMT verification with Z3 & Week 6 \\
 \hline
-13 & Real-program dataset from Codeforces submissions; strict mode of the C front end & Week 15 \\
+13 & Real-program dataset from Codeforces submissions; strict mode of the C front end & Week 6 \\
 \hline
-14 & Runs on the real programs; independent re-check; wide-range inputs; final report & Week 16 \\
+14 & Runs on the real programs; independent re-check; wide-range inputs; final report & Week 6 \\
 \hline
 \end{tabularx}
 \end{table}
@@ -414,6 +414,7 @@ pyarrow & $\geq$15 & Reading the Codeforces data files (dataset building only) \
 \chapter{DESIGN APPROACH AND DETAILS}
 
 \section{Datasets}
+\label{sec:datasets}
 
 We wrote a Python generator (\texttt{dataset/generator.py}) that creates 500 source programs spread across seven categories. Each category targets a different mix of optimization opportunities, so the agent faces a range of challenges rather than the same pattern repeated.
 
@@ -772,12 +773,12 @@ The first prototype also had a provider for a paid API. It was removed, because 
 
 \subsection{Module 7: Verification, Cost and Dataset Extensions}
 
-\texttt{smt\_verifier.py} holds the SMT stage: a symbolic walk over every path of a loop-free program and the query to Z3. \texttt{cost\_evaluator.py} gained the execution profiler and the latency table, and the interpreter can report how often each instruction ran. The self-repair loop sits in the Orchestrator right after the two gates, and the repair prompt in \texttt{optimizer\_llm.py}. \texttt{dataset/real\_dataset.py} builds the real-program dataset (collect, select, rebuild from the manifest). Full runs save every finished program at once, so a run that is interrupted, or stopped because a free daily quota is spent, can be resumed; \texttt{ollama\_demo.bat} starts the offline demo with one command.
+\texttt{smt\_verifier.py} holds the SMT stage: a symbolic walk over every path of a loop-free program and the query to Z3. \texttt{cost\_evaluator.py} gained the execution profiler and the latency table, and the interpreter can report how often each instruction ran. The self-repair loop sits in the Orchestrator right after the two gates, and the repair prompt in \texttt{optimizer\_llm.py}. \texttt{dataset/real\_dataset.py} builds the real-program dataset (collect, select, rebuild from the manifest). Full runs save every finished program at once, so a run that is interrupted, or stopped because a free daily quota is spent, can be resumed; \texttt{ollama\_demo.bat} starts the offline demo with one command. In the visualization module, \texttt{model\_charts.py} draws each of the result charts for several runs at once, one panel per LLM, and \texttt{suggestions.py} counts the correct and the wrong suggestions per optimization type and per program category.
 
 \section{Testing}
 \label{sec:testing}
 
-We wrote 407 automated tests across 19 test files, covering every component (Table~\ref{tab:tests}). The LLM backends are tested against stand-in local servers, so the tests need no API key, no Ollama installation and no network.
+We wrote 410 automated tests across twenty test files, covering every component (Table~\ref{tab:tests}). The LLM backends are tested against stand-in local servers, so the tests need no API key, no Ollama installation and no network.
 
 \begin{table}[H]
 \centering
@@ -822,6 +823,10 @@ We wrote 407 automated tests across 19 test files, covering every component (Tab
 \hline
 \texttt{test\_demo.py} & Demo front end & 21 \\
 \hline
+\texttt{test\_suggestions.py} & Correct and wrong suggestion counts & 3 \\
+\hline
+\texttt{test\_model\_charts.py} & Charts with the three LLM runs side by side & 3 \\
+\hline
 \texttt{test\_bugfixes.py} & Regression tests & 13 \\
 \hline
 \end{tabular}
@@ -846,7 +851,10 @@ The extensions are tested in the same way. The SMT stage is checked against hand
 % ============================================================
 \chapter{RESULTS AND DISCUSSION}
 
-\section{Detailed Results}
+We tested the system on two datasets, and this chapter keeps their results apart. The generated dataset (Section~\ref{sec:datasets}) has 500 programs written by our generator in seven categories. The official dataset has 500 accepted Codeforces submissions, chosen in the same seven categories (Section~\ref{sec:realdata}). The two behave very differently: a generated program is mostly constants and shrinks a lot, while a real program reads its input and keeps most of its work. For each dataset the tables come first and then the charts.
+
+\section{Results on the Generated Dataset}
+\label{sec:genresults}
 
 We ran the agent four times on the full 500-program dataset: once with the rule-based optimizer only, and three times in \texttt{hybrid} mode, in which an LLM is asked when the rules hit a wall. Table~\ref{tab:metrics} summarizes the headline numbers.
 
@@ -947,21 +955,154 @@ Time for the full run & 43 min & 42 min & 2 h 14 min \\
 
 Gemini and Groq reach almost the same result. Groq's models were the most reliable: only 6 of 318 proposals were wrong. During the Groq run the first model (\texttt{gpt-oss-120b}) used up its free daily quota after 286 calls, and the system moved on to \texttt{gpt-oss-20b} for the last 148 programs without stopping. The local model was wrong more often than it was right, but because every proposal is verified this cost time and not correctness, and it still improved 32 programs with no internet connection at all.
 
-\subsection{Results on Real Programs}
-\label{sec:realresults}
+\subsection{Correct and Wrong Suggestions}
 
-All runs in this subsection use the real-program dataset of Section~\ref{sec:realdata} and allow 200 iterations per program, because real programs are longer than the generated ones.
-
-\subsubsection{Rule-Based Optimization}
+Table~\ref{tab:gen-types} counts the correct suggestions for each kind of optimization, first with the rules alone and then with each LLM. We call a suggestion correct when it passed verification; it was then either accepted or turned down only because it did not make the program cheaper. None of the rule suggestions was wrong. The rule counts change a little from column to column, because once an LLM change is accepted the rules see a different program.
 
 \begin{table}[H]
 \centering
-\caption{Rules only: generated and real programs (static cost model)}
+\caption{Generated dataset: correct suggestions per optimization type}
+\label{tab:gen-types}
+\small
+\begin{tabular}{|l|c|c|c|c|}
+\hline
+\textbf{Optimization type} & \textbf{Rules} & \textbf{+ Gemini} & \textbf{+ Groq} & \textbf{+ Ollama} \\
+\hline
+Constant folding & 1,855 & 1,806 & 1,834 & 1,828 \\
+\hline
+Algebraic simplification & 179 & 172 & 174 & 177 \\
+\hline
+Dead code elimination & 1,795 & 1,890 & 1,939 & 1,846 \\
+\hline
+Common subexpression (CSE) & 147 & 147 & 147 & 147 \\
+\hline
+Strength reduction & 185 & 148 & 167 & 159 \\
+\hline
+Copy propagation & 6,467 & 6,475 & 6,506 & 6,450 \\
+\hline
+LLM proposal & --- & 314 & 312 & 85 \\
+\hline
+\textbf{Total correct} & \textbf{10,628} & \textbf{10,952} & \textbf{11,079} & \textbf{10,692} \\
+\hline
+\textbf{Wrong (blocked)} & \textbf{0} & \textbf{26} & \textbf{6} & \textbf{113} \\
+\hline
+\end{tabular}
+\end{table}
+
+Figure~\ref{fig:gen-correct} shows in which program categories the LLMs made their correct suggestions: 314 for Gemini, 312 for Groq and 85 for Ollama, mostly in the mixed, loop and conditional programs, where a loop with constant bounds can be replaced by its result.
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=0.85\textwidth]{report_figures/gen_suggestions_correct.png}
+\caption{Generated dataset: correct LLM suggestions per program category}
+\label{fig:gen-correct}
+\end{figure}
+
+The wrong suggestions get a chart of their own (Figure~\ref{fig:gen-wrong}). A suggestion is wrong when the verifier finds an input on which the new program prints something different, or when the symbolic check fails. There were 26 for Gemini, 6 for Groq and 113 for Ollama, most of them in loop, conditional and mixed programs. All of them were stopped before they could change the program, which is why every run still has zero false positives.
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=0.85\textwidth]{report_figures/gen_suggestions_wrong.png}
+\caption{Generated dataset: wrong LLM suggestions per program category, all rejected by the verifier}
+\label{fig:gen-wrong}
+\end{figure}
+
+\subsection{Result Charts}
+
+Each figure in this subsection is one kind of chart, drawn for the three LLM runs side by side and in the same order: Gemini, Groq, Ollama. Where it makes sense the panels share one scale, so a difference between two panels is a difference between the models.
+
+\subsubsection{Proposal Flow}
+
+The diagrams follow every proposal of a run from where it came from, the rules or the LLM, through the verifier to the cost check. A wrong proposal ends at the verifier and never reaches the program. The wrong ones are 26 of Gemini's 10,978 proposals, 6 of Groq's 11,085 and 113 of Ollama's 10,805; everything that gets to the right-hand side was checked first.
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=0.92\textwidth]{report_figures/gen_flow.png}
+\caption{Generated dataset: proposal flow of the three LLM runs, from source to decision}
+\label{fig:gen-flow}
+\end{figure}
+
+\subsubsection{Outcomes by Optimization Type}
+
+The bars of the six rules look almost the same in the three runs, because the rules do not change between them. The difference is in the last group, the LLM's own proposals: Gemini had 262 accepted and 26 wrong, Groq had 248 accepted and 6 wrong and Ollama had 60 accepted and 113 wrong. For Ollama the wrong answers outnumber the accepted ones. The scale is logarithmic; on a normal scale every bar next to copy propagation would be too small to read.
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=\textwidth]{report_figures/gen_outcomes.png}
+\caption{Generated dataset: accepted, correct but no gain, and wrong proposals per optimization type (log scale)}
+\label{fig:gen-outcomes}
+\end{figure}
+
+\subsubsection{Accepted Optimizations by Type}
+
+Copy propagation makes up between 59\% and 61\% of the accepted changes in every run, followed by dead code elimination and constant folding. The LLM's slice is small: 2.4\% for Gemini, 2.3\% for Groq and 0.6\% for Ollama. These few changes still count for a lot, because many of them remove a whole loop or branch that the rules leave in place.
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=\textwidth]{report_figures/gen_accepted.png}
+\caption{Generated dataset: share of each optimization type among the accepted changes}
+\label{fig:gen-accepted}
+\end{figure}
+
+\subsubsection{Cost over Iterations}
+
+Each line is one program of a category, the one whose reduction is closest to the middle of that category. The cost falls a little with almost every step, because most steps remove a single copy or temporary. The steep drops in the Gemini and Groq panels are LLM changes that replaced a larger piece of code in one step.
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=\textwidth]{report_figures/gen_cost.png}
+\caption{Generated dataset: weighted cost after each step for one typical program of five categories}
+\label{fig:gen-cost}
+\end{figure}
+
+\subsubsection{Steps against Improvement}
+
+Programs that take more steps tend to end up cheaper, because a long run usually means there was more redundant code to remove. The fitted line changes by +0.41, +0.43 and +0.49 percentage points per step for Gemini, Groq and Ollama. The programs of one category stay close together, so how much a program shrinks depends more on its category than on the model.
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=\textwidth]{report_figures/gen_steps.png}
+\caption{Generated dataset: steps taken against cost reduction for every program, with the fitted line}
+\label{fig:gen-steps}
+\end{figure}
+
+\subsubsection{Where the Optimizations Were Applied}
+
+Copy propagation is the darkest column in every run, and the rule columns look much the same in all three panels. The column that differs is the last one: the accepted LLM changes fall mostly in mixed, loop and conditional programs.
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=0.95\textwidth]{report_figures/gen_heatmap.png}
+\caption{Generated dataset: accepted changes per program category and optimization type}
+\label{fig:gen-heatmap}
+\end{figure}
+
+\subsubsection{Rules Only against Rules + LLM}
+
+The grey bars are the rules alone (82.5\% on average); the coloured bars add one LLM: 91.5\% with Gemini, 90.9\% with Groq and 83.3\% with Ollama. The biggest gain is in the loop category for Gemini and Groq and the mixed category for Ollama.
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=\textwidth]{report_figures/gen_rules_vs_llm.png}
+\caption{Generated dataset: average cost reduction per category, rules alone against rules + LLM}
+\label{fig:gen-rules_vs_llm}
+\end{figure}
+
+\section{Results on the Official Dataset}
+\label{sec:realresults}
+
+The official dataset is the set of 500 accepted Codeforces submissions described in Section~\ref{sec:realdata}. Every run on it allows 200 iterations per program, because these programs are longer than the generated ones.
+
+\subsection{Rule-Based Optimization}
+
+\begin{table}[H]
+\centering
+\caption{Rules only: generated and official dataset (static cost model)}
 \label{tab:realrules}
 \small
 \begin{tabular}{|l|c|c|c|c|c|}
 \hline
-\textbf{Category} & \textbf{Programs} & \textbf{Generated} & \textbf{Real} & \textbf{Real, time} & \textbf{Proved} \\
+\textbf{Category} & \textbf{Programs} & \textbf{Generated} & \textbf{Official} & \textbf{Official, time} & \textbf{Proved} \\
 \hline
 Arithmetic-only & 60 & 96.03\% & 63.26\% & 21.84\% & 60 \\
 \hline
@@ -982,20 +1123,13 @@ Mixed & 100 & 77.91\% & 48.75\% & 21.71\% & 0 \\
 \end{tabular}
 \end{table}
 
-On the real programs the rules reduce the static cost by 52.32\% on average (median 51.88\%); 495 of the 500 programs improve by more than 30\%. The figure is lower than on the generated set because nearly all real programs read their values with \texttt{scanf}, so nothing folds down to a constant. Most of what the rules remove is the redundancy of the naive TAC translation: 6,457 accepted copy propagations and 1,757 dead-code removals, against 143 common subexpressions and 41 constant folds (Figure~\ref{fig:realheat}). All 10,546 proposals passed verification; 8,450 were accepted and 2,096 gave no cost gain.
+On the official dataset the rules cut the static cost by 52.32\% on average (median 51.88\%), and 495 of the 500 programs improve by more than 30\%. That is less than on the generated programs, because nearly every real program reads its values with \texttt{scanf}, so nothing folds down to a constant. Most of what the rules remove is the redundancy of the plain TAC translation: 6,457 copy propagations and 1,757 dead-code removals were accepted, against 143 common subexpressions and 41 constant folds. All 10,546 proposals passed verification; 8,450 were accepted and 2,096 gave no cost gain.
 
-\begin{figure}[H]
-\centering
-\includegraphics[width=\textwidth]{report_figures/real_heatmap_rules.png}
-\caption{Real programs, rules only: accepted optimizations by category and type}
-\label{fig:realheat}
-\end{figure}
-
-\subsubsection{Execution Time and the Two Cost Models}
+\subsection{Execution Time and the Two Cost Models}
 
 \begin{table}[H]
 \centering
-\caption{Rules only on the 500 real programs under the two cost models}
+\caption{Rules only on the official dataset under the two cost models}
 \label{tab:costmodels}
 \small
 \begin{tabular}{|l|c|c|}
@@ -1019,19 +1153,19 @@ False positives & \textbf{0} & \textbf{0} \\
 \end{tabular}
 \end{table}
 
-The execution time falls less than the static cost, because most of the removed instructions are copies, which cost one cycle each, while the divisions, multiplications and branches that dominate the running time have to stay. The time model accepts changes that the static count regards as a tie, such as replacing a multiplication by two with an addition, and so removes a little more time.
+The execution time falls less than the static cost. Most of the removed instructions are copies, which cost one cycle each, while the divisions, multiplications and branches that take most of the time have to stay. The time model also accepts changes that the static count sees as a tie, such as turning a multiplication by two into an addition, so it removes a little more time.
 
-\subsubsection{Proved Equivalence}
+\subsection{Proved Equivalence}
 
-For 253 of the 500 real programs the optimized program is proved equivalent to the original for every input: 127 by the polynomial check for straight-line code and 126 by the SMT solver. The remaining programs contain loops, or defeated the solver within its time limit, and are verified by differential testing as before. The end-to-end check never failed, so no program had to be reverted to its original.
+For 253 of the 500 programs the optimized version is proved equivalent to the original for every input: 127 by the polynomial check for straight-line code and 126 by the SMT solver. The others contain loops, or the solver ran out of time on them, and they are verified by differential testing as before. The end-to-end check never failed, so no program had to be put back to its original.
 
-\subsubsection{LLM Proposers with Self-Repair}
+\subsection{LLM Proposers with Self-Repair}
 
-The LLM configurations were run on the real programs with self-repair switched on (Table~\ref{tab:realllms}). To stay inside the free daily quotas of the cloud providers, every fifth program is allowed two fresh LLM proposals and the others one; a rejected answer gets one repair in either case. Gemini uses \texttt{gemini-3.1-flash-lite} in the cloud. Groq uses its \texttt{gpt-oss} and \texttt{qwen} models in the cloud. Ollama runs \texttt{qwen2.5-coder:7b} on the laptop, mostly on its GPU.
+The three LLMs were run on the official dataset with self-repair switched on (Table~\ref{tab:realllms}). To stay inside the free daily quotas of the cloud providers, every fifth program is allowed two fresh LLM proposals and the others one; a rejected answer gets one repair either way. Gemini uses \texttt{gemini-3.1-flash-lite} in the cloud. Groq uses its \texttt{gpt-oss} and \texttt{qwen} models in the cloud. Ollama runs \texttt{qwen2.5-coder:7b} on the laptop, mostly on its GPU.
 
 \begin{table}[H]
 \centering
-\caption{LLM proposers with self-repair on the real programs}
+\caption{LLM proposers with self-repair on the official dataset}
 \label{tab:realllms}
 \small
 \begin{tabular}{|l|c|c|c|}
@@ -1067,55 +1201,18 @@ False positives & \textbf{0} & \textbf{0} & \textbf{0} \\
 \end{tabular}
 \end{table}
 
-On real programs an LLM adds much less than on the generated ones. A generated loop usually has constant bounds and can be replaced by its result; a real loop depends on the input, so it has to stay. Self-repair helps the cloud models, whose rejected answers are mostly invalid TAC (a whole expression written in one instruction): told so, they often answer again in valid form. It does not help the small local model, which repeats its mistake or returns the program unchanged.
+Here an LLM adds much less than on the generated programs. A generated loop usually has constant bounds and can be replaced by its result; a real loop depends on the input, so it has to stay. Self-repair helps the cloud models, whose rejected answers are mostly invalid TAC (a whole expression written in one instruction): once told, they often answer again in valid form. It does not help the small local model, which repeats its mistake or hands the program back unchanged.
 
-A verified LLM change is always correct and always cheaper at the moment it is accepted, but it is not always the best step: it can rewrite the code so that a rule which would have applied later no longer does. On the real programs this left 3 programs with Gemini and 2 programs with Groq slightly below the result of the rules alone (by 5 percentage points at most). The averages in Table~\ref{tab:realllms} include these programs.
+A verified LLM change is always correct and always cheaper when it is accepted, but it is not always the best step: it can rewrite the code so that a rule which would have applied later no longer does. This left 3 programs with Gemini and 2 programs with Groq slightly below the rules alone (by 5 percentage points at most). The averages in Table~\ref{tab:realllms} include these programs.
 
-\begin{figure}[H]
-\centering
-\includegraphics[width=0.9\textwidth]{report_figures/real_comparison_gemini.png}
-\caption{Real programs: rule-only against rule + Gemini, per category}
-\label{fig:realcmp}
-\end{figure}
+\subsection{Correct and Wrong Suggestions}
 
-\subsubsection{Correct Suggestions per Optimization Type and Model}
-
-Tables~\ref{tab:typesgen} and~\ref{tab:typesreal} count the correct suggestions for every optimization type, under the rules alone and with each of the three LLMs. A suggestion is \emph{correct} when it passed verification; it was then accepted, or turned down only because it did not make the program cheaper. No rule suggestion was wrong in any run. The counts of a rule type differ a little between the columns, because an accepted LLM change alters what the rules find afterwards.
+Table~\ref{tab:real-types} counts the correct suggestions for each kind of optimization, first with the rules alone and then with each LLM. We call a suggestion correct when it passed verification; it was then either accepted or turned down only because it did not make the program cheaper. None of the rule suggestions was wrong. The rule counts change a little from column to column, because once an LLM change is accepted the rules see a different program.
 
 \begin{table}[H]
 \centering
-\caption{Correct suggestions per optimization type on the generated dataset}
-\label{tab:typesgen}
-\small
-\begin{tabular}{|l|c|c|c|c|}
-\hline
-\textbf{Optimization type} & \textbf{Rules} & \textbf{+ Gemini} & \textbf{+ Groq} & \textbf{+ Ollama} \\
-\hline
-Constant folding & 1,855 & 1,806 & 1,834 & 1,828 \\
-\hline
-Algebraic simplification & 179 & 172 & 174 & 177 \\
-\hline
-Dead code elimination & 1,795 & 1,890 & 1,939 & 1,846 \\
-\hline
-Common subexpression (CSE) & 147 & 147 & 147 & 147 \\
-\hline
-Strength reduction & 185 & 148 & 167 & 159 \\
-\hline
-Copy propagation & 6,467 & 6,475 & 6,506 & 6,450 \\
-\hline
-LLM proposal & --- & 314 & 312 & 85 \\
-\hline
-\textbf{Total correct} & \textbf{10,628} & \textbf{10,952} & \textbf{11,079} & \textbf{10,692} \\
-\hline
-\textbf{Wrong (blocked)} & \textbf{0} & \textbf{26} & \textbf{6} & \textbf{113} \\
-\hline
-\end{tabular}
-\end{table}
-
-\begin{table}[H]
-\centering
-\caption{Correct suggestions per optimization type on the real programs}
-\label{tab:typesreal}
+\caption{Official dataset: correct suggestions per optimization type}
+\label{tab:real-types}
 \small
 \begin{tabular}{|l|c|c|c|c|}
 \hline
@@ -1142,80 +1239,103 @@ LLM proposal & --- & 280 & 287 & 43 \\
 \end{tabular}
 \end{table}
 
-Figure~\ref{fig:sugcorrect} shows where the correct LLM suggestions fall. On the generated programs they are in the loops, conditionals and mixed categories, where a loop with constant bounds can be replaced by its result. On the real programs they are spread over every category.
+Figure~\ref{fig:real-correct} shows in which program categories the LLMs made their correct suggestions: 280 for Gemini, 287 for Groq and 43 for Ollama, mostly in the mixed, repeated-expression and conditional programs, but every category has some.
 
 \begin{figure}[H]
 \centering
-\includegraphics[width=0.92\textwidth]{report_figures/suggestions_correct.png}
-\caption{Correct LLM suggestions per program category and model}
-\label{fig:sugcorrect}
+\includegraphics[width=0.85\textwidth]{report_figures/real_suggestions_correct.png}
+\caption{Official dataset: correct LLM suggestions per program category}
+\label{fig:real-correct}
 \end{figure}
 
-\subsubsection{Wrong Suggestions}
-
-The wrong suggestions are shown apart in Figure~\ref{fig:sugwrong}. A suggestion is \emph{wrong} when the verifier found an input on which the suggested program prints something else, or when its symbolic check failed. On the generated dataset there were 26 from Gemini, 6 from Groq, 113 from Ollama; on the real programs 171 from Gemini, 174 from Groq, 161 from Ollama. Every one of them was rejected before it could change the program, so no run has a false positive. The local model is wrong most often on generated loops, which it tries to fold and gets the value wrong; on real programs all three models are wrong at a similar rate, because a real loop or branch depends on the input and a rewrite that looks right on small values fails on others.
+The wrong suggestions get a chart of their own (Figure~\ref{fig:real-wrong}). A suggestion is wrong when the verifier finds an input on which the new program prints something different, or when the symbolic check fails. There were 171 for Gemini, 174 for Groq and 161 for Ollama, most of them in loop, mixed and conditional programs. All of them were stopped before they could change the program, which is why every run still has zero false positives.
 
 \begin{figure}[H]
 \centering
-\includegraphics[width=0.92\textwidth]{report_figures/suggestions_wrong.png}
-\caption{Wrong LLM suggestions per program category and model, all rejected by the verifier}
-\label{fig:sugwrong}
+\includegraphics[width=0.85\textwidth]{report_figures/real_suggestions_wrong.png}
+\caption{Official dataset: wrong LLM suggestions per program category, all rejected by the verifier}
+\label{fig:real-wrong}
 \end{figure}
 
-\subsubsection{Analysis Charts for the Groq Run on Real Programs}
+\subsection{Result Charts}
 
-The charts below are drawn from the Groq run on the 500 real programs.
+Each figure in this subsection is one kind of chart, drawn for the three LLM runs side by side and in the same order: Gemini, Groq, Ollama. Where it makes sense the panels share one scale, so a difference between two panels is a difference between the models.
+
+\subsubsection{Proposal Flow}
+
+The diagrams follow every proposal of a run from where it came from, the rules or the LLM, through the verifier to the cost check. A wrong proposal ends at the verifier and never reaches the program. The wrong ones are 171 of Gemini's 10,022 proposals, 174 of Groq's 10,436 and 161 of Ollama's 10,689; everything that gets to the right-hand side was checked first.
 
 \begin{figure}[H]
 \centering
-\includegraphics[width=0.85\textwidth]{report_figures/real_outcomes_groq.png}
-\caption{Real programs, Groq run: accept, reject, and invalid counts for each optimization type}
+\includegraphics[width=0.92\textwidth]{report_figures/real_flow.png}
+\caption{Official dataset: proposal flow of the three LLM runs, from source to decision}
+\label{fig:real-flow}
 \end{figure}
 
+\subsubsection{Outcomes by Optimization Type}
+
+The bars of the six rules are similar in the three runs but not identical, because an accepted LLM change alters what the rules find next. The difference is in the last group, the LLM's own proposals: Gemini had 196 accepted and 171 wrong, Groq had 213 accepted and 174 wrong and Ollama had 24 accepted and 161 wrong. For Ollama the wrong answers outnumber the accepted ones. The scale is logarithmic; on a normal scale every bar next to copy propagation would be too small to read.
+
 \begin{figure}[H]
 \centering
-\includegraphics[width=0.6\textwidth]{report_figures/real_accepted_groq.png}
-\caption{Real programs, Groq run: share of each optimization type among the accepted changes}
+\includegraphics[width=\textwidth]{report_figures/real_outcomes.png}
+\caption{Official dataset: accepted, correct but no gain, and wrong proposals per optimization type (log scale)}
+\label{fig:real-outcomes}
 \end{figure}
 
+\subsubsection{Accepted Optimizations by Type}
+
+Copy propagation makes up between 73\% and 76\% of the accepted changes in every run, followed by dead code elimination and common subexpression elimination. The LLM's slice is small: 2.4\% for Gemini, 2.5\% for Groq and 0.3\% for Ollama. Here, though, they are mostly small changes: a real loop depends on its input, so it cannot be replaced by its result the way a generated loop can.
+
 \begin{figure}[H]
 \centering
-\includegraphics[width=0.85\textwidth]{report_figures/real_heatmap_groq.png}
-\caption{Real programs, Groq run: accepted optimizations by program category and type}
+\includegraphics[width=\textwidth]{report_figures/real_accepted.png}
+\caption{Official dataset: share of each optimization type among the accepted changes}
+\label{fig:real-accepted}
 \end{figure}
 
+\subsubsection{Cost over Iterations}
+
+Each line is one program of a category, the one whose reduction is closest to the middle of that category. The cost falls a little with almost every step, because most steps remove a single copy or temporary. No single step removes much at once here; the LLM changes in these programs are small ones.
+
 \begin{figure}[H]
 \centering
-\includegraphics[width=0.85\textwidth]{report_figures/real_comparison_groq.png}
-\caption{Real programs, Groq run: rule-only against rule + LLM, per category}
+\includegraphics[width=\textwidth]{report_figures/real_cost.png}
+\caption{Official dataset: weighted cost after each step for one typical program of five categories}
+\label{fig:real-cost}
 \end{figure}
 
-\subsubsection{Analysis Charts for the Ollama Run on Real Programs}
+\subsubsection{Steps against Improvement}
 
-The charts below are drawn from the Ollama run on the 500 real programs.
+The fitted line is almost flat ($-$0.03, $-$0.05 and $-$0.04 percentage points per step for Gemini, Groq and Ollama). On these programs the number of steps says little about how much a program shrinks: a long program needs many steps, but it also keeps more of its work. The colours of the categories are mixed together for the same reason.
 
 \begin{figure}[H]
 \centering
-\includegraphics[width=0.85\textwidth]{report_figures/real_outcomes_ollama.png}
-\caption{Real programs, Ollama run: accept, reject, and invalid counts for each optimization type}
+\includegraphics[width=\textwidth]{report_figures/real_steps.png}
+\caption{Official dataset: steps taken against cost reduction for every program, with the fitted line}
+\label{fig:real-steps}
 \end{figure}
 
-\begin{figure}[H]
-\centering
-\includegraphics[width=0.6\textwidth]{report_figures/real_accepted_ollama.png}
-\caption{Real programs, Ollama run: share of each optimization type among the accepted changes}
-\end{figure}
+\subsubsection{Where the Optimizations Were Applied}
+
+Copy propagation is the darkest column in every run, and the rule columns look much the same in all three panels. The column that differs is the last one: the accepted LLM changes fall mostly in mixed, repeated-expression and nested-expression programs.
 
 \begin{figure}[H]
 \centering
-\includegraphics[width=0.85\textwidth]{report_figures/real_heatmap_ollama.png}
-\caption{Real programs, Ollama run: accepted optimizations by program category and type}
+\includegraphics[width=0.95\textwidth]{report_figures/real_heatmap.png}
+\caption{Official dataset: accepted changes per program category and optimization type}
+\label{fig:real-heatmap}
 \end{figure}
+
+\subsubsection{Rules Only against Rules + LLM}
+
+The grey bars are the rules alone (52.3\% on average); the coloured bars add one LLM: 53.6\% with Gemini, 53.2\% with Groq and 52.4\% with Ollama. The biggest gain is in the repeated-expression category for all three.
 
 \begin{figure}[H]
 \centering
-\includegraphics[width=0.85\textwidth]{report_figures/real_comparison_ollama.png}
-\caption{Real programs, Ollama run: rule-only against rule + LLM, per category}
+\includegraphics[width=\textwidth]{report_figures/real_rules_vs_llm.png}
+\caption{Official dataset: average cost reduction per category, rules alone against rules + LLM}
+\label{fig:real-rules_vs_llm}
 \end{figure}
 
 \section{Output Screenshots}
@@ -1251,177 +1371,6 @@ printf("%d\n", sum);
 Optimized TAC:  print 50        cost 56.0 -> 1.0  (98.2% reduction)
 original prints [50], optimized prints [50]: identical output
 \end{lstlisting}
-
-Figures~\ref{fig:sankey} to \ref{fig:heatmap} are drawn from the Gemini run. Figures~\ref{fig:cmp-gemini} to \ref{fig:cmp-ollama} compare each LLM run with the rule-only baseline.
-
-\subsection{Sankey Diagram: Proposal Flow}
-
-\begin{figure}[H]
-\centering
-\includegraphics[width=\textwidth]{report_figures/sankey_gemini.png}
-\caption{Sankey diagram showing the flow of 10,978 proposals from submission through verification to the accept/reject decision. The 26 invalid proposals are visible as a narrow band}
-\label{fig:sankey}
-\end{figure}
-
-\subsection{Grouped Bar Chart: Outcomes by Optimization Type}
-
-\begin{figure}[H]
-\centering
-\includegraphics[width=\textwidth]{report_figures/outcomes_by_type_gemini.png}
-\caption{Accept, reject, and invalid counts for each optimization type. Copy propagation accounts for the most accepted changes}
-\label{fig:outcomes}
-\end{figure}
-
-\subsection{Line Chart: Cost Trajectory over Iterations}
-
-\begin{figure}[H]
-\centering
-\includegraphics[width=\textwidth]{report_figures/cost_over_iterations_gemini.png}
-\caption{Weighted cost at each iteration for five representative programs. Cost decreases rapidly during early iterations and levels off as optimization converges}
-\label{fig:trajectory}
-\end{figure}
-
-\subsection{Pie Chart: Accepted Optimization Types}
-
-\begin{figure}[H]
-\centering
-\includegraphics[width=0.9\textwidth]{report_figures/accepted_types_gemini.png}
-\caption{Breakdown of accepted optimizations by optimization type. Copy propagation accounts for the largest share of accepted changes}
-\label{fig:pie}
-\end{figure}
-
-\subsection{Scatter Plot: Steps vs.\ Cost Improvement}
-
-\begin{figure}[H]
-\centering
-\includegraphics[width=\textwidth]{report_figures/steps_vs_improvement_gemini.png}
-\caption{Agent steps versus percentage cost improvement across the program categories}
-\label{fig:scatter}
-\end{figure}
-
-\subsection{Heatmap: Category vs.\ Optimization Type}
-
-\begin{figure}[H]
-\centering
-\includegraphics[width=\textwidth]{report_figures/heatmap_gemini.png}
-\caption{Number of accepted optimizations for each program category and optimization type}
-\label{fig:heatmap}
-\end{figure}
-
-\subsection{Comparison Charts: Rule-Only vs.\ Rule + LLM}
-
-\begin{figure}[H]
-\centering
-\includegraphics[width=0.9\textwidth]{report_figures/comparison_gemini.png}
-\caption{Average cost reduction per category comparing rule-only optimization with rule + Gemini. Loops rise from 65\% to 93\%}
-\label{fig:cmp-gemini}
-\end{figure}
-
-\begin{figure}[H]
-\centering
-\includegraphics[width=0.9\textwidth]{report_figures/comparison_groq.png}
-\caption{Rule-only against rule + Groq. The pattern is the same as with Gemini}
-\label{fig:cmp-groq}
-\end{figure}
-
-\begin{figure}[H]
-\centering
-\includegraphics[width=0.9\textwidth]{report_figures/comparison_ollama.png}
-\caption{Rule-only against rule + the local Ollama model. The gains are small but come with no internet connection}
-\label{fig:cmp-ollama}
-\end{figure}
-
-\subsection{Analysis Charts for the Groq Run}
-
-Figures~\ref{fig:sankey-groq} to \ref{fig:heatmap-groq} repeat the six charts for the run with Groq. The picture is close to the Gemini run: the same optimization types dominate, and only 6 proposals fail verification.
-
-\begin{figure}[H]
-\centering
-\includegraphics[width=\textwidth]{report_figures/sankey_groq.png}
-\caption{Groq run: flow of the 11,085 proposals. Only 6 LLM proposals were invalid, so the band of blocked proposals is barely visible}
-\label{fig:sankey-groq}
-\end{figure}
-
-\begin{figure}[H]
-\centering
-\includegraphics[width=\textwidth]{report_figures/outcomes_by_type_groq.png}
-\caption{Groq run: accept, reject, and invalid counts for each optimization type}
-\label{fig:outcomes-groq}
-\end{figure}
-
-\begin{figure}[H]
-\centering
-\includegraphics[width=\textwidth]{report_figures/cost_over_iterations_groq.png}
-\caption{Groq run: weighted cost at each iteration for five representative programs}
-\label{fig:trajectory-groq}
-\end{figure}
-
-\begin{figure}[H]
-\centering
-\includegraphics[width=0.9\textwidth]{report_figures/accepted_types_groq.png}
-\caption{Groq run: breakdown of accepted optimizations by type}
-\label{fig:pie-groq}
-\end{figure}
-
-\begin{figure}[H]
-\centering
-\includegraphics[width=\textwidth]{report_figures/steps_vs_improvement_groq.png}
-\caption{Groq run: agent steps versus percentage cost improvement}
-\label{fig:scatter-groq}
-\end{figure}
-
-\begin{figure}[H]
-\centering
-\includegraphics[width=\textwidth]{report_figures/heatmap_groq.png}
-\caption{Groq run: accepted optimizations for each program category and optimization type}
-\label{fig:heatmap-groq}
-\end{figure}
-
-\subsection{Analysis Charts for the Ollama Run}
-
-Figures~\ref{fig:sankey-ollama} to \ref{fig:heatmap-ollama} show the same charts for the offline run with the local model. Here the band of invalid proposals is clearly visible: 113 of the local model's proposals were wrong, and every one was blocked by the verifier.
-
-\begin{figure}[H]
-\centering
-\includegraphics[width=\textwidth]{report_figures/sankey_ollama.png}
-\caption{Ollama run: flow of the 10,805 proposals. The 113 invalid LLM proposals form a visible band that ends at the verifier}
-\label{fig:sankey-ollama}
-\end{figure}
-
-\begin{figure}[H]
-\centering
-\includegraphics[width=\textwidth]{report_figures/outcomes_by_type_ollama.png}
-\caption{Ollama run: accept, reject, and invalid counts for each optimization type. The invalid bar belongs to the LLM proposals}
-\label{fig:outcomes-ollama}
-\end{figure}
-
-\begin{figure}[H]
-\centering
-\includegraphics[width=\textwidth]{report_figures/cost_over_iterations_ollama.png}
-\caption{Ollama run: weighted cost at each iteration for five representative programs}
-\label{fig:trajectory-ollama}
-\end{figure}
-
-\begin{figure}[H]
-\centering
-\includegraphics[width=0.9\textwidth]{report_figures/accepted_types_ollama.png}
-\caption{Ollama run: breakdown of accepted optimizations by type}
-\label{fig:pie-ollama}
-\end{figure}
-
-\begin{figure}[H]
-\centering
-\includegraphics[width=\textwidth]{report_figures/steps_vs_improvement_ollama.png}
-\caption{Ollama run: agent steps versus percentage cost improvement}
-\label{fig:scatter-ollama}
-\end{figure}
-
-\begin{figure}[H]
-\centering
-\includegraphics[width=\textwidth]{report_figures/heatmap_ollama.png}
-\caption{Ollama run: accepted optimizations for each program category and optimization type}
-\label{fig:heatmap-ollama}
-\end{figure}
 
 \section{Performance Analysis and Evaluation}
 

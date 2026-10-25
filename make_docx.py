@@ -58,6 +58,23 @@ def earlier_text(path: str) -> tuple[str, str, str]:
 
 
 BASE_FLOW, BASE_ALL, BASE_RAW = earlier_text(EARLIER)
+# the table rows of the earlier report (only a .docx has them), so a changed cell can be found in its row
+BASE_ROWS = ([[norm(cell.text) for cell in row.cells] for table in Document(EARLIER).tables for row in table.rows]
+             if EARLIER.lower().endswith(".docx") else [])
+
+
+def changed_cells(cells: list[str]) -> list[bool] | None:
+    """Which cells of a row differ from the most similar row of the earlier report's tables (None: no such row)."""
+    keys = [norm(text) for text in cells]
+    best, score = None, 0
+    for row in BASE_ROWS:
+        if len(row) == len(keys) and row[0] == keys[0]:
+            same = sum(1 for a, b in zip(row, keys) if a == b)
+            if same > score:
+                best, score = row, same
+    if best is None or score * 2 < len(keys):
+        return None
+    return [a != b and bool(b) for a, b in zip(best, keys)]
 
 
 def is_old(text: str) -> bool:
@@ -454,8 +471,23 @@ for p in doc.paragraphs:
 for index, table in enumerate(doc.tables):
     table_borders(table)
     cover = index == 0
+    # a table whose caption is new is new as a whole; a table the earlier report had is judged cell by cell
+    before = table._tbl.getprevious()
+    while before is not None and before.tag != qn("w:p"):
+        before = before.getprevious()
+    caption = ""
+    if before is not None and any(s.get(qn("w:val")) == "TableCaption" for s in before.iter(qn("w:pStyle"))):
+        caption = "".join(t.text or "" for t in before.iter(qn("w:t")))
+    all_new = not cover and bool(caption) and not is_old(caption.split(": ", 1)[-1])
     for r, row in enumerate(table.rows):
-        for cell in row.cells:
+        tr_pr = row._tr.get_or_add_trPr()
+        if tr_pr.find(qn("w:cantSplit")) is None:
+            tr_pr.append(OxmlElement("w:cantSplit"))          # a row never breaks across two pages
+        changes = None if all_new or cover else changed_cells([cell.text for cell in row.cells])
+        if changes is None and BASE_ROWS and not (all_new or cover):
+            if not is_old(" ".join(cell.text for cell in row.cells)):
+                changes = [True] * len(row.cells)             # a row the earlier table did not have
+        for c, cell in enumerate(row.cells):
             for p in cell.paragraphs:
                 p.paragraph_format.line_spacing = 1.0
                 p.paragraph_format.space_after = Pt(2)
@@ -463,7 +495,12 @@ for index, table in enumerate(doc.tables):
                 for run in p.runs:
                     mono = run.style is not None and run.style.name == "Verbatim Char"
                     set_font(run, 10 if mono else 11, name="Consolas" if mono else FONT)
-                if not cover:
+                if (all_new or (changes is not None and changes[c])) and paragraph_text(p).strip():
+                    highlight(p, [(0, len(paragraph_text(p)))])
+                    marked += 1
+                elif changes is not None:
+                    continue                                  # the same as in the earlier table
+                elif not cover:
                     marked += mark_new(p, whole=True)
 
 # ------------------------------------------------------------------ pictures

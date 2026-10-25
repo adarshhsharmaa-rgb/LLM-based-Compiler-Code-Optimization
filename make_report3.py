@@ -11,6 +11,7 @@ from __future__ import annotations
 
 import json
 import os
+import re
 import shutil
 import statistics
 import subprocess
@@ -20,6 +21,7 @@ ROOT = os.path.dirname(os.path.abspath(__file__))
 if ROOT not in sys.path:
     sys.path.insert(0, ROOT)
 
+from src.visualization import model_charts as mc  # noqa: E402
 from src.visualization import suggestions as sg  # noqa: E402
 from src.visualization.report import aggregate_metrics, load_results  # noqa: E402
 
@@ -36,7 +38,8 @@ TEST_COMPONENTS = [
     ("test_verifier.py", "Verifier"), ("test_cost_evaluator.py", "Cost evaluator"),
     ("test_review3_features.py", "Execution time, SMT, wide-range inputs"),
     ("test_real_dataset.py", "Real-program dataset, strict C"), ("test_orchestrator.py", "Orchestrator (integration)"),
-    ("test_demo.py", "Demo front end"), ("test_bugfixes.py", "Regression tests"),
+    ("test_demo.py", "Demo front end"), ("test_suggestions.py", "Correct and wrong suggestion counts"),
+    ("test_model_charts.py", "Charts with the three LLM runs side by side"), ("test_bugfixes.py", "Regression tests"),
 ]
 
 
@@ -129,13 +132,8 @@ def build() -> str:
 
     # ------------------------------------------------------------------ figures
     figures = os.path.join(ROOT, "report_figures")
-    for source, name in (("output_real_rule_only/plots/6_heatmap_category_vs_type.png", "real_heatmap_rules.png"),
-                         ("output_real_rule_only/plots/5_scatter_steps_vs_improvement.png", "real_steps_rules.png"),
-                         ("output_real_gemini/plots/7_comparison_rule_vs_llm.png", "real_comparison_gemini.png"),
-                         ("output_real_groq/plots/1_sankey_proposal_flow.png", "real_sankey_groq.png")):
-        if os.path.exists(os.path.join(ROOT, source)):
-            shutil.copyfile(os.path.join(ROOT, source), os.path.join(figures, name))
     doc.swap("report_figures/architecture.png", "report_figures/architecture_review3.png")
+    doc.swap("\\section{Datasets}\n", "\\section{Datasets}\n\\label{sec:datasets}\n")
 
     # ------------------------------------------------------------------ abstract: the earlier one, with additions
     # (the template allows 200 to 300 words on one page)
@@ -185,6 +183,14 @@ def build() -> str:
         "12 & LLM self-repair; execution time in the cost evaluator; SMT verification with Z3 & Week 14 \\\\\n\\hline\n"
         "13 & Real-program dataset from Codeforces submissions; strict mode of the C front end & Week 15 \\\\\n\\hline\n"
         "14 & Runs on the real programs; independent re-check; wide-range inputs; final report & Week 16 \\\\\n\\hline\n"))
+    # the week numbers as the authors set them by hand in the Word file (2026-10-13)
+    weeks = {1: "Weeks 1--2", 2: "Week 1", 3: "Week 2", 4: "Week 3", 5: "Week 3", 6: "Week 4", 7: "Week 4",
+             8: "Week 4", 9: "Week 5", 10: "Week 5", 11: "Week 5", 12: "Week 6", 13: "Week 6", 14: "Week 6"}
+    a, b = doc.text.index("\\section{Project Plan}"), doc.text.index("\\chapter{TECHNICAL SPECIFICATION}")
+    plan, count = re.subn(r"(?m)^(\d+) & (.*) & Weeks? [0-9-]+ \\\\$",
+                          lambda m: f"{m.group(1)} & {m.group(2)} & {weeks[int(m.group(1))]} \\\\", doc.text[a:b])
+    assert count == len(weeks), count
+    doc.text = doc.text[:a] + plan + doc.text[b:]
     doc.swap("pytest & $\\geq$8.0 & Unit and integration testing \\\\\n\\hline\n", (
         "pytest & $\\geq$8.0 & Unit and integration testing \\\\\n\\hline\n"
         "z3-solver & $\\geq$4.12 & SMT proofs for programs without loops (optional) \\\\\n\\hline\n"
@@ -297,9 +303,11 @@ def build() -> str:
         "\\texttt{dataset/real\\_dataset.py} builds the real-program dataset (collect, select, rebuild from the "
         "manifest). Full runs save every finished program at once, so a run that is interrupted, or stopped "
         "because a free daily quota is spent, can be resumed; \\texttt{ollama\\_demo.bat} starts the offline demo "
-        "with one command.\n"))
+        "with one command. In the visualization module, \\texttt{model\\_charts.py} draws each of the result charts "
+        "for several runs at once, one panel per LLM, and \\texttt{suggestions.py} counts the correct and the wrong "
+        "suggestions per optimization type and per program category.\n"))
     doc.swap("We wrote 336 automated tests across fifteen test files", f"We wrote {total_tests} automated tests across "
-             + {15: "fifteen", 16: "sixteen", 17: "seventeen", 18: "eighteen"}.get(len(tests), str(len(tests))) + " test files")
+             + {15: "fifteen", 16: "sixteen", 17: "seventeen", 18: "eighteen", 19: "nineteen", 20: "twenty", 21: "twenty-one"}.get(len(tests), str(len(tests))) + " test files")
     table_rows = ""
     for name, component in TEST_COMPONENTS:
         if name in tests:
@@ -322,7 +330,126 @@ def build() -> str:
         f"re-check of all runs on real programs ({RECHECK_EXECUTIONS} executions) now finds no mismatch. The four "
         "runs on the generated dataset were re-checked on the same wide inputs, also without a mismatch.\n"))
 
-    # ------------------------------------------------------------------ results on real programs
+    # ------------------------------------------------------------------ the results chapter, one section per dataset
+    # Every kind of chart is drawn once per dataset with the three LLM runs side by side
+    # (src/visualization/model_charts.py), so the reader compares the models in one figure.
+    def records(run):
+        return list(run["by_name"].values()) if run else []
+
+    def names(items):
+        items = list(items)
+        return items[0] if len(items) == 1 else ", ".join(items[:-1]) + " and " + items[-1]
+
+    generated_llm = [(name, run) for name, run in (("Gemini", load("output")), ("Groq", load("output_groq")),
+                                                   ("Ollama", load("output_ollama"))) if run]
+    type_names = {"CONSTANT_FOLD": "Constant folding", "ALGEBRAIC_SIMPLIFY": "Algebraic simplification",
+                  "DEAD_CODE": "Dead code elimination", "CSE": "Common subexpression (CSE)",
+                  "STRENGTH_REDUCTION": "Strength reduction", "COPY_PROPAGATION": "Copy propagation",
+                  "LLM": "LLM proposal"}
+    plain = {"arithmetic": "arithmetic", "nested": "nested-expression", "repeated_expr": "repeated-expression",
+             "dead_code": "dead-code", "loops": "loop", "conditionals": "conditional", "mixed": "mixed"}
+
+    def type_table(caption, label, rules_run, llms):
+        configs = [("Rules", rules_run)] + [("+ " + name, run) for name, run in llms]
+        counts = [sg.by_type(records(run)) for _, run in configs]
+        text = ("\\begin{table}[H]\n\\centering\n\\caption{" + caption + "}\n\\label{" + label + "}\n\\small\n"
+                "\\begin{tabular}{|l|" + "c|" * len(configs) + "}\n\\hline\n\\textbf{Optimization type} & "
+                + " & ".join("\\textbf{" + name + "}" for name, _ in configs) + " \\\\\n\\hline\n")
+        for key, name in type_names.items():
+            cells = ["---" if key == "LLM" and i == 0 else n(c[key]["correct"]) for i, c in enumerate(counts)]
+            text += name + " & " + " & ".join(cells) + " \\\\\n\\hline\n"
+        text += ("\\textbf{Total correct} & "
+                 + " & ".join("\\textbf{" + n(sum(v["correct"] for v in c.values())) + "}" for c in counts)
+                 + " \\\\\n\\hline\n\\textbf{Wrong (blocked)} & "
+                 + " & ".join("\\textbf{" + n(sum(v["wrong"] for v in c.values())) + "}" for c in counts)
+                 + " \\\\\n\\hline\n\\end{tabular}\n\\end{table}\n\n")
+        return text
+
+    def figure(path, caption, label, width="\\textwidth"):
+        return ("\\begin{figure}[H]\n\\centering\n\\includegraphics[width=" + width + "]{report_figures/"
+                + os.path.basename(path) + "}\n\\caption{" + caption + "}\n\\label{" + label + "}\n\\end{figure}\n\n")
+
+    def suggestion_part(prefix, dataset, rules_run, llms, where):
+        """The correct suggestions per optimization type, then the correct and the wrong LLM suggestions apart."""
+        runs = {name: records(run) for name, run in llms}
+        per_category = {name: sg.llm_by_category(r) for name, r in runs.items()}
+        correct_png = sg.category_chart([(dataset, runs)], "correct",
+                                        os.path.join(figures, f"{prefix}_suggestions_correct.png"),
+                                        "Correct LLM suggestions (passed verification)")
+        wrong_png = sg.category_chart([(dataset, runs)], "wrong",
+                                      os.path.join(figures, f"{prefix}_suggestions_wrong.png"),
+                                      "Wrong LLM suggestions (rejected by the verifier)")
+
+        def total(name, field):
+            return sum(v[field] for v in per_category[name].values())
+
+        def busiest(field):
+            sums = {key: sum(per_category[name][key][field] for name in runs) for key, _ in CATEGORIES}
+            ranked = sorted(sums, key=lambda key: -sums[key])
+            return names(plain[key] for key in ranked[:3])
+
+        return (
+            "\\subsection{Correct and Wrong Suggestions}\n\n"
+            f"Table~\\ref{{tab:{prefix}-types}} counts the correct suggestions for each kind of optimization, first "
+            "with the rules alone and then with each LLM. We call a suggestion correct when it passed verification; "
+            "it was then either accepted or turned down only because it did not make the program cheaper. None of "
+            "the rule suggestions was wrong. The rule counts change a little from column to column, because once an "
+            "LLM change is accepted the rules see a different program.\n\n"
+            + type_table(f"{dataset}: correct suggestions per optimization type", f"tab:{prefix}-types", rules_run, llms)
+            + f"Figure~\\ref{{fig:{prefix}-correct}} shows in which program categories the LLMs made their correct "
+            "suggestions: " + names(f"{total(name, 'correct')} for {name}" for name in runs)
+            + f", mostly in the {busiest('correct')} programs{where}.\n\n"
+            + figure(correct_png, f"{dataset}: correct LLM suggestions per program category",
+                     f"fig:{prefix}-correct", "0.85\\textwidth")
+            + f"The wrong suggestions get a chart of their own (Figure~\\ref{{fig:{prefix}-wrong}}). A suggestion is "
+            "wrong when the verifier finds an input on which the new program prints something different, or when "
+            "the symbolic check fails. There were " + names(f"{total(name, 'wrong')} for {name}" for name in runs)
+            + f", most of them in {busiest('wrong')} programs. All of them were stopped before they could change "
+            "the program, which is why every run still has zero false positives.\n\n"
+            + figure(wrong_png, f"{dataset}: wrong LLM suggestions per program category, all rejected by the verifier",
+                     f"fig:{prefix}-wrong", "0.85\\textwidth"))
+
+    def chart_part(prefix, dataset, rules_run, llms, llm_note):
+        """Every kind of result chart, each with the three LLM runs in one figure."""
+        runs = [(name, records(run)) for name, run in llms]
+        mc.draw_all(runs, records(rules_run), figures, prefix, layout="page")
+        text = (
+            "\\subsection{Result Charts}\n\n"
+            "Each figure in this subsection is one kind of chart, drawn for the three LLM runs side by side and in "
+            "the same order: Gemini, Groq, Ollama. Where it makes sense the panels share one scale, so a difference "
+            "between two panels is a difference between the models.\n\n")
+        facts = {key: long.replace("%", "\\%").replace("-0.", "$-$0.")
+                 for key, (long, _) in mc.describe(runs, records(rules_run), llm_note).items()}
+
+        captions = {"flow": "proposal flow of the three LLM runs, from source to decision",
+                    "outcomes": "accepted, correct but no gain, and wrong proposals per optimization type (log scale)",
+                    "accepted": "share of each optimization type among the accepted changes",
+                    "cost": "weighted cost after each step for one typical program of five categories",
+                    "steps": "steps taken against cost reduction for every program, with the fitted line",
+                    "heatmap": "accepted changes per program category and optimization type",
+                    "rules_vs_llm": "average cost reduction per category, rules alone against rules + LLM"}
+        widths = {"flow": "0.92\\textwidth", "heatmap": "0.95\\textwidth"}
+        for key, title, _ in mc.CHARTS:
+            text += (f"\\subsubsection{{{title}}}\n\n{facts[key]}\n\n"
+                     + figure(os.path.join(figures, f"{prefix}_{key}.png"), f"{dataset}: {captions[key]}",
+                              f"fig:{prefix}-{key}", widths.get(key, "\\textwidth")))
+        return text
+
+    # ---------------------------------------------------------------- 6.1 the generated dataset
+    old = doc.text
+    detailed = old[old.index("\\section{Detailed Results}\n\n") + len("\\section{Detailed Results}\n\n"):
+                   old.index("\\subsection{Comparing the Three LLMs}")]
+    comparing = old[old.index("\\subsection{Comparing the Three LLMs}"):old.index("\\section{Output Screenshots}")]
+    sample = old[old.index("\\subsection{Sample Run}"):old.index("Figures~\\ref{fig:sankey} to")]
+    generated_section = (
+        "\\section{Results on the Generated Dataset}\n\\label{sec:genresults}\n\n" + detailed + comparing
+        + suggestion_part("gen", "Generated dataset", generated, generated_llm,
+                          ", where a loop with constant bounds can be replaced by its result")
+        + chart_part("gen", "Generated dataset", generated, generated_llm,
+                     "These few changes still count for a lot, because many of them remove a whole loop or branch "
+                     "that the rules leave in place."))
+
+    # ---------------------------------------------------------------- 6.2 the official dataset
     table_rows = ""
     for key, label in CATEGORIES:
         g = generated["m"]["per_category"][key]["avg_reduction_pct"] if generated else None
@@ -332,29 +459,27 @@ def build() -> str:
     table_rows += (f"\\textbf{{All}} & \\textbf{{500}} & \\textbf{{{p(generated['m']['avg_cost_reduction_pct'])}}} & "
                    f"\\textbf{{{p(rm['avg_cost_reduction_pct'])}}} & \\textbf{{{p(rm['avg_time_reduction_pct'])}}} & "
                    f"\\textbf{{{rm['programs_proved_equivalent']}}} \\\\\n\\hline\n")
-    results = (
-        "\\subsection{Results on Real Programs}\n\\label{sec:realresults}\n\n"
-        "All runs in this subsection use the real-program dataset of Section~\\ref{sec:realdata} and allow 200 "
-        "iterations per program, because real programs are longer than the generated ones.\n\n"
-        "\\subsubsection{Rule-Based Optimization}\n\n"
-        "\\begin{table}[H]\n\\centering\n\\caption{Rules only: generated and real programs (static cost model)}\n"
+    official = (
+        "\\section{Results on the Official Dataset}\n\\label{sec:realresults}\n\n"
+        "The official dataset is the set of 500 accepted Codeforces submissions described in "
+        "Section~\\ref{sec:realdata}. Every run on it allows 200 iterations per program, because these programs are "
+        "longer than the generated ones.\n\n"
+        "\\subsection{Rule-Based Optimization}\n\n"
+        "\\begin{table}[H]\n\\centering\n\\caption{Rules only: generated and official dataset (static cost model)}\n"
         "\\label{tab:realrules}\n\\small\n\\begin{tabular}{|l|c|c|c|c|c|}\n\\hline\n"
-        "\\textbf{Category} & \\textbf{Programs} & \\textbf{Generated} & \\textbf{Real} & \\textbf{Real, time} & "
+        "\\textbf{Category} & \\textbf{Programs} & \\textbf{Generated} & \\textbf{Official} & \\textbf{Official, time} & "
         "\\textbf{Proved} \\\\\n\\hline\n" + table_rows + "\\end{tabular}\n\\end{table}\n\n"
-        f"On the real programs the rules reduce the static cost by {p(rm['avg_cost_reduction_pct'])} on average "
-        f"(median {p(rm['median_cost_reduction_pct'])}); {rm['programs_with_reduction_over_30pct']} of the 500 "
-        "programs improve by more than 30\\%. The figure is lower than on the generated set because nearly all "
-        "real programs read their values with \\texttt{scanf}, so nothing folds down to a constant. Most of what "
-        f"the rules remove is the redundancy of the naive TAC translation: {n(kind(rm, 'COPY_PROPAGATION'))} "
-        f"accepted copy propagations and {n(kind(rm, 'DEAD_CODE'))} dead-code removals, against "
-        f"{n(kind(rm, 'CSE'))} common subexpressions and {n(kind(rm, 'CONSTANT_FOLD'))} constant folds "
-        "(Figure~\\ref{fig:realheat}). "
+        f"On the official dataset the rules cut the static cost by {p(rm['avg_cost_reduction_pct'])} on average "
+        f"(median {p(rm['median_cost_reduction_pct'])}), and {rm['programs_with_reduction_over_30pct']} of the 500 "
+        "programs improve by more than 30\\%. That is less than on the generated programs, because nearly every "
+        "real program reads its values with \\texttt{scanf}, so nothing folds down to a constant. Most of what the "
+        f"rules remove is the redundancy of the plain TAC translation: {n(kind(rm, 'COPY_PROPAGATION'))} copy "
+        f"propagations and {n(kind(rm, 'DEAD_CODE'))} dead-code removals were accepted, against "
+        f"{n(kind(rm, 'CSE'))} common subexpressions and {n(kind(rm, 'CONSTANT_FOLD'))} constant folds. "
         f"All {n(rm['total_proposals'])} proposals passed verification; {n(rm['accepted'])} were accepted and "
         f"{n(rm['rejected_no_cost_gain'])} gave no cost gain.\n\n"
-        "\\begin{figure}[H]\n\\centering\n\\includegraphics[width=\\textwidth]{report_figures/real_heatmap_rules.png}\n"
-        "\\caption{Real programs, rules only: accepted optimizations by category and type}\n\\label{fig:realheat}\n\\end{figure}\n\n"
-        "\\subsubsection{Execution Time and the Two Cost Models}\n\n"
-        "\\begin{table}[H]\n\\centering\n\\caption{Rules only on the 500 real programs under the two cost models}\n"
+        "\\subsection{Execution Time and the Two Cost Models}\n\n"
+        "\\begin{table}[H]\n\\centering\n\\caption{Rules only on the official dataset under the two cost models}\n"
         "\\label{tab:costmodels}\n\\small\n\\begin{tabular}{|l|c|c|}\n\\hline\n\\textbf{Metric} & \\textbf{Static model} & \\textbf{Time model} \\\\\n\\hline\n"
         f"Average static cost reduction & {p(rm['avg_cost_reduction_pct'])} & {p(tm['avg_cost_reduction_pct'])} \\\\\n\\hline\n"
         f"Average execution-time reduction & {p(rm['avg_time_reduction_pct'])} & {p(tm['avg_time_reduction_pct'])} \\\\\n\\hline\n"
@@ -365,160 +490,73 @@ def build() -> str:
         f"Proposals accepted & {n(rm['accepted'])} & {n(tm['accepted'])} \\\\\n\\hline\n"
         f"False positives & \\textbf{{{rm['false_positive_count']}}} & \\textbf{{{tm['false_positive_count']}}} \\\\\n\\hline\n"
         "\\end{tabular}\n\\end{table}\n\n"
-        "The execution time falls less than the static cost, because most of the removed instructions are copies, "
-        "which cost one cycle each, while the divisions, multiplications and branches that dominate the running "
-        "time have to stay. The time model accepts changes that the static count regards as a tie, such as "
-        "replacing a multiplication by two with an addition, and so removes a little more time.\n\n"
-        "\\subsubsection{Proved Equivalence}\n\n"
-        f"For {rm['programs_proved_equivalent']} of the 500 real programs the optimized program is proved "
-        f"equivalent to the original for every input: {rm['programs_proved_equivalent'] - rm['programs_proved_by_smt']} "
-        f"by the polynomial check for straight-line code and {rm['programs_proved_by_smt']} by the SMT solver. The "
-        "remaining programs contain loops, or defeated the solver within its time limit, and are verified by "
-        "differential testing as before. The end-to-end check never failed, so no program had to be reverted to "
-        "its original.\n\n")
-    if llm_runs:
-        cells = {"Programs": lambda r: n(r["m"]["total_programs"]),
-                 "Programs the LLM was consulted on": lambda r: n(consulted(r)),
-                 "Rules alone on these programs": lambda r: p(same(r)),
-                 "Rules + LLM": lambda r: "\\textbf{" + p(r["m"]["avg_cost_reduction_pct"]) + "}",
-                 "Programs improved by the LLM": lambda r: str(improved(r)),
-                 "Average execution-time reduction": lambda r: p(r["m"]["avg_time_reduction_pct"]),
-                 "LLM calls": lambda r: n(calls(r)),
-                 "LLM proposals accepted": lambda r: n(r["m"]["by_source"]["LLM"]["accepted"]),
-                 "LLM proposals with no cost gain": lambda r: n(r["m"]["by_source"]["LLM"]["rejected"]),
-                 "Wrong LLM proposals blocked": lambda r: n(r["m"]["by_source"]["LLM"]["invalid"]),
-                 "LLM validity rate": lambda r: p(r["m"]["llm_validity_rate_pct"]),
-                 "Self-repairs accepted / tried": lambda r: f"{r['m'].get('llm_repairs_accepted', 0)} / {r['m'].get('llm_repairs', 0)}",
-                 "False positives": lambda r: "\\textbf{" + str(r["m"]["false_positive_count"]) + "}"}
-        body = ""
-        for label, getter in cells.items():
-            body += f"{label} & " + " & ".join(getter(run) for _, run in llm_runs) + " \\\\\n\\hline\n"
-        models = {"Gemini": "Gemini uses \\texttt{gemini-3.1-flash-lite} in the cloud.",
-                  "Groq": "Groq uses its \\texttt{gpt-oss} and \\texttt{qwen} models in the cloud.",
-                  "Ollama": "Ollama runs \\texttt{qwen2.5-coder:7b} on the laptop, mostly on its GPU."}
-        short = " ".join(
-            f"{name}'s free daily quota ended after {consulted(run)} programs, and its remaining "
-            f"{run['m']['total_programs'] - consulted(run)} programs were optimized by the rules alone, which is "
-            "what the system does whenever an LLM becomes unavailable."
-            for name, run in llm_runs if consulted(run) < 0.9 * run["m"]["total_programs"])
-        results += (
-            "\\subsubsection{LLM Proposers with Self-Repair}\n\n"
-            "The LLM configurations were run on the real programs with self-repair switched on "
-            "(Table~\\ref{tab:realllms}). To stay inside the free daily quotas of the cloud providers, every fifth "
-            "program is allowed two fresh LLM proposals and the others one; a rejected answer gets one repair in "
-            "either case. "
-            + (short + " " if short else "")
-            + " ".join(models[name] for name, _ in llm_runs) + "\n\n"
-            "\\begin{table}[H]\n\\centering\n\\caption{LLM proposers with self-repair on the real programs}\n"
-            "\\label{tab:realllms}\n\\small\n\\begin{tabular}{|l|" + "c|" * len(llm_runs) + "}\n\\hline\n\\textbf{Metric} & "
-            + " & ".join("\\textbf{Rules + " + name + "}" for name, _ in llm_runs) + " \\\\\n\\hline\n"
-            + body + "\\end{tabular}\n\\end{table}\n\n"
-            "On real programs an LLM adds much less than on the generated ones. A generated loop usually has "
-            "constant bounds and can be replaced by its result; a real loop depends on the input, so it has to "
-            "stay. Self-repair helps the cloud models, whose rejected answers are mostly invalid TAC (a whole "
-            "expression written in one instruction): told so, they often answer again in valid form. It does not "
-            "help the small local model, which repeats its mistake or returns the program unchanged.\n\n")
-        below = [(name, lower(run)) for name, run in llm_runs if lower(run)]
-        if below:
-            results += (
-                "A verified LLM change is always correct and always cheaper at the moment it is accepted, but it "
-                "is not always the best step: it can rewrite the code so that a rule which would have applied "
-                "later no longer does. On the real programs this left "
-                + " and ".join(f"{count} program{'s' if count != 1 else ''} with {name}" for name, count in below)
-                + " slightly below the result of the rules alone (by 5 percentage points at most). The averages "
-                "in Table~\\ref{tab:realllms} include these programs.\n\n")
-        if os.path.exists(os.path.join(figures, "real_comparison_gemini.png")):
-            results += ("\\begin{figure}[H]\n\\centering\n\\includegraphics[width=0.9\\textwidth]{report_figures/real_comparison_gemini.png}\n"
-                        "\\caption{Real programs: rule-only against rule + Gemini, per category}\n\\label{fig:realcmp}\n\\end{figure}\n\n")
-        # correct suggestions per optimization type and model; the wrong LLM suggestions in a diagram of their own
-        def records(run):
-            return list(run["by_name"].values()) if run else []
+        "The execution time falls less than the static cost. Most of the removed instructions are copies, which "
+        "cost one cycle each, while the divisions, multiplications and branches that take most of the time have to "
+        "stay. The time model also accepts changes that the static count sees as a tie, such as turning a "
+        "multiplication by two into an addition, so it removes a little more time.\n\n"
+        "\\subsection{Proved Equivalence}\n\n"
+        f"For {rm['programs_proved_equivalent']} of the 500 programs the optimized version is proved equivalent to "
+        f"the original for every input: {rm['programs_proved_equivalent'] - rm['programs_proved_by_smt']} by the "
+        f"polynomial check for straight-line code and {rm['programs_proved_by_smt']} by the SMT solver. The others "
+        "contain loops, or the solver ran out of time on them, and they are verified by differential testing as "
+        "before. The end-to-end check never failed, so no program had to be put back to its original.\n\n")
+    cells = {"Programs": lambda r: n(r["m"]["total_programs"]),
+             "Programs the LLM was consulted on": lambda r: n(consulted(r)),
+             "Rules alone on these programs": lambda r: p(same(r)),
+             "Rules + LLM": lambda r: "\\textbf{" + p(r["m"]["avg_cost_reduction_pct"]) + "}",
+             "Programs improved by the LLM": lambda r: str(improved(r)),
+             "Average execution-time reduction": lambda r: p(r["m"]["avg_time_reduction_pct"]),
+             "LLM calls": lambda r: n(calls(r)),
+             "LLM proposals accepted": lambda r: n(r["m"]["by_source"]["LLM"]["accepted"]),
+             "LLM proposals with no cost gain": lambda r: n(r["m"]["by_source"]["LLM"]["rejected"]),
+             "Wrong LLM proposals blocked": lambda r: n(r["m"]["by_source"]["LLM"]["invalid"]),
+             "LLM validity rate": lambda r: p(r["m"]["llm_validity_rate_pct"]),
+             "Self-repairs accepted / tried": lambda r: f"{r['m'].get('llm_repairs_accepted', 0)} / {r['m'].get('llm_repairs', 0)}",
+             "False positives": lambda r: "\\textbf{" + str(r["m"]["false_positive_count"]) + "}"}
+    body = ""
+    for label, getter in cells.items():
+        body += f"{label} & " + " & ".join(getter(run) for _, run in llm_runs) + " \\\\\n\\hline\n"
+    models = {"Gemini": "Gemini uses \\texttt{gemini-3.1-flash-lite} in the cloud.",
+              "Groq": "Groq uses its \\texttt{gpt-oss} and \\texttt{qwen} models in the cloud.",
+              "Ollama": "Ollama runs \\texttt{qwen2.5-coder:7b} on the laptop, mostly on its GPU."}
+    below = [(name, lower(run)) for name, run in llm_runs if lower(run)]
+    official += (
+        "\\subsection{LLM Proposers with Self-Repair}\n\n"
+        "The three LLMs were run on the official dataset with self-repair switched on "
+        "(Table~\\ref{tab:realllms}). To stay inside the free daily quotas of the cloud providers, every fifth "
+        "program is allowed two fresh LLM proposals and the others one; a rejected answer gets one repair either "
+        "way. " + " ".join(models[name] for name, _ in llm_runs) + "\n\n"
+        "\\begin{table}[H]\n\\centering\n\\caption{LLM proposers with self-repair on the official dataset}\n"
+        "\\label{tab:realllms}\n\\small\n\\begin{tabular}{|l|" + "c|" * len(llm_runs) + "}\n\\hline\n\\textbf{Metric} & "
+        + " & ".join("\\textbf{Rules + " + name + "}" for name, _ in llm_runs) + " \\\\\n\\hline\n"
+        + body + "\\end{tabular}\n\\end{table}\n\n"
+        "Here an LLM adds much less than on the generated programs. A generated loop usually has constant bounds "
+        "and can be replaced by its result; a real loop depends on the input, so it has to stay. Self-repair "
+        "helps the cloud models, whose rejected answers are mostly invalid TAC (a whole expression written in one "
+        "instruction): once told, they often answer again in valid form. It does not help the small local model, "
+        "which repeats its mistake or hands the program back unchanged.\n\n"
+        + ("A verified LLM change is always correct and always cheaper when it is accepted, but it is not always "
+           "the best step: it can rewrite the code so that a rule which would have applied later no longer does. "
+           "This left " + names(f"{count} program{'s' if count != 1 else ''} with {name}" for name, count in below)
+           + " slightly below the rules alone (by 5 percentage points at most). The averages in "
+           "Table~\\ref{tab:realllms} include these programs.\n\n" if below else "")
+        + suggestion_part("real", "Official dataset", rule, llm_runs,
+                          ", but every category has some")
+        + chart_part("real", "Official dataset", rule, llm_runs,
+                     "Here, though, they are mostly small changes: a real loop depends on its input, so it cannot "
+                     "be replaced by its result the way a generated loop can."))
 
-        generated_llm = {name: run for name, run in (("Gemini", load("output")), ("Groq", load("output_groq")),
-                                                     ("Ollama", load("output_ollama"))) if run}
-        real_llm = dict(llm_runs)
-        type_names = {"CONSTANT_FOLD": "Constant folding", "ALGEBRAIC_SIMPLIFY": "Algebraic simplification",
-                      "DEAD_CODE": "Dead code elimination", "CSE": "Common subexpression (CSE)",
-                      "STRENGTH_REDUCTION": "Strength reduction", "COPY_PROPAGATION": "Copy propagation",
-                      "LLM": "LLM proposal"}
-
-        def type_table(caption, label, rules_run, llms):
-            configs = [("Rules", rules_run)] + [("+ " + name, run) for name, run in llms.items()]
-            counts = [sg.by_type(records(run)) for _, run in configs]
-            text = ("\\begin{table}[H]\n\\centering\n\\caption{" + caption + "}\n\\label{" + label + "}\n\\small\n"
-                    "\\begin{tabular}{|l|" + "c|" * len(configs) + "}\n\\hline\n\\textbf{Optimization type} & "
-                    + " & ".join("\\textbf{" + name + "}" for name, _ in configs) + " \\\\\n\\hline\n")
-            for key, name in type_names.items():
-                cells = ["---" if key == "LLM" and i == 0 else n(c[key]["correct"]) for i, c in enumerate(counts)]
-                text += name + " & " + " & ".join(cells) + " \\\\\n\\hline\n"
-            text += ("\\textbf{Total correct} & "
-                     + " & ".join("\\textbf{" + n(sum(v["correct"] for v in c.values())) + "}" for c in counts)
-                     + " \\\\\n\\hline\n\\textbf{Wrong (blocked)} & "
-                     + " & ".join("\\textbf{" + n(sum(v["wrong"] for v in c.values())) + "}" for c in counts)
-                     + " \\\\\n\\hline\n\\end{tabular}\n\\end{table}\n\n")
-            return text
-
-        panels = [("Generated dataset (500 programs)", {k: records(v) for k, v in generated_llm.items()}),
-                  ("Real programs (500 Codeforces submissions)", {k: records(v) for k, v in real_llm.items()})]
-        sg.category_chart(panels, "correct", os.path.join(figures, "suggestions_correct.png"),
-                          "Correct LLM suggestions (passed verification)", stacked=True)
-        sg.category_chart(panels, "wrong", os.path.join(figures, "suggestions_wrong.png"),
-                          "Wrong LLM suggestions (rejected by the verifier)", stacked=True)
-
-        def total(runs, field):
-            return ", ".join(f"{sum(v[field] for v in sg.llm_by_category(records(run)).values())} from {name}"
-                             for name, run in runs.items())
-
-        results += (
-            "\\subsubsection{Correct Suggestions per Optimization Type and Model}\n\n"
-            "Tables~\\ref{tab:typesgen} and~\\ref{tab:typesreal} count the correct suggestions for every optimization "
-            "type, under the rules alone and with each of the three LLMs. A suggestion is \\emph{correct} when it "
-            "passed verification; it was then accepted, or turned down only because it did not make the program "
-            "cheaper. No rule suggestion was wrong in any run. The counts of a rule type differ a little between "
-            "the columns, because an accepted LLM change alters what the rules find afterwards.\n\n"
-            + type_table("Correct suggestions per optimization type on the generated dataset", "tab:typesgen",
-                         generated, generated_llm)
-            + type_table("Correct suggestions per optimization type on the real programs", "tab:typesreal",
-                         rule, real_llm)
-            + "Figure~\\ref{fig:sugcorrect} shows where the correct LLM suggestions fall. On the generated programs "
-            "they are in the loops, conditionals and mixed categories, where a loop with constant bounds can be "
-            "replaced by its result. On the real programs they are spread over every category.\n\n"
-            "\\begin{figure}[H]\n\\centering\n\\includegraphics[width=0.92\\textwidth]{report_figures/suggestions_correct.png}\n"
-            "\\caption{Correct LLM suggestions per program category and model}\n\\label{fig:sugcorrect}\n\\end{figure}\n\n"
-            "\\subsubsection{Wrong Suggestions}\n\n"
-            "The wrong suggestions are shown apart in Figure~\\ref{fig:sugwrong}. A suggestion is \\emph{wrong} when "
-            "the verifier found an input on which the suggested program prints something else, or when its symbolic "
-            "check failed. On the generated dataset there were " + total(generated_llm, "wrong")
-            + "; on the real programs " + total(real_llm, "wrong")
-            + ". Every one of them was rejected before it could change the program, so no run has a false positive. "
-            "The local model is wrong most often on generated loops, which it tries to fold and gets the value "
-            "wrong; on real programs all three models are wrong at a similar rate, because a real loop or branch "
-            "depends on the input and a rewrite that looks right on small values fails on others.\n\n"
-            "\\begin{figure}[H]\n\\centering\n\\includegraphics[width=0.92\\textwidth]{report_figures/suggestions_wrong.png}\n"
-            "\\caption{Wrong LLM suggestions per program category and model, all rejected by the verifier}\n"
-            "\\label{fig:sugwrong}\n\\end{figure}\n\n")
-
-        # the charts of the Groq and Ollama runs on the real programs, copied from the run folders
-        charts = (("2_bar_outcomes_by_type", "outcomes", "accept, reject, and invalid counts for each optimization type", "0.85"),
-                  ("4_pie_accepted_types", "accepted", "share of each optimization type among the accepted changes", "0.6"),
-                  ("6_heatmap_category_vs_type", "heatmap", "accepted optimizations by program category and type", "0.85"),
-                  ("7_comparison_rule_vs_llm", "comparison", "rule-only against rule + LLM, per category", "0.85"))
-        for name, run in llm_runs:
-            if name == "Gemini":
-                continue
-            plots = os.path.join(ROOT, f"output_real_{name.lower()}", "plots")
-            block = ""
-            for source, short_name, caption, width in charts:
-                if not os.path.exists(os.path.join(plots, source + ".png")):
-                    continue
-                target = f"real_{short_name}_{name.lower()}.png"
-                shutil.copyfile(os.path.join(plots, source + ".png"), os.path.join(figures, target))
-                block += (f"\\begin{{figure}}[H]\n\\centering\n\\includegraphics[width={width}\\textwidth]{{report_figures/{target}}}\n"
-                          f"\\caption{{Real programs, {name} run: {caption}}}\n\\end{{figure}}\n\n")
-            if block:
-                results += (f"\\subsubsection{{Analysis Charts for the {name} Run on Real Programs}}\n\n"
-                            f"The charts below are drawn from the {name} run on the 500 real programs.\n\n" + block)
-    doc.before("\\section{Output Screenshots}\n", results)
+    chapter = (
+        "\\chapter{RESULTS AND DISCUSSION}\n\n"
+        "We tested the system on two datasets, and this chapter keeps their results apart. The generated dataset "
+        "(Section~\\ref{sec:datasets}) has 500 programs written by our generator in seven categories. The "
+        "official dataset has 500 accepted Codeforces submissions, chosen in the same seven categories "
+        "(Section~\\ref{sec:realdata}). The two behave very differently: a generated program is mostly constants "
+        "and shrinks a lot, while a real program reads its input and keeps most of its work. For each dataset "
+        "the tables come first and then the charts.\n\n"
+        + generated_section + official
+        + "\\section{Output Screenshots}\n\n" + sample)
+    doc.between("\\chapter{RESULTS AND DISCUSSION}\n", "\\section{Performance Analysis and Evaluation}\n", chapter)
 
     # ------------------------------------------------------------------ analysis and limitations
     doc.before("\\subsection{Limitations}\n", (

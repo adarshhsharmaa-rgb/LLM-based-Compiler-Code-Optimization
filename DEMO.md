@@ -10,7 +10,7 @@ Everything runs from the project folder in a terminal (PowerShell or Command Pro
    `.groq_key`, the Gemini key in `.gemini_key` (one line each, nothing else in the file).
 3. For the offline model, start the Ollama app and check the model is there: `ollama list`
    should show `qwen2.5-coder:7b`. If it does not: `ollama pull qwen2.5-coder:7b`.
-4. Check that everything works: `py -m pytest -q` should end with `407 passed`.
+4. Check that everything works: `py -m pytest -q` should end with `410 passed`.
 
 ## The demo itself
 

@@ -46,13 +46,14 @@ from build_review2 import (  # noqa: E402
 from pptx.enum.shapes import PP_PLACEHOLDER  # noqa: E402
 from pptx.oxml.ns import qn  # noqa: E402
 
+from src.visualization import model_charts as mc  # noqa: E402
 from src.visualization import suggestions as sg  # noqa: E402
 from src.visualization.report import aggregate_metrics, load_results  # noqa: E402
 
 OUTPUT = os.path.join(ROOT, "project_ppt_24bce2972_review3.pptx")
 REVIEW1_DECK = "project_ppt_24bce2972 (1).pptx"
 PENDING = "run in progress"
-TOTAL_TESTS = 407
+TOTAL_TESTS = 410
 RECHECK_TOTAL = "539,170"       # executions in the independent re-check of the runs on real programs
 CATEGORIES = r2.CATEGORIES
 
@@ -240,6 +241,15 @@ def title_of(slide) -> str:
     return ""
 
 
+def retitle(slide, title: str) -> None:
+    for shape in slide.shapes:
+        if shape.is_placeholder and shape.placeholder_format.type == PP_PLACEHOLDER.TITLE:
+            runs = shape.text_frame.paragraphs[0].runs
+            runs[0].text = title
+            for extra in runs[1:]:
+                extra.text = ""
+
+
 def replace_everywhere(deck, old: str, new: str) -> None:
     for slide in deck.order:
         for shape in slide.shapes:
@@ -288,6 +298,13 @@ def build() -> str:
     tail = {"Project Status", "Conclusion", "Review-01 Comments and Our Response"}
     references = deck.order[-1]
     deck.order = [s for s in deck.order[:-1] if title_of(s) not in tail]
+    # the charts of the Gemini run alone, and the three rules-vs-LLM slides, give way to charts with all three
+    # LLM runs side by side (added below); the other Review 2 results become the generated-dataset results
+    deck.order = [s for s in deck.order if not (title_of(s).endswith("(Gemini Run)")
+                                                or title_of(s).startswith("Results: Rules Only vs. Rules + "))]
+    for s in deck.order:
+        if title_of(s).startswith("Results: "):
+            retitle(s, "Generated Dataset: " + title_of(s)[len("Results: "):])
 
     rule = load("output_real_rule_only")
     timed = load("output_real_rule_time")
@@ -672,76 +689,91 @@ def build() -> str:
         table(s, x + 0.22, TOP + 1.1, [(cw - 0.44) * 0.65, (cw - 0.44) * 0.35], lines, size=13 if wide else 12,
               row_h=0.4, header=False)
 
-    # ------------------------------------------------------------------ correct suggestions per optimization type
+    # ------------------------------------------------------------------ per dataset: suggestions and every chart
+    # The results of the two datasets are kept apart. For each one: the correct suggestions per optimization type,
+    # the correct and the wrong LLM suggestions as two separate charts, then every kind of result chart with the
+    # three LLM runs side by side. The generated-dataset slides go into the Review 2 results, the official ones
+    # right after the official LLM results above.
     def records(run):
         return list(run["by_name"].values()) if run else []
 
-    generated_llm = {"Gemini": load("output"), "Groq": load("output_groq"), "Ollama": load("output_ollama")}
-    real_llm = {name: run for name, run, _, _ in llm_runs}
+    charts = tempfile.mkdtemp(prefix="review3_charts_")
+    generated_llm = [(name, run) for name, run in (("Gemini", load("output")), ("Groq", load("output_groq")),
+                                                   ("Ollama", load("output_ollama"))) if run]
+    real_llm = [(name, run) for name, run, _, _ in llm_runs]
     type_names = {"CONSTANT_FOLD": "Constant folding", "ALGEBRAIC_SIMPLIFY": "Algebraic simplification",
                   "DEAD_CODE": "Dead code elimination", "CSE": "Common subexpression (CSE)",
                   "STRENGTH_REDUCTION": "Strength reduction", "COPY_PROPAGATION": "Copy propagation",
                   "LLM": "LLM proposal"}
 
-    def type_table(slide, x, width, heading, rules_run, llms):
-        configs = [("Rules", rules_run)] + [(f"+ {name}", run) for name, run in llms.items() if run]
+    def dataset_slides(prefix, label, rules_run, llms):
+        made = []
+        # correct suggestions per optimization type
+        s = deck.new(f"{label}: Correct Suggestions per Optimization Type")
+        configs = [("Rules only", rules_run)] + [(f"Rules + {name}", run) for name, run in llms]
         counts = [sg.by_type(records(run)) for _, run in configs]
-        rows = [["Optimization type"] + [label for label, _ in configs]]
-        for kind, label in type_names.items():
-            rows.append([label] + ["n/a" if kind == "LLM" and i == 0 else num(c[kind]["correct"])
-                                   for i, c in enumerate(counts)])
+        rows = [["Optimization type"] + [name for name, _ in configs]]
+        for kind, name in type_names.items():
+            rows.append([name] + ["n/a" if kind == "LLM" and i == 0 else num(c[kind]["correct"])
+                                  for i, c in enumerate(counts)])
         rows.append([("Total correct", {"bold": True})]
                     + [(num(sum(v["correct"] for v in c.values())), {"bold": True, "color": "a2"}) for c in counts])
         rows.append([("Wrong (blocked)", {"bold": True})]
                     + [(num(sum(v["wrong"] for v in c.values())), {"bold": True, "color": "a3"}) for c in counts])
-        text(slide, x, TOP, width, 0.35, heading, size=15, color="a1", bold=True)
-        first = 2.3
-        table(slide, x, TOP + 0.42, [first] + [(width - first) / len(configs)] * len(configs), rows, size=11.5, row_h=0.4)
+        first = 3.6
+        table(s, LM, TOP, [first] + [(CW - first) / len(configs)] * len(configs), rows, size=13, row_h=0.42)
+        card(s, LM, TOP + 4.45, CW, 0.9)
+        text(s, LM + 0.25, TOP + 4.45, CW - 0.5, 0.9, [[
+            ("Correct ", {"bold": True, "color": "a2"}), "= passed verification (then accepted, or turned down only "
+            "because it was not cheaper). No rule suggestion was wrong. A rule's count changes a little between the "
+            "columns because an accepted LLM change alters what the rules find next."]], size=13, color="tx1",
+            anchor="ctr")
+        made.append(s)
 
-    s = deck.new("Correct Suggestions per Optimization Type and Model")
-    half = (CW - 0.25) / 2
-    type_table(s, LM, half, "Generated dataset (500 programs)", generated, generated_llm)
-    type_table(s, LM + half + 0.25, half, "Real programs (500 Codeforces submissions)", rule, real_llm)
-    card(s, LM, TOP + 4.55, CW, 0.8)
-    text(s, LM + 0.25, TOP + 4.55, CW - 0.5, 0.8, [[
-        ("Correct ", {"bold": True, "color": "a2"}), "= the suggestion passed verification (it was then accepted, or "
-        "turned down only because it was not cheaper). No rule suggestion was wrong in any run. The counts of a rule "
-        "type differ a little between the columns because an accepted LLM change alters what the rules find next."]],
-        size=12.5, color="tx1", anchor="ctr")
+        # correct and wrong LLM suggestions: two separate charts
+        runs = {name: records(run) for name, run in llms}
+        per_category = {name: sg.llm_by_category(r) for name, r in runs.items()}
 
-    # ------------------------------------------------------------------ correct and wrong LLM suggestions, apart
-    charts = tempfile.mkdtemp(prefix="review3_charts_")
-    panels = [("Generated dataset (500 programs)", {k: records(v) for k, v in generated_llm.items() if v}),
-              ("Real programs (500 Codeforces submissions)", {k: records(v) for k, v in real_llm.items() if v})]
+        def totals(field):
+            return ", ".join(f"{name} {sum(v[field] for v in per_category[name].values())}" for name in runs)
 
-    def totals(field):
-        parts = []
-        for label, runs in (("generated", generated_llm), ("real", real_llm)):
-            cells = [f"{name} {sum(v[field] for v in sg.llm_by_category(records(run)).values())}"
-                     for name, run in runs.items() if run]
-            parts.append(f"{label} programs: " + ", ".join(cells))
-        return "; ".join(parts) + "."
+        s = deck.new(f"{label}: Correct and Wrong LLM Suggestions")
+        half = (CW - 0.3) / 2
+        text(s, LM, TOP, half, 0.35, "Correct: passed verification", size=15, color="a2", bold=True)
+        text(s, LM + half + 0.3, TOP, half, 0.35, "Wrong: blocked by the verifier", size=15, color="a3", bold=True)
+        picture(s, sg.category_chart([(label, runs)], "correct", os.path.join(charts, f"{prefix}_correct.png"),
+                                     "Correct LLM suggestions per category"), LM, TOP + 0.45, half, 3.85)
+        picture(s, sg.category_chart([(label, runs)], "wrong", os.path.join(charts, f"{prefix}_wrong.png"),
+                                     "Wrong LLM suggestions per category"), LM + half + 0.3, TOP + 0.45, half, 3.85)
+        card(s, LM, TOP + 4.45, CW, 0.9)
+        text(s, LM + 0.25, TOP + 4.45, CW - 0.5, 0.9, [
+            [("Correct: ", {"bold": True, "color": "a2"}), totals("correct") + ".   ",
+             ("Wrong: ", {"bold": True, "color": "a3"}), totals("wrong") + "."],
+            "Every wrong suggestion was stopped before it changed the program, so all runs have 0 false positives."],
+            size=13, color="tx1", anchor="ctr", after=4)
+        made.append(s)
 
-    s = deck.new("Correct LLM Suggestions per Program Category")
-    picture(s, sg.category_chart(panels, "correct", os.path.join(charts, "correct.png"),
-                                 "Correct LLM suggestions (passed verification)"), LM, TOP, CW, 3.9)
-    card(s, LM, TOP + 4.05, CW, 1.3, fill="a2", alpha=10)
-    text(s, LM + 0.25, TOP + 4.05, CW - 0.5, 1.3, [
-        [("Totals. ", {"bold": True, "color": "a2"}), "On the " + totals("correct")],
-        "On generated programs the correct suggestions are in the loops, conditionals and mixed categories, where "
-        "a loop with constant bounds can be replaced by its result. Real programs spread them over every category.",
-    ], size=12.5, color="tx1", anchor="ctr", after=4)
+        # every kind of result chart, the three LLM runs side by side
+        chart_runs = [(name, records(run)) for name, run in llms]
+        paths = mc.draw_all(chart_runs, records(rules_run), charts, prefix, layout="slide")
+        words = mc.describe(chart_runs, records(rules_run))
+        for key, title, _ in mc.CHARTS:
+            s = deck.new(f"{label}: {title}")
+            picture(s, paths[key], LM, TOP, CW, 4.5)
+            card(s, LM, TOP + 4.62, CW, 0.73)
+            text(s, LM + 0.25, TOP + 4.62, CW - 0.5, 0.73, words[key][1], size=13.5, color="tx1", anchor="ctr")
+            made.append(s)
+        return made
 
-    s = deck.new("Wrong LLM Suggestions, Shown Separately")
-    picture(s, sg.category_chart(panels, "wrong", os.path.join(charts, "wrong.png"),
-                                 "Wrong LLM suggestions (rejected by the verifier)"), LM, TOP, CW, 3.9)
-    card(s, LM, TOP + 4.05, CW, 1.3, fill="a3", alpha=10)
-    text(s, LM + 0.25, TOP + 4.05, CW - 0.5, 1.3, [
-        [("Totals. ", {"bold": True, "color": "a3"}), "On the " + totals("wrong")],
-        [("Wrong ", {"bold": True}), "= the verifier found an input on which the suggested program prints something "
-         "else, or its symbolic check failed. ", ("None of these reached the output: 0 false positives in every run.",
-                                                  {"bold": True})],
-    ], size=12.5, color="tx1", anchor="ctr", after=4)
+    def place(slides, after_title):
+        for s in slides:
+            deck.order.remove(s)
+        at = next(i for i, s in enumerate(deck.order) if title_of(s) == after_title) + 1
+        deck.order[at:at] = slides
+
+    place(dataset_slides("gen", "Generated Dataset", generated, generated_llm),
+          "Generated Dataset: Comparing the Three LLMs")
+    place(dataset_slides("real", "Official Dataset", rule, real_llm), "Real Programs: The LLMs with Self-Repair")
 
     # ------------------------------------------------------------------ the wrong change the re-check found
     s = deck.new("Validation: A Wrong Change the Tests Missed")
@@ -792,12 +824,7 @@ def build() -> str:
                                                         "500 generated programs, 4 full runs",
                                                         "500 real programs, rule runs under 2 cost models",
                                                         "LLM runs with self-repair on the real programs",
-                                                        "Static cost and execution time reported"]),
-              ("route", "a4", "Limits and next steps", ["Arrays and functions in the front end",
-                                                       "SMT for loops (bounded unrolling)",
-                                                       "32-bit overflow is not modelled",
-                                                       "A larger LLM budget per real program",
-                                                       "Rule passes for loops and branches"])]
+                                                        "Static cost and execution time reported"])]
     for i, (name, colour, heading, items) in enumerate(status):
         x = LM + i * 4.127
         card(s, x, TOP, 3.88, 5.35)
@@ -841,6 +868,10 @@ def build() -> str:
             clone.remove(extra)
         last.addnext(clone)
         last = clone
+    deck.order = [s for s in deck.order if title_of(s) != "Validation: A Wrong Change the Tests Missed"]
+    for s in deck.order:
+        if title_of(s).startswith("Real Programs: "):
+            retitle(s, "Official Dataset: " + title_of(s)[len("Real Programs: "):])
     deck.order.append(references)
 
     try:
