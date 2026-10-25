@@ -487,6 +487,8 @@ for index, table in enumerate(doc.tables):
         if tr_pr.find(qn("w:cantSplit")) is None:
             tr_pr.append(OxmlElement("w:cantSplit"))          # a row never breaks across two pages
         changes = None if all_new or cover else changed_cells([cell.text for cell in row.cells])
+        if changes is not None:
+            changes = [False] * len(row.cells)                # a row the earlier report had: a corrected cell stays plain
         if changes is None and BASE_ROWS and not (all_new or cover):
             if not is_old(" ".join(cell.text for cell in row.cells)):
                 changes = [True] * len(row.cells)             # a row the earlier table did not have
