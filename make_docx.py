@@ -10,7 +10,9 @@ given as plain text (extracted from its PDF) or as a .docx; a sentence, table ce
 heading counts as old when its letters and digits appear there, whatever the spacing,
 hyphenation or punctuation.
 
-Usage: python make_docx.py <report.tex> <out.docx> <pandoc.exe> <earlier report: .txt or .docx>
+Usage: python make_docx.py <report.tex> <out.docx> <pandoc.exe> <earlier report: .txt or .docx> [figures]
+
+With ``figures`` only the captions of new figures are highlighted, nothing else.
 """
 import copy
 import os
@@ -26,6 +28,7 @@ from docx.shared import Inches, Pt, RGBColor
 from docx.text.run import Run
 
 TEX, OUT, PANDOC, EARLIER = sys.argv[1:5]
+ONLY_FIGURES = sys.argv[5:6] == ["figures"]
 FONT = "Times New Roman"
 BODY_STYLES = ("Body Text", "First Paragraph", "Compact", "Normal")
 TEXT_WIDTH = 5.77          # inches between the margins
@@ -111,9 +114,9 @@ def paragraph_text(paragraph) -> str:
     return "".join(run_text(r) for r in run_elements(paragraph))
 
 
-def highlight(paragraph, spans) -> None:
+def highlight(paragraph, spans, figure: bool = False) -> None:
     """Yellow highlight on the character ranges ``spans`` of the paragraph's text."""
-    if not spans:
+    if not spans or (ONLY_FIGURES and not figure):
         return
     pos = 0
     for r in run_elements(paragraph):
@@ -174,7 +177,7 @@ def mark_new(paragraph, whole: bool = False, skip: int = 0) -> int:
     if whole and new and skip:
         new = [(0, len(text))]              # a new caption is new together with its number
     highlight(paragraph, new)
-    return len(new)
+    return 0 if ONLY_FIGURES else len(new)
 
 
 def set_font(run, size=None, bold=None, italic=None, color=None, name=FONT):
@@ -389,8 +392,8 @@ for i, p in enumerate(paragraphs):
         fmt.space_before, fmt.space_after = Pt(4), Pt(8)
         for run in p.runs:
             set_font(run, 10, italic=False)
-        if new:
-            highlight(p, [(0, len(paragraph_text(p)))])
+        if new and (style == "Image Caption" or not ONLY_FIGURES):
+            highlight(p, [(0, len(paragraph_text(p)))], figure=style == "Image Caption")
             marked += 1
         continue
     if style == "Captioned Figure":
@@ -432,7 +435,7 @@ for i, p in enumerate(paragraphs):
             cap_paragraph.alignment = WD_ALIGN_PARAGRAPH.CENTER
             cap_paragraph.paragraph_format.line_spacing = 1.0
             cap_paragraph.paragraph_format.keep_with_next = True
-            if not is_old(caption):
+            if not is_old(caption) and not ONLY_FIGURES:
                 run.font.highlight_color = WD_COLOR_INDEX.YELLOW
         continue
     # ------------------------------------------------------------ body text

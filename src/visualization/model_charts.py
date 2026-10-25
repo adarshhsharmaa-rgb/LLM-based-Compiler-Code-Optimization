@@ -5,7 +5,8 @@ runs, one panel per run, so the runs can be compared at a glance: the proposal f
 outcomes per optimization type, the cost over iterations, the accepted types, steps against
 improvement, the category heatmap and the rules-only baseline against rules + LLM.
 
-``layout="slide"`` puts the panels in a row for a 16:9 slide. ``layout="page"`` is for an A4
+``layout="slide"`` puts the panels in a row for a 16:9 slide, ``layout="half"`` likewise but lower, so that
+two charts fit on one slide. ``layout="page"`` is for an A4
 page: panels that need the width (flow, outcomes, heatmap) go under each other, the others in a
 row with one legend below.
 
@@ -49,8 +50,8 @@ def _figure(count: int, layout: str, stacked: bool, row_height: float = 2.0):
     size = 7 if small else 9.5          # set before the axes exist, so tick labels follow it
     plt.rcParams.update({"font.size": size, "xtick.labelsize": size, "ytick.labelsize": size,
                          "axes.labelsize": size})
-    if layout == "slide":
-        fig, axes = plt.subplots(1, count, figsize=(13.3, 4.5), squeeze=False)
+    if layout in ("slide", "half"):         # "half": two charts stacked on one slide
+        fig, axes = plt.subplots(1, count, figsize=(13.3, 4.5 if layout == "slide" else 3.1), squeeze=False)
     elif stacked:
         fig, axes = plt.subplots(count, 1, figsize=(6.6, row_height * count + 0.3), squeeze=False)
     else:
@@ -130,7 +131,7 @@ def proposal_flow(runs, path: str, layout: str = "slide") -> str:
             textfont=dict(color=INK, size=13 if page else 12, family="Segoe UI, sans-serif")))
     fig.update_layout(paper_bgcolor=SURFACE, plot_bgcolor=SURFACE, annotations=annotations,
                       font=dict(family="Segoe UI, sans-serif", color=INK_2),
-                      width=1100 if page else 1500, height=270 * count if page else 520,
+                      width=1100 if page else 1500, height=270 * count if page else (520 if layout == "slide" else 360),
                       margin=dict(l=10, r=10, t=12, b=10))
     os.makedirs(os.path.dirname(os.path.abspath(path)), exist_ok=True)
     fig.write_image(path, scale=2)

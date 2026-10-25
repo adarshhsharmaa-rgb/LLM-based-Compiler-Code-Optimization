@@ -135,18 +135,8 @@ def build() -> str:
     doc.swap("report_figures/architecture.png", "report_figures/architecture_review3.png")
     doc.swap("\\section{Datasets}\n", "\\section{Datasets}\n\\label{sec:datasets}\n")
 
-    # ------------------------------------------------------------------ abstract: the earlier one, with additions
-    # (the template allows 200 to 300 words on one page)
-    listed = [f"{p(run['m']['avg_cost_reduction_pct'], 1)} ({name})" for name, run in llm_runs]
-    listed = listed[0] if len(listed) == 1 else ", ".join(listed[:-1]) + " and " + listed[-1]
-    doc.after("a local model served by Ollama that works with no internet connection.",
-              " A rejected LLM answer is sent back once with the reason.")
-    doc.after("and symbolic polynomial equivalence for straight-line logic.",
-              " Loop-free programs with branches are also proved equivalent by the Z3 SMT solver.")
-    doc.after("so every run finished with zero false positives.", (
-        f" On 500 real Codeforces programs the rules cut the static cost by {p(rm['avg_cost_reduction_pct'], 1)} "
-        f"and the execution time by {p(rm['avg_time_reduction_pct'], 1)}, and an LLM raised the cost reduction to "
-        + listed + f". {rm['programs_proved_equivalent']} of them are proved equivalent for every input."))
+    # ------------------------------------------------------------------ abstract: kept exactly as in report.tex
+    # (the authors asked on 2026-10-25 that the abstract stay as it was; the template allows 200 to 300 words)
     a = doc.text.index("Standard compilers apply a fixed chain of optimization passes")
     words = len(doc.text[a:doc.text.index("\\setstretch{1.5}\n\\newpage", a)].split())
     assert words <= 300, f"the abstract has {words} words"
