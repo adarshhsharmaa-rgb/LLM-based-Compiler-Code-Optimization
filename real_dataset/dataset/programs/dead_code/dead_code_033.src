@@ -1,9 +1,0 @@
-// category: dead_code  (program 033)
-int res = 6;
-int b = 75;
-int k = b - 7;
-int w = 18;
-w = 57;
-w = w + 8;
-int tmp = res + 4;
-print(tmp);

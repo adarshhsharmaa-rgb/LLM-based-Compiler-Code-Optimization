@@ -1,9 +1,0 @@
-.gemini_key
-.groq_key
-.env
-__pycache__/
-*.pyc
-.pytest_cache/
-
-# Real-program dataset: the downloaded shards and candidate pool stay local (see dataset/real_dataset.py)
-dataset/real_cache/

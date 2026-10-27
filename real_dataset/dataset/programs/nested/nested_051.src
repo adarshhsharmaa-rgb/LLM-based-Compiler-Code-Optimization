@@ -1,5 +1,0 @@
-// category: nested  (program 051)
-int x = (5 + 9) + (8 / 5);
-int g = ((x / 7) + (19 + x)) - ((x + 2) / 7);
-int r = g + (g * (14 * 4));
-print(r);

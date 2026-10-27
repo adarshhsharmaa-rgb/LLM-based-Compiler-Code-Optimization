@@ -1,7 +1,0 @@
-// category: conditionals  (program 047)
-int x = -20;
-int g = 0;
-if (x != -10) {
-    g = x - 0;
-}
-print(g);

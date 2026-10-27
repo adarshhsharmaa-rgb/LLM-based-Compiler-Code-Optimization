@@ -1,5 +1,0 @@
-// category: arithmetic  (program 057)
-int w = 4 + 5;
-int v = w + 9;
-print(v);
-print(w * 9);

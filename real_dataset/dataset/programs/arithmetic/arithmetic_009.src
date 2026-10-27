@@ -1,5 +1,0 @@
-// category: arithmetic  (program 009)
-int c = 9 * 9;
-int h = c + 14 - 2;
-print(h);
-print(c + 9);

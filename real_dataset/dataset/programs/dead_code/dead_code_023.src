@@ -1,5 +1,0 @@
-// category: dead_code  (program 023)
-int k = 5;
-int val = k - 10;
-int a = k + 5;
-print(a);
