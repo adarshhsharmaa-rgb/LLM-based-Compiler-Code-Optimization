@@ -238,7 +238,7 @@ py main.py --run-all --dataset real --quiet --output-dir output_real_rule_only
 py -m pytest tests/ -v
 ```
 
-407 tests cover every component (the SMT tests are skipped when `z3-solver` is not installed). The Ollama and Groq tests run against stand-in
+410 tests cover every component (the SMT tests are skipped when `z3-solver` is not installed). The Ollama and Groq tests run against stand-in
 local servers, so they need no Ollama, API key or network. The verifier tests inject wrong changes
 (bad folds, operand swaps, CSE across non-commutative ops, deleted live
 stores, off-by-one conditions, removed loop increments, deleted trapping
@@ -639,6 +639,18 @@ Chart 7 is produced only with `--visualize --compare-with output_rule_only`.
 5. **Scatter (small multiples).** Agent steps vs. cost improvement, one panel per category plus an "all programs" panel, each with a linear trend line.
 6. **Heatmap.** Category × optimization type, number of accepted applications.
 7. **Comparison.** Average cost reduction per category, rule-based only vs. rule-based + LLM.
+
+The same seven charts can also be drawn with the three LLM runs side by side, one panel per model
+(`src/visualization/model_charts.py`; the report and the deck use them for both datasets):
+
+```python
+from src.visualization import model_charts
+runs = [("Gemini", gemini_records), ("Groq", groq_records), ("Ollama", ollama_records)]
+model_charts.draw_all(runs, rule_only_records, "report_figures", "gen", layout="page")   # or layout="slide"
+```
+
+`src/visualization/suggestions.py` counts the correct and the wrong suggestions per optimization
+type and per program category, and draws the correct and the wrong LLM suggestions as two separate charts.
 
 ---
 

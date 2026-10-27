@@ -56,7 +56,7 @@ def llm_by_category(records: list[dict]) -> dict[str, dict[str, int]]:
 
 
 def category_chart(panels: list[tuple[str, dict[str, list[dict]]]], field: str, path: str, title: str,
-                   stacked: bool = False) -> str:
+                   stacked: bool = False, size: tuple[float, float] | None = None) -> str:
     """Grouped bars: program categories along the axis, one bar per LLM.
 
     ``panels`` is [(panel title, {model name: records})], one panel per dataset; ``field`` is
@@ -65,7 +65,8 @@ def category_chart(panels: list[tuple[str, dict[str, list[dict]]]], field: str, 
     """
     _style()
     rows, cols = (len(panels), 1) if stacked else (1, len(panels))
-    fig, axes = plt.subplots(rows, cols, figsize=(7.2, 3.3 * rows) if stacked else (6.4 * cols, 3.9), squeeze=False)
+    figsize = size or ((7.2, 3.3 * rows) if stacked else (6.4 * cols, 3.9))
+    fig, axes = plt.subplots(rows, cols, figsize=figsize, squeeze=False)
     top = 1
     for ax, (panel, runs) in zip(axes.flat, panels):
         x = np.arange(len(CATEGORIES))
