@@ -21,140 +21,140 @@ int main() {
 --- Iteration 1 ---
   [ANALYZE] Found 19 opportunities: ALGEBRAIC_SIMPLIFY (priority=90), DEAD_CODEx2 (priority=80), COPY_PROPAGATIONx16 (priority=50)
   [PROPOSE] Applying ALGEBRAIC_SIMPLIFY at instruction 16: t11 = a - a → t11 = 0
-  [VERIFY]  PASS (differential: 37/37 inputs matched, symbolic: equivalent)
-  [COST]    Before: 64.5, After: 64.0 (reduction: 0.8%)
+  [VERIFY]  PASS (differential: 354/354 inputs matched, symbolic: equivalent)
+  [COST]    Before: 64.5, After: 64.0 (reduction: 0.8%); time 28.0 → 28.0 cycles
   [ACCEPT]  ✓ Change accepted
 --- Iteration 2 ---
   [ANALYZE] Found 18 opportunities: DEAD_CODEx2 (priority=80), COPY_PROPAGATIONx16 (priority=50)
   [PROPOSE] Applying DEAD_CODE at instruction 0: n = 0 → (removed)
-  [VERIFY]  PASS (differential: 37/37 inputs matched, symbolic: equivalent)
-  [COST]    Before: 64.0, After: 61.5 (reduction: 3.9%)
+  [VERIFY]  PASS (differential: 354/354 inputs matched, symbolic: equivalent)
+  [COST]    Before: 64.0, After: 61.5 (reduction: 3.9%); time 28.0 → 27.0 cycles
   [ACCEPT]  ✓ Change accepted
 --- Iteration 3 ---
   [ANALYZE] Found 17 opportunities: DEAD_CODE (priority=80), COPY_PROPAGATIONx16 (priority=50)
   [PROPOSE] Applying DEAD_CODE at instruction 16: wasted = t11 → (removed)
-  [VERIFY]  PASS (differential: 37/37 inputs matched, symbolic: equivalent)
-  [COST]    Before: 61.5, After: 59.0 (reduction: 4.1%)
+  [VERIFY]  PASS (differential: 354/354 inputs matched, symbolic: equivalent)
+  [COST]    Before: 61.5, After: 59.0 (reduction: 4.1%); time 27.0 → 26.0 cycles
   [ACCEPT]  ✓ Change accepted
 --- Iteration 4 ---
   [ANALYZE] Found 16 opportunities: DEAD_CODE (priority=80), COPY_PROPAGATIONx15 (priority=50)
   [PROPOSE] Applying DEAD_CODE at instruction 15: t11 = 0 → (removed)
-  [VERIFY]  PASS (differential: 37/37 inputs matched, symbolic: equivalent)
-  [COST]    Before: 59.0, After: 56.0 (reduction: 5.1%)
+  [VERIFY]  PASS (differential: 354/354 inputs matched, symbolic: equivalent)
+  [COST]    Before: 59.0, After: 56.0 (reduction: 5.1%); time 26.0 → 25.0 cycles
   [ACCEPT]  ✓ Change accepted
 --- Iteration 5 ---
   [ANALYZE] Found 15 opportunities: COPY_PROPAGATIONx15 (priority=50)
   [PROPOSE] Applying COPY_PROPAGATION at instruction 0: n = in_n → uses of n -> in_n at instr 2, 7
-  [VERIFY]  PASS (differential: 35/35 inputs matched, symbolic: equivalent)
-  [COST]    Before: 56.0, After: 53.5 (reduction: 4.5%)
+  [VERIFY]  PASS (differential: 352/352 inputs matched, symbolic: equivalent)
+  [COST]    Before: 56.0, After: 53.5 (reduction: 4.5%); time 25.0 → 24.0 cycles
   [ACCEPT]  ✓ Change accepted
 --- Iteration 6 ---
   [ANALYZE] Found 14 opportunities: COPY_PROPAGATIONx14 (priority=50)
   [PROPOSE] Applying COPY_PROPAGATION at instruction 0: t0 = 4 → uses of t0 -> 4 at instr 1
-  [VERIFY]  PASS (differential: 35/35 inputs matched, symbolic: equivalent)
-  [COST]    Before: 53.5, After: 50.5 (reduction: 5.6%)
+  [VERIFY]  PASS (differential: 352/352 inputs matched, symbolic: equivalent)
+  [COST]    Before: 53.5, After: 50.5 (reduction: 5.6%); time 24.0 → 23.0 cycles
   [ACCEPT]  ✓ Change accepted
 --- Iteration 7 ---
   [ANALYZE] Found 14 opportunities: STRENGTH_REDUCTION (priority=60), COPY_PROPAGATIONx13 (priority=50)
   [PROPOSE] Applying STRENGTH_REDUCTION at instruction 0: t1 = in_n * 4 → t1 = in_n << 2
-  [VERIFY]  PASS (differential: 35/35 inputs matched, symbolic: equivalent)
-  [COST]    Before: 50.5, After: 48.5 (reduction: 4.0%)
+  [VERIFY]  PASS (differential: 352/352 inputs matched, symbolic: equivalent)
+  [COST]    Before: 50.5, After: 48.5 (reduction: 4.0%); time 23.0 → 21.0 cycles
   [ACCEPT]  ✓ Change accepted
 --- Iteration 8 ---
   [ANALYZE] Found 13 opportunities: COPY_PROPAGATIONx13 (priority=50)
   [PROPOSE] Applying COPY_PROPAGATION at instruction 1: t2 = 10 → uses of t2 -> 10 at instr 2
-  [VERIFY]  PASS (differential: 35/35 inputs matched, symbolic: equivalent)
-  [COST]    Before: 48.5, After: 45.5 (reduction: 6.2%)
+  [VERIFY]  PASS (differential: 352/352 inputs matched, symbolic: equivalent)
+  [COST]    Before: 48.5, After: 45.5 (reduction: 6.2%); time 21.0 → 20.0 cycles
   [ACCEPT]  ✓ Change accepted
 --- Iteration 9 ---
   [ANALYZE] Found 12 opportunities: COPY_PROPAGATIONx12 (priority=50)
   [PROPOSE] Applying COPY_PROPAGATION at instruction 2: t3 = t1 + 10; a = t3 → a = t1 + 10
-  [VERIFY]  PASS (differential: 35/35 inputs matched, symbolic: equivalent)
-  [COST]    Before: 45.5, After: 42.5 (reduction: 6.6%)
+  [VERIFY]  PASS (differential: 352/352 inputs matched, symbolic: equivalent)
+  [COST]    Before: 45.5, After: 42.5 (reduction: 6.6%); time 20.0 → 19.0 cycles
   [ACCEPT]  ✓ Change accepted
 --- Iteration 10 ---
   [ANALYZE] Found 10 opportunities: COPY_PROPAGATIONx10 (priority=50)
   [PROPOSE] Applying COPY_PROPAGATION at instruction 2: t4 = 4 → uses of t4 -> 4 at instr 3
-  [VERIFY]  PASS (differential: 35/35 inputs matched, symbolic: equivalent)
-  [COST]    Before: 42.5, After: 39.5 (reduction: 7.1%)
+  [VERIFY]  PASS (differential: 352/352 inputs matched, symbolic: equivalent)
+  [COST]    Before: 42.5, After: 39.5 (reduction: 7.1%); time 19.0 → 18.0 cycles
   [ACCEPT]  ✓ Change accepted
 --- Iteration 11 ---
   [ANALYZE] Found 10 opportunities: STRENGTH_REDUCTION (priority=60), COPY_PROPAGATIONx9 (priority=50)
   [PROPOSE] Applying STRENGTH_REDUCTION at instruction 2: t5 = in_n * 4 → t5 = in_n << 2
-  [VERIFY]  PASS (differential: 35/35 inputs matched, symbolic: equivalent)
-  [COST]    Before: 39.5, After: 37.5 (reduction: 5.1%)
+  [VERIFY]  PASS (differential: 352/352 inputs matched, symbolic: equivalent)
+  [COST]    Before: 39.5, After: 37.5 (reduction: 5.1%); time 18.0 → 16.0 cycles
   [ACCEPT]  ✓ Change accepted
 --- Iteration 12 ---
   [ANALYZE] Found 10 opportunities: CSE (priority=70), COPY_PROPAGATIONx9 (priority=50)
   [PROPOSE] Applying CSE at instruction 2: t5 = in_n << 2 → t5 = t1 (forwarded into uses of t5)
-  [VERIFY]  PASS (differential: 34/34 inputs matched, symbolic: equivalent)
-  [COST]    Before: 37.5, After: 36.0 (reduction: 4.0%)
+  [VERIFY]  PASS (differential: 351/351 inputs matched, symbolic: equivalent)
+  [COST]    Before: 37.5, After: 36.0 (reduction: 4.0%); time 16.0 → 15.0 cycles
   [ACCEPT]  ✓ Change accepted
 --- Iteration 13 ---
   [ANALYZE] Found 9 opportunities: COPY_PROPAGATIONx9 (priority=50)
   [PROPOSE] Applying COPY_PROPAGATION at instruction 2: t6 = 10 → uses of t6 -> 10 at instr 3
-  [VERIFY]  PASS (differential: 34/34 inputs matched, symbolic: equivalent)
-  [COST]    Before: 36.0, After: 33.0 (reduction: 8.3%)
+  [VERIFY]  PASS (differential: 351/351 inputs matched, symbolic: equivalent)
+  [COST]    Before: 36.0, After: 33.0 (reduction: 8.3%); time 15.0 → 14.0 cycles
   [ACCEPT]  ✓ Change accepted
 --- Iteration 14 ---
   [ANALYZE] Found 9 opportunities: CSE (priority=70), COPY_PROPAGATIONx8 (priority=50)
   [PROPOSE] Applying CSE at instruction 2: t7 = t1 + 10 → t7 = a
-  [VERIFY]  PASS (differential: 34/34 inputs matched, symbolic: equivalent)
-  [COST]    Before: 33.0, After: 32.5 (reduction: 1.5%)
+  [VERIFY]  PASS (differential: 351/351 inputs matched, symbolic: equivalent)
+  [COST]    Before: 33.0, After: 32.5 (reduction: 1.5%); time 14.0 → 14.0 cycles
   [ACCEPT]  ✓ Change accepted
 --- Iteration 15 ---
   [ANALYZE] Found 8 opportunities: COPY_PROPAGATIONx8 (priority=50)
   [PROPOSE] Applying COPY_PROPAGATION at instruction 2: t7 = a → uses of t7 -> a at instr 3
-  [VERIFY]  PASS (differential: 34/34 inputs matched, symbolic: equivalent)
-  [COST]    Before: 32.5, After: 29.5 (reduction: 9.2%)
+  [VERIFY]  PASS (differential: 351/351 inputs matched, symbolic: equivalent)
+  [COST]    Before: 32.5, After: 29.5 (reduction: 9.2%); time 14.0 → 13.0 cycles
   [ACCEPT]  ✓ Change accepted
 --- Iteration 16 ---
   [ANALYZE] Found 7 opportunities: COPY_PROPAGATIONx7 (priority=50)
   [PROPOSE] Applying COPY_PROPAGATION at instruction 2: b = a → uses of b -> a at instr 7
-  [VERIFY]  PASS (differential: 34/34 inputs matched, symbolic: equivalent)
-  [COST]    Before: 29.5, After: 27.0 (reduction: 8.5%)
+  [VERIFY]  PASS (differential: 351/351 inputs matched, symbolic: equivalent)
+  [COST]    Before: 29.5, After: 27.0 (reduction: 8.5%); time 13.0 → 12.0 cycles
   [ACCEPT]  ✓ Change accepted
 --- Iteration 17 ---
   [ANALYZE] Found 6 opportunities: COPY_PROPAGATIONx6 (priority=50)
   [PROPOSE] Applying COPY_PROPAGATION at instruction 2: t8 = 2 → uses of t8 -> 2 at instr 4
-  [VERIFY]  PASS (differential: 34/34 inputs matched, symbolic: equivalent)
-  [COST]    Before: 27.0, After: 24.0 (reduction: 11.1%)
+  [VERIFY]  PASS (differential: 351/351 inputs matched, symbolic: equivalent)
+  [COST]    Before: 27.0, After: 24.0 (reduction: 11.1%); time 12.0 → 11.0 cycles
   [ACCEPT]  ✓ Change accepted
 --- Iteration 18 ---
   [ANALYZE] Found 5 opportunities: COPY_PROPAGATIONx5 (priority=50)
   [PROPOSE] Applying COPY_PROPAGATION at instruction 2: t9 = 6 → uses of t9 -> 6 at instr 3
-  [VERIFY]  PASS (differential: 34/34 inputs matched, symbolic: equivalent)
-  [COST]    Before: 24.0, After: 21.0 (reduction: 12.5%)
+  [VERIFY]  PASS (differential: 351/351 inputs matched, symbolic: equivalent)
+  [COST]    Before: 24.0, After: 21.0 (reduction: 12.5%); time 11.0 → 10.0 cycles
   [ACCEPT]  ✓ Change accepted
 --- Iteration 19 ---
   [ANALYZE] Found 5 opportunities: CONSTANT_FOLD (priority=100), COPY_PROPAGATIONx4 (priority=50)
   [PROPOSE] Applying CONSTANT_FOLD at instruction 2: t10 = 2 + 6 → t10 = 8
-  [VERIFY]  PASS (differential: 35/35 inputs matched, symbolic: equivalent)
-  [COST]    Before: 21.0, After: 20.5 (reduction: 2.4%)
+  [VERIFY]  PASS (differential: 352/352 inputs matched, symbolic: equivalent)
+  [COST]    Before: 21.0, After: 20.5 (reduction: 2.4%); time 10.0 → 10.0 cycles
   [ACCEPT]  ✓ Change accepted
 --- Iteration 20 ---
   [ANALYZE] Found 4 opportunities: COPY_PROPAGATIONx4 (priority=50)
   [PROPOSE] Applying COPY_PROPAGATION at instruction 2: t10 = 8 → uses of t10 -> 8 at instr 3
-  [VERIFY]  PASS (differential: 33/33 inputs matched, symbolic: equivalent)
-  [COST]    Before: 20.5, After: 17.5 (reduction: 14.6%)
+  [VERIFY]  PASS (differential: 350/350 inputs matched, symbolic: equivalent)
+  [COST]    Before: 20.5, After: 17.5 (reduction: 14.6%); time 10.0 → 9.0 cycles
   [ACCEPT]  ✓ Change accepted
 --- Iteration 21 ---
   [ANALYZE] Found 3 opportunities: COPY_PROPAGATIONx3 (priority=50)
   [PROPOSE] Applying COPY_PROPAGATION at instruction 2: scale = 8 → uses of scale -> 8 at instr 4
-  [VERIFY]  PASS (differential: 33/33 inputs matched, symbolic: equivalent)
-  [COST]    Before: 17.5, After: 15.0 (reduction: 14.3%)
+  [VERIFY]  PASS (differential: 350/350 inputs matched, symbolic: equivalent)
+  [COST]    Before: 17.5, After: 15.0 (reduction: 14.3%); time 9.0 → 8.0 cycles
   [ACCEPT]  ✓ Change accepted
 --- Iteration 22 ---
   [ANALYZE] Found 3 opportunities: STRENGTH_REDUCTION (priority=60), COPY_PROPAGATIONx2 (priority=50)
   [PROPOSE] Applying STRENGTH_REDUCTION at instruction 3: t13 = t12 * 8 → t13 = t12 << 3
-  [VERIFY]  PASS (differential: 34/34 inputs matched, symbolic: equivalent)
-  [COST]    Before: 15.0, After: 13.0 (reduction: 13.3%)
+  [VERIFY]  PASS (differential: 351/351 inputs matched, symbolic: equivalent)
+  [COST]    Before: 15.0, After: 13.0 (reduction: 13.3%); time 8.0 → 6.0 cycles
   [ACCEPT]  ✓ Change accepted
 --- Iteration 23 ---
   [ANALYZE] Found 2 opportunities: COPY_PROPAGATIONx2 (priority=50)
   [PROPOSE] Applying COPY_PROPAGATION at instruction 4: t13 = t12 << 3; total = t13 → total = t12 << 3
-  [VERIFY]  PASS (differential: 32/32 inputs matched, symbolic: equivalent)
-  [COST]    Before: 13.0, After: 10.0 (reduction: 23.1%)
+  [VERIFY]  PASS (differential: 349/349 inputs matched, symbolic: equivalent)
+  [COST]    Before: 13.0, After: 10.0 (reduction: 23.1%); time 6.0 → 5.0 cycles
   [ACCEPT]  ✓ Change accepted
 --- Iteration 24 ---
   [ANALYZE] No more opportunities found.
@@ -162,11 +162,13 @@ int main() {
   Original cost: 64.5
   Final cost:    10.0
   Reduction:     84.5%
+  Exec. time:    28.0 → 5.0 cycles (82.1% less)
   Iterations:    24
   Accepted:      23
   Rejected:      0
   Invalid:       0
   Output match:  PASS ✓
+  Equivalence:   proved for all inputs
 === Original TAC ===
    0 |     n = 0
    1 |     n = in_n
