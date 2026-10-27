@@ -1,0 +1,9 @@
+// category: dead_code  (program 037)
+int z = 7;
+int tmp = z + 13;
+int s = 12;
+int e = tmp - 3;
+z = 57;
+z = z + 13;
+int v = z + 7;
+print(v);

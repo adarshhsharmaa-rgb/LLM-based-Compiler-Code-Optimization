@@ -1,0 +1,9 @@
+// category: conditionals  (program 002)
+// inputs: in_n
+int q = 0;
+if (in_n <= -7) {
+    q = 1 * in_n;
+} else {
+    q = in_n - 4;
+}
+print(q);

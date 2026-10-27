@@ -1,0 +1,17 @@
+// category: mixed  (program 047)
+// inputs: in_c
+int r = in_c * in_c;
+int tmp = in_c * in_c + r;
+int z = 34;
+int p = 0;
+for (int i = 0; i < 5; i = i + 1) {
+    p = p + (2 + 3);
+}
+int val = in_c + (11 * 6);
+int u = p;
+if (p > 10) {
+    u = u * 1 + 2;
+} else {
+    u = u - 0;
+}
+print(val + u);

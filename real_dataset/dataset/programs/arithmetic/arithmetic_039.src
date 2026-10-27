@@ -1,0 +1,7 @@
+// category: arithmetic  (program 039)
+int w = 12 - 13;
+int num = 3 - 18;
+int z = 11 + 17;
+int f = 14 - 1;
+print(f);
+print(w + 7);

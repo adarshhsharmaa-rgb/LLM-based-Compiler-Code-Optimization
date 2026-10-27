@@ -1,0 +1,11 @@
+// category: conditionals  (program 020)
+// inputs: in_y
+int e = 0;
+if (in_y != -9) {
+    int h = 11 + 1;
+    e = in_y + 0;
+    e = e + (1 * 2);
+} else {
+    e = in_y + 3;
+}
+print(e);

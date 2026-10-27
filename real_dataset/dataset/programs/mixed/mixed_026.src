@@ -1,0 +1,11 @@
+// category: mixed  (program 026)
+int c = 9 + 6;
+int p = c + (10 * 16);
+int f = c * 6;
+int k = c;
+if (c > 5) {
+    k = k * 1 + 4;
+} else {
+    k = k - 0;
+}
+print(p + k);

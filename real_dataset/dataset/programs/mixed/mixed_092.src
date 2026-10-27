@@ -1,0 +1,14 @@
+// category: mixed  (program 092)
+int f = 9 + 10;
+int c = f + (8 * 13);
+int u = 61;
+int n = c;
+if (c > 5) {
+    n = n * 1 + 1;
+} else {
+    n = n - 0;
+}
+int g = c * c;
+int q = c * c + g;
+int tmp = n / 1;
+print(q + tmp);

@@ -1,0 +1,6 @@
+// category: nested  (program 006)
+int tmp = ((5 - 14) % 8) + ((16 / 8) + (14 % 2));
+int res = ((8 + 12) / 4) % 2;
+int k = (8 * (19 / 5)) - ((tmp * 1) * (3 - 5));
+int v = res + (res * (10 - 15));
+print(v);

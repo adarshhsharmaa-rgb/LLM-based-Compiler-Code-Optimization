@@ -1,0 +1,65 @@
+=== Program: repeated_expr_052.src ===
+--- Iteration 1 ---
+  [ANALYZE] Found 7 opportunities: CSE (priority=70), COPY_PROPAGATIONx6 (priority=50)
+  [PROPOSE] Applying CSE at instruction 2: t1 = in_b * in_a → t1 = t0
+  [VERIFY]  PASS (differential: 25/25 inputs matched, symbolic: equivalent)
+  [COST]    Before: 19.0, After: 18.5 (reduction: 2.6%)
+  [ACCEPT]  ✓ Change accepted
+--- Iteration 2 ---
+  [ANALYZE] Found 5 opportunities: COPY_PROPAGATIONx5 (priority=50)
+  [PROPOSE] Applying COPY_PROPAGATION at instruction 1: n = t0 → uses of n -> t0 at instr 4
+  [VERIFY]  PASS (differential: 25/25 inputs matched, symbolic: equivalent)
+  [COST]    Before: 18.5, After: 16.0 (reduction: 13.5%)
+  [ACCEPT]  ✓ Change accepted
+--- Iteration 3 ---
+  [ANALYZE] Found 4 opportunities: COPY_PROPAGATIONx4 (priority=50)
+  [PROPOSE] Applying COPY_PROPAGATION at instruction 1: t1 = t0 → uses of t1 -> t0 at instr 2
+  [VERIFY]  PASS (differential: 25/25 inputs matched, symbolic: equivalent)
+  [COST]    Before: 16.0, After: 13.0 (reduction: 18.8%)
+  [ACCEPT]  ✓ Change accepted
+--- Iteration 4 ---
+  [ANALYZE] Found 3 opportunities: COPY_PROPAGATIONx3 (priority=50)
+  [PROPOSE] Applying COPY_PROPAGATION at instruction 1: k = t0 → uses of k -> t0 at instr 2
+  [VERIFY]  PASS (differential: 25/25 inputs matched, symbolic: equivalent)
+  [COST]    Before: 13.0, After: 10.5 (reduction: 19.2%)
+  [ACCEPT]  ✓ Change accepted
+--- Iteration 5 ---
+  [ANALYZE] Found 2 opportunities: COPY_PROPAGATIONx2 (priority=50)
+  [PROPOSE] Applying COPY_PROPAGATION at instruction 2: t2 = t0 + t0; f = t2 → f = t0 + t0
+  [VERIFY]  PASS (differential: 25/25 inputs matched, symbolic: equivalent)
+  [COST]    Before: 10.5, After: 7.5 (reduction: 28.6%)
+  [ACCEPT]  ✓ Change accepted
+--- Iteration 6 ---
+  [ANALYZE] No more opportunities found.
+  [LLM]     LLM proposal: Algebraic simplification replaces the addition of two identical products with a multiplication by two, reducing the operation count.
+  [VERIFY]  PASS (differential: 38/38 inputs matched, symbolic: equivalent)
+  [COST]    Before: 7.5, After: 5.5 (reduction: 26.7%)
+  [ACCEPT]  ✓ Change accepted
+--- Iteration 7 ---
+  [ANALYZE] No more opportunities found.
+  [LLM]     LLM proposal: Algebraic simplification: replacing multiplication by 2 (via a left shift of 1) with an addition of the value to itself, which is often faster on many architectures.
+  [VERIFY]  PASS (differential: 38/38 inputs matched, symbolic: equivalent)
+  [COST]    Before: 5.5, After: 7.5 (reduction: -36.4%)
+  [REJECT]  ✗ Change rejected: No cost improvement
+=== RESULT ===
+  Original cost: 19.0
+  Final cost:    5.5
+  Reduction:     71.1%
+  Iterations:    7
+  Accepted:      6
+  Rejected:      1
+  Invalid:       0
+  LLM proposals: 2 (2 passed verification)
+  Output match:  PASS ✓
+=== Original TAC ===
+  0 |     t0 = in_b * in_a
+  1 |     n = t0
+  2 |     t1 = in_b * in_a
+  3 |     k = t1
+  4 |     t2 = n + k
+  5 |     f = t2
+  6 |     print f
+=== Optimized TAC ===
+  0 |     t0 = in_b * in_a
+  1 |     f = t0 << 1
+  2 |     print f

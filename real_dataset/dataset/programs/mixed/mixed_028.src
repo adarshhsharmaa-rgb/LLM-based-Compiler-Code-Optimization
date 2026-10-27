@@ -1,0 +1,10 @@
+// category: mixed  (program 028)
+int h = 6 + 18;
+int s = h * 4;
+int z = 61;
+int tmp = h + (3 * 5);
+int x = 0;
+for (int i = 0; i < 5; i = i + 1) {
+    x = x + (3 + 2);
+}
+print(tmp + x);

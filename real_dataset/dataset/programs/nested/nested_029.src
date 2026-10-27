@@ -1,0 +1,6 @@
+// category: nested  (program 029)
+int p = (4 * 9) % 5;
+int q = (7 * p) + (p + p);
+int b = ((p + 2) / 8) % 9;
+int h = b + (b * (6 + 5));
+print(h);

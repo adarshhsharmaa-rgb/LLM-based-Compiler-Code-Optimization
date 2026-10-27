@@ -1,0 +1,14 @@
+// category: conditionals  (program 005)
+int d = 1;
+int tmp = 0;
+if (d != 4) {
+    int f = 12 + 19;
+    tmp = d + 0;
+} else {
+    tmp = d + 3;
+}
+int q = 3;
+if (q > 9) {
+    tmp = tmp + q * 1;
+}
+print(tmp);

@@ -1,0 +1,7 @@
+// category: dead_code  (program 026)
+int d = 16;
+int e = 31;
+int acc = e * 17;
+int g = e - 16;
+int res = acc + 16;
+print(res);

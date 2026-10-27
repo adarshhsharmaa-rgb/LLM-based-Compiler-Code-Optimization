@@ -1,0 +1,14 @@
+// category: mixed  (program 052)
+// inputs: in_n
+int k = in_n * 16;
+int d = in_n;
+if (in_n > -5) {
+    d = d * 1 + 2;
+} else {
+    d = d - 0;
+}
+int p = 0;
+for (int i = 0; i < 6; i = i + 1) {
+    p = p + (2 + 3);
+}
+print(d + p);

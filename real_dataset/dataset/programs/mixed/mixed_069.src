@@ -1,0 +1,15 @@
+// category: mixed  (program 069)
+int w = 10 + 20;
+int num = w / 1;
+int tmp = 0;
+for (int i = 0; i < 3; i = i + 1) {
+    tmp = tmp + (4 + 2);
+}
+int h = num;
+if (num > 7) {
+    h = h * 1 + 5;
+} else {
+    h = h - 0;
+}
+int y = h * 2;
+print(tmp + h);

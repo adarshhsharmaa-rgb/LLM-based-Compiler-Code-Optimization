@@ -1,0 +1,11 @@
+// category: conditionals  (program 019)
+int acc = -4;
+int z = 0;
+if (acc >= -6) {
+    z = acc - 0;
+}
+int tmp = 4;
+if (tmp > 8) {
+    z = z + tmp * 1;
+}
+print(z);

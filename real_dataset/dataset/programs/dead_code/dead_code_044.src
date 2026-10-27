@@ -1,0 +1,7 @@
+// category: dead_code  (program 044)
+int r = 2;
+int a = 11;
+int x = r + 2;
+int u = 72;
+int p = a + 6;
+print(p);

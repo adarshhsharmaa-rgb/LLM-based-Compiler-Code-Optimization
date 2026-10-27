@@ -1,0 +1,7 @@
+// category: mixed  (program 062)
+int h = 14 + 6;
+int res = h * h;
+int acc = h * h + res;
+int n = acc * 16;
+int b = h + 0;
+print(n + b);

@@ -1,0 +1,11 @@
+// category: conditionals  (program 037)
+int a = -7;
+int b = 0;
+if (a != 10) {
+    int r = 1 + 13;
+    b = a + 0;
+    b = b + (2 * 4);
+} else {
+    b = a - 7;
+}
+print(b);

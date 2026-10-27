@@ -1,0 +1,7 @@
+// category: arithmetic  (program 036)
+int v = 10 + 13;
+int tmp = 11 + 20;
+int s = tmp + 14;
+int f = v * 19 - 17;
+print(f);
+print(v * 11);

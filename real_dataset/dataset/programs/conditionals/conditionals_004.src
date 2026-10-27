@@ -1,0 +1,14 @@
+// category: conditionals  (program 004)
+int w = 8;
+int k = 0;
+if (w != 5 && w != 21) {
+    k = 1 * w;
+    k = k + (5 * 4);
+} else {
+    k = w * 1;
+}
+int d = 5;
+if (d > 9) {
+    k = k + d * 1;
+}
+print(k);

@@ -1,0 +1,4 @@
+// category: arithmetic  (program 033)
+int d = 12 + 18;
+int k = 18 - 4;
+print(k);

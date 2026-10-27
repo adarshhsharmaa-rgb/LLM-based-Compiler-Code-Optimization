@@ -1,0 +1,7 @@
+// category: arithmetic  (program 031)
+int q = 8 - 5;
+int x = q - 5 + 18;
+int k = 6 + 1;
+int num = 12 + 19;
+print(num);
+print(q + 9);

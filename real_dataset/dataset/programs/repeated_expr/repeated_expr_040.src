@@ -1,0 +1,9 @@
+// category: repeated_expr  (program 040)
+int z = 1;
+int res = 4;
+int w = z + res;
+int x = res + z;
+z = z + 2;
+int acc = (z + res) + w;
+int d = w * x + w * x;
+print(acc + d);

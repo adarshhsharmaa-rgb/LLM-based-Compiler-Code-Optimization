@@ -1,0 +1,5 @@
+// category: arithmetic  (program 052)
+int q = 16 * 5;
+int x = q - 20;
+print(x);
+print(q * 20);

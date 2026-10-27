@@ -1,0 +1,4 @@
+// category: arithmetic  (program 024)
+int d = 10 * 5;
+int k = d - 11;
+print(k);

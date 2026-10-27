@@ -1,0 +1,6 @@
+// category: nested  (program 040)
+int k = 3 / 3;
+int v = ((9 - 7) / 9) % 8;
+int u = 18 - 4;
+int a = u + (u * (9 - 15));
+print(a);

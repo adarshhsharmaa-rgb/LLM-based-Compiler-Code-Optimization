@@ -1,0 +1,6 @@
+// category: arithmetic  (program 022)
+int y = 6 * 17;
+int n = y + 19;
+int u = n + 16;
+int d = 11 - 4;
+print(d);

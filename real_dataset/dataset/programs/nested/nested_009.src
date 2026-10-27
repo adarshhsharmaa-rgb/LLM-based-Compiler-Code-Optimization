@@ -1,0 +1,6 @@
+// category: nested  (program 009)
+int acc = ((8 + 7) * (12 / 8)) + ((7 + 2) + (9 / 4));
+int u = ((acc - 14) - (acc - acc)) % 5;
+int y = (u + 19) % 6;
+int v = y + (y * (14 * 15));
+print(v);

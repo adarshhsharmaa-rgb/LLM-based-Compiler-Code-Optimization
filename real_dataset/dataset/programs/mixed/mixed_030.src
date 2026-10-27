@@ -1,0 +1,14 @@
+// category: mixed  (program 030)
+// inputs: in_n
+int num = 0 + in_n;
+int m = in_n * num;
+int n = in_n * num + m;
+int w = n * 4;
+int y = n + (8 * 5);
+int res = in_n;
+if (in_n > -3) {
+    res = res * 1 + 1;
+} else {
+    res = res - 0;
+}
+print(y + res);

@@ -1,0 +1,8 @@
+// category: dead_code  (program 030)
+int f = 10;
+int g = 83;
+int c = 19;
+c = 67;
+c = c + 7;
+int r = f + 5;
+print(r);

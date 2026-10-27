@@ -1,0 +1,11 @@
+// category: conditionals  (program 064)
+int q = -1;
+int x = 0;
+if (q == -4) {
+    int r = 3 + 3;
+    x = q * 1;
+    x = x + (1 * 2);
+} else {
+    x = q + 1;
+}
+print(x);

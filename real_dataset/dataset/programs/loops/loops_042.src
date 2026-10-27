@@ -1,0 +1,14 @@
+// category: loops  (program 042)
+int sum = 0;
+int c = 0;
+for (int i = 0; i < 3; i = i + 1) {
+    int h = 1 + 9;
+    sum = sum + h;
+    int v = h * 1;
+    for (int j = 0; j < 3; j = j + 1) {
+        c = c + 1 * 1;
+    }
+}
+print(sum);
+print(c);
+print(sum * 1);

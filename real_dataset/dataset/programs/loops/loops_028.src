@@ -1,0 +1,15 @@
+// category: loops  (program 028)
+int total = 0;
+int tmp = 0;
+int i = 0;
+while (i < 5) {
+    int h = 6 * 3;
+    total = total + h;
+    for (int j = 0; j < 3; j = j + 1) {
+        tmp = tmp + 1;
+    }
+    i = i + 1;
+}
+print(total);
+print(tmp);
+print(total * 2);

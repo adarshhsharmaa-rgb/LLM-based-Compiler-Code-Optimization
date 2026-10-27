@@ -1,0 +1,6 @@
+// category: mixed  (program 094)
+int num = 19 + 12;
+int n = num + 0;
+int res = 24;
+int u = num * 8;
+print(n + u);

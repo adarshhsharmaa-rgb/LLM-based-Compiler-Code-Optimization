@@ -1,0 +1,11 @@
+// category: dead_code  (program 006)
+int num = 5;
+int f = num / 5;
+int g = 7;
+int acc = num + 14;
+int c = 78;
+int z = g / 4;
+num = 57;
+num = num + 6;
+int m = num + 15;
+print(m);

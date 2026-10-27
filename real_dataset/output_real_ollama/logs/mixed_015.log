@@ -1,0 +1,176 @@
+=== Program: mixed_015.c ===
+--- Iteration 1 ---
+  [ANALYZE] Found 12 opportunities: DEAD_CODEx4 (priority=80), COPY_PROPAGATIONx8 (priority=50)
+  [ROUTE]   Rule-based optimizer: highest-priority opportunity is DEAD_CODE (priority 80)
+  [PROPOSE] Applying DEAD_CODE at instruction 0: x = 0 → (removed)
+  [VERIFY]  PASS (differential: 357/357 inputs matched, symbolic: skipped (control flow))
+  [COST]    Before: 94.0, After: 91.5 (reduction: 2.7%); time 1276.3 → 1275.3 cycles
+  [ACCEPT]  ✓ Change accepted
+--- Iteration 2 ---
+  [ANALYZE] Found 11 opportunities: DEAD_CODEx3 (priority=80), COPY_PROPAGATIONx8 (priority=50)
+  [ROUTE]   Rule-based optimizer: highest-priority opportunity is DEAD_CODE (priority 80)
+  [PROPOSE] Applying DEAD_CODE at instruction 0: y = 0 → (removed)
+  [VERIFY]  PASS (differential: 357/357 inputs matched, symbolic: skipped (control flow))
+  [COST]    Before: 91.5, After: 89.0 (reduction: 2.7%); time 1275.3 → 1274.3 cycles
+  [ACCEPT]  ✓ Change accepted
+--- Iteration 3 ---
+  [ANALYZE] Found 10 opportunities: DEAD_CODEx2 (priority=80), COPY_PROPAGATIONx8 (priority=50)
+  [ROUTE]   Rule-based optimizer: highest-priority opportunity is DEAD_CODE (priority 80)
+  [PROPOSE] Applying DEAD_CODE at instruction 0: z = 0 → (removed)
+  [VERIFY]  PASS (differential: 357/357 inputs matched, symbolic: skipped (control flow))
+  [COST]    Before: 89.0, After: 86.5 (reduction: 2.8%); time 1274.3 → 1273.3 cycles
+  [ACCEPT]  ✓ Change accepted
+--- Iteration 4 ---
+  [ANALYZE] Found 9 opportunities: DEAD_CODE (priority=80), COPY_PROPAGATIONx8 (priority=50)
+  [ROUTE]   Rule-based optimizer: highest-priority opportunity is DEAD_CODE (priority 80)
+  [PROPOSE] Applying DEAD_CODE at instruction 0: k = 0 → (removed)
+  [VERIFY]  PASS (differential: 357/357 inputs matched, symbolic: skipped (control flow))
+  [COST]    Before: 86.5, After: 84.0 (reduction: 2.9%); time 1273.3 → 1272.3 cycles
+  [ACCEPT]  ✓ Change accepted
+--- Iteration 5 ---
+  [ANALYZE] Found 8 opportunities: COPY_PROPAGATIONx8 (priority=50)
+  [ROUTE]   Rule-based optimizer: highest-priority opportunity is COPY_PROPAGATION (priority 50)
+  [PROPOSE] Applying COPY_PROPAGATION at instruction 3: k = in_k → uses of k -> in_k at instr 9
+  [VERIFY]  PASS (differential: 336/336 inputs matched, symbolic: skipped (control flow))
+  [COST]    Before: 84.0, After: 81.5 (reduction: 3.0%); time 1272.3 → 1271.3 cycles
+  [ACCEPT]  ✓ Change accepted
+--- Iteration 6 ---
+  [ANALYZE] Found 7 opportunities: COPY_PROPAGATIONx7 (priority=50)
+  [ROUTE]   Rule-based optimizer: highest-priority opportunity is COPY_PROPAGATION (priority 50)
+  [PROPOSE] Applying COPY_PROPAGATION at instruction 6: t2 = 3 → uses of t2 -> 3 at instr 7
+  [VERIFY]  PASS (differential: 336/336 inputs matched, symbolic: skipped (control flow))
+  [COST]    Before: 81.5, After: 78.5 (reduction: 3.7%); time 1271.3 → 1202.5 cycles
+  [ACCEPT]  ✓ Change accepted
+--- Iteration 7 ---
+  [ANALYZE] Found 6 opportunities: COPY_PROPAGATIONx6 (priority=50)
+  [ROUTE]   Rule-based optimizer: highest-priority opportunity is COPY_PROPAGATION (priority 50)
+  [PROPOSE] Applying COPY_PROPAGATION at instruction 13: t8 = 1 → uses of t8 -> 1 at instr 14
+  [VERIFY]  PASS (differential: 336/336 inputs matched, symbolic: skipped (control flow))
+  [COST]    Before: 78.5, After: 75.5 (reduction: 3.8%); time 1202.5 → 1176.7 cycles
+  [ACCEPT]  ✓ Change accepted
+--- Iteration 8 ---
+  [ANALYZE] Found 5 opportunities: COPY_PROPAGATIONx5 (priority=50)
+  [ROUTE]   Rule-based optimizer: highest-priority opportunity is COPY_PROPAGATION (priority 50)
+  [PROPOSE] Applying COPY_PROPAGATION at instruction 14: t9 = x - 1; x = t9 → x = x - 1
+  [VERIFY]  PASS (differential: 342/342 inputs matched, symbolic: skipped (control flow))
+  [COST]    Before: 75.5, After: 72.5 (reduction: 4.0%); time 1176.7 → 1150.9 cycles
+  [ACCEPT]  ✓ Change accepted
+--- Iteration 9 ---
+  [ANALYZE] Found 4 opportunities: COPY_PROPAGATIONx4 (priority=50)
+  [ROUTE]   Rule-based optimizer: highest-priority opportunity is COPY_PROPAGATION (priority 50)
+  [PROPOSE] Applying COPY_PROPAGATION at instruction 18: t11 = 1 → uses of t11 -> 1 at instr 19
+  [VERIFY]  PASS (differential: 342/342 inputs matched, symbolic: skipped (control flow))
+  [COST]    Before: 72.5, After: 69.5 (reduction: 4.1%); time 1150.9 → 1132.5 cycles
+  [ACCEPT]  ✓ Change accepted
+--- Iteration 10 ---
+  [ANALYZE] Found 3 opportunities: COPY_PROPAGATIONx3 (priority=50)
+  [ROUTE]   Rule-based optimizer: highest-priority opportunity is COPY_PROPAGATION (priority 50)
+  [PROPOSE] Applying COPY_PROPAGATION at instruction 19: t12 = y - 1; y = t12 → y = y - 1
+  [VERIFY]  PASS (differential: 342/342 inputs matched, symbolic: skipped (control flow))
+  [COST]    Before: 69.5, After: 66.5 (reduction: 4.3%); time 1132.5 → 1114.0 cycles
+  [ACCEPT]  ✓ Change accepted
+--- Iteration 11 ---
+  [ANALYZE] Found 2 opportunities: COPY_PROPAGATIONx2 (priority=50)
+  [ROUTE]   Rule-based optimizer: highest-priority opportunity is COPY_PROPAGATION (priority 50)
+  [PROPOSE] Applying COPY_PROPAGATION at instruction 21: t13 = 1 → uses of t13 -> 1 at instr 22
+  [VERIFY]  PASS (differential: 343/343 inputs matched, symbolic: skipped (control flow))
+  [COST]    Before: 66.5, After: 63.5 (reduction: 4.5%); time 1114.0 → 1090.5 cycles
+  [ACCEPT]  ✓ Change accepted
+--- Iteration 12 ---
+  [ANALYZE] Found 1 opportunity: COPY_PROPAGATION (priority=50)
+  [ROUTE]   Rule-based optimizer: highest-priority opportunity is COPY_PROPAGATION (priority 50)
+  [PROPOSE] Applying COPY_PROPAGATION at instruction 22: t14 = z - 1; z = t14 → z = z - 1
+  [VERIFY]  PASS (differential: 343/343 inputs matched, symbolic: skipped (control flow))
+  [COST]    Before: 63.5, After: 60.5 (reduction: 4.7%); time 1090.5 → 1067.0 cycles
+  [ACCEPT]  ✓ Change accepted
+--- Iteration 13 ---
+  [ANALYZE] No more opportunities found.
+  [ROUTE]   LLM optimizer (ollama qwen2.5-coder:7b): the rules have nothing left to try
+  [LLM]     LLM produced no usable TAC: could not parse LLM TAC; reasoning: Constant folding: Simplify the expression `t3 = t1 - 3` by replacing `t1` with its value `x + y + z`.
+  [REPAIR]  Feedback sent to the LLM: It is not valid TAC: TAC line 7: unrecognised instruction: 't3 = t0 + z - 3'. Use only the instruction forms listed below; one instruction has at most one operator.
+  [LLM]     LLM produced no usable TAC: LLM returned unchanged TAC; reasoning: Algebraic simplification to reduce the number of instructions.
+=== RESULT ===
+  Original cost: 94.0
+  Final cost:    60.5
+  Reduction:     35.6%
+  Exec. time:    1276.3 → 1067.0 cycles (16.4% less)
+  Iterations:    13
+  Accepted:      12
+  Rejected:      0
+  Invalid:       0
+  Routing:       hybrid (LLM: ollama qwen2.5-coder:7b)
+  LLM repairs:   1 (0 accepted)
+  Output match:  PASS ✓
+  Equivalence:   tested on the verifier's inputs
+=== Original TAC ===
+   0 |     x = 0
+   1 |     y = 0
+   2 |     z = 0
+   3 |     k = 0
+   4 |     x = in_x
+   5 |     y = in_y
+   6 |     z = in_z
+   7 |     k = in_k
+   8 | L0:
+   9 |     t0 = x + y
+  10 |     t1 = t0 + z
+  11 |     t2 = 3
+  12 |     t3 = t1 - t2
+  13 |     t4 = t3 > k
+  14 |     ifFalse t4 goto L1
+  15 |     t5 = x > y
+  16 |     t6 = x > z
+  17 |     t7 = t5 && t6
+  18 |     ifFalse t7 goto L2
+  19 |     t8 = 1
+  20 |     t9 = x - t8
+  21 |     x = t9
+  22 |     goto L3
+  23 | L2:
+  24 |     t10 = y > z
+  25 |     ifFalse t10 goto L4
+  26 |     t11 = 1
+  27 |     t12 = y - t11
+  28 |     y = t12
+  29 |     goto L5
+  30 | L4:
+  31 |     t13 = 1
+  32 |     t14 = z - t13
+  33 |     z = t14
+  34 | L5:
+  35 | L3:
+  36 |     goto L0
+  37 | L1:
+  38 |     t15 = x * y
+  39 |     t16 = t15 * z
+  40 |     print t16
+=== Optimized TAC ===
+   0 |     x = in_x
+   1 |     y = in_y
+   2 |     z = in_z
+   3 | L0:
+   4 |     t0 = x + y
+   5 |     t1 = t0 + z
+   6 |     t3 = t1 - 3
+   7 |     t4 = t3 > in_k
+   8 |     ifFalse t4 goto L1
+   9 |     t5 = x > y
+  10 |     t6 = x > z
+  11 |     t7 = t5 && t6
+  12 |     ifFalse t7 goto L2
+  13 |     x = x - 1
+  14 |     goto L3
+  15 | L2:
+  16 |     t10 = y > z
+  17 |     ifFalse t10 goto L4
+  18 |     y = y - 1
+  19 |     goto L5
+  20 | L4:
+  21 |     z = z - 1
+  22 | L5:
+  23 | L3:
+  24 |     goto L0
+  25 | L1:
+  26 |     t15 = x * y
+  27 |     t16 = t15 * z
+  28 |     print t16

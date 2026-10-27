@@ -1,0 +1,85 @@
+=== Program: loops_039.c ===
+--- Iteration 1 ---
+  [ANALYZE] Found 7 opportunities: DEAD_CODEx2 (priority=80), COPY_PROPAGATIONx5 (priority=50)
+  [PROPOSE] Applying DEAD_CODE at instruction 0: n = 0 → (removed)
+  [VERIFY]  PASS (differential: 287/287 inputs matched, symbolic: skipped (control flow))
+  [COST]    Before: 39.5, After: 37.0 (reduction: 6.3%); time 173.2 → 172.2 cycles
+  [ACCEPT]  ✓ Change accepted
+--- Iteration 2 ---
+  [ANALYZE] Found 6 opportunities: DEAD_CODE (priority=80), COPY_PROPAGATIONx5 (priority=50)
+  [PROPOSE] Applying DEAD_CODE at instruction 0: s = 0 → (removed)
+  [VERIFY]  PASS (differential: 287/287 inputs matched, symbolic: skipped (control flow))
+  [COST]    Before: 37.0, After: 34.5 (reduction: 6.8%); time 172.2 → 171.2 cycles
+  [ACCEPT]  ✓ Change accepted
+--- Iteration 3 ---
+  [ANALYZE] Found 5 opportunities: COPY_PROPAGATIONx5 (priority=50)
+  [PROPOSE] Applying COPY_PROPAGATION at instruction 1: t0 = 0 → uses of t0 -> 0 at instr 2
+  [VERIFY]  PASS (differential: 287/287 inputs matched, symbolic: skipped (control flow))
+  [COST]    Before: 34.5, After: 31.5 (reduction: 8.7%); time 171.2 → 170.2 cycles
+  [ACCEPT]  ✓ Change accepted
+--- Iteration 4 ---
+  [ANALYZE] Found 4 opportunities: COPY_PROPAGATIONx4 (priority=50)
+  [PROPOSE] Applying COPY_PROPAGATION at instruction 3: t1 = 0 → uses of t1 -> 0 at instr 4
+  [VERIFY]  PASS (differential: 287/287 inputs matched, symbolic: skipped (control flow))
+  [COST]    Before: 31.5, After: 28.5 (reduction: 9.5%); time 170.2 → 152.9 cycles
+  [ACCEPT]  ✓ Change accepted
+--- Iteration 5 ---
+  [ANALYZE] Found 3 opportunities: COPY_PROPAGATIONx3 (priority=50)
+  [PROPOSE] Applying COPY_PROPAGATION at instruction 6: t3 = s + n; s = t3 → s = s + n
+  [VERIFY]  PASS (differential: 287/287 inputs matched, symbolic: skipped (control flow))
+  [COST]    Before: 28.5, After: 25.5 (reduction: 10.5%); time 152.9 → 136.6 cycles
+  [ACCEPT]  ✓ Change accepted
+--- Iteration 6 ---
+  [ANALYZE] Found 2 opportunities: COPY_PROPAGATIONx2 (priority=50)
+  [PROPOSE] Applying COPY_PROPAGATION at instruction 6: t4 = 2 → uses of t4 -> 2 at instr 7
+  [VERIFY]  PASS (differential: 287/287 inputs matched, symbolic: skipped (control flow))
+  [COST]    Before: 25.5, After: 22.5 (reduction: 11.8%); time 136.6 → 120.2 cycles
+  [ACCEPT]  ✓ Change accepted
+--- Iteration 7 ---
+  [ANALYZE] Found 1 opportunity: COPY_PROPAGATION (priority=50)
+  [PROPOSE] Applying COPY_PROPAGATION at instruction 7: t5 = n - 2; n = t5 → n = n - 2
+  [VERIFY]  PASS (differential: 287/287 inputs matched, symbolic: skipped (control flow))
+  [COST]    Before: 22.5, After: 19.5 (reduction: 13.3%); time 120.2 → 103.9 cycles
+  [ACCEPT]  ✓ Change accepted
+--- Iteration 8 ---
+  [ANALYZE] No more opportunities found.
+=== RESULT ===
+  Original cost: 39.5
+  Final cost:    19.5
+  Reduction:     50.6%
+  Exec. time:    173.2 → 103.9 cycles (40.0% less)
+  Iterations:    8
+  Accepted:      7
+  Rejected:      0
+  Invalid:       0
+  Output match:  PASS ✓
+  Equivalence:   tested on the verifier's inputs
+=== Original TAC ===
+   0 |     n = 0
+   1 |     s = 0
+   2 |     n = in_n
+   3 |     t0 = 0
+   4 |     s = t0
+   5 | L0:
+   6 |     t1 = 0
+   7 |     t2 = n > t1
+   8 |     ifFalse t2 goto L1
+   9 |     t3 = s + n
+  10 |     s = t3
+  11 |     t4 = 2
+  12 |     t5 = n - t4
+  13 |     n = t5
+  14 |     goto L0
+  15 | L1:
+  16 |     print s
+=== Optimized TAC ===
+  0 |     n = in_n
+  1 |     s = 0
+  2 | L0:
+  3 |     t2 = n > 0
+  4 |     ifFalse t2 goto L1
+  5 |     s = s + n
+  6 |     n = n - 2
+  7 |     goto L0
+  8 | L1:
+  9 |     print s

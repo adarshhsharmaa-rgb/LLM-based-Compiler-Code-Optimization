@@ -1,0 +1,7 @@
+// category: arithmetic  (program 002)
+int x = 3 + 18;
+int n = x * 13;
+int k = 18 + 11;
+int z = x + 2 - 13;
+print(z);
+print(x + 19);

@@ -1,0 +1,7 @@
+// category: mixed  (program 086)
+int tmp = 19 + 14;
+int y = tmp * tmp;
+int acc = tmp * tmp + y;
+int z = tmp * 4;
+int r = tmp + 0;
+print(z + r);

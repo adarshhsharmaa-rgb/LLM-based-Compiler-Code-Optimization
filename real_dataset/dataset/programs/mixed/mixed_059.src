@@ -1,0 +1,12 @@
+// category: mixed  (program 059)
+int u = 7 + 2;
+int acc = u + (7 * 18);
+int val = u * 6;
+int e = acc * 2;
+int b = u;
+if (u > 4) {
+    b = b * 1 + 2;
+} else {
+    b = b - 0;
+}
+print(e + b);

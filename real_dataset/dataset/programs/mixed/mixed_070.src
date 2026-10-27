@@ -1,0 +1,16 @@
+// category: mixed  (program 070)
+int b = 15 + 19;
+int y = 0;
+for (int i = 0; i < 6; i = i + 1) {
+    y = y + (4 + 3);
+}
+int q = y;
+if (y > 7) {
+    q = q * 1 + 5;
+} else {
+    q = q - 0;
+}
+int h = b * 8;
+int d = h * 9;
+int m = q + (5 * 3);
+print(h + m);

@@ -1,0 +1,7 @@
+// category: dead_code  (program 055)
+int v = 13;
+int n = v + 14;
+v = 55;
+v = v + 2;
+int acc = n + 14;
+print(acc);

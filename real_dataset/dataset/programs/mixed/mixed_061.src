@@ -1,0 +1,12 @@
+// category: mixed  (program 061)
+int n = 2 + 15;
+int acc = 0;
+for (int i = 0; i < 5; i = i + 1) {
+    acc = acc + (2 + 2);
+}
+int e = 0 + n;
+int g = e * 2;
+int a = e + (11 * 9);
+int m = acc * n;
+int c = acc * n + m;
+print(a + c);

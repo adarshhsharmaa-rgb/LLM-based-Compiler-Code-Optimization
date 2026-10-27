@@ -1,0 +1,8 @@
+// category: conditionals  (program 045)
+// inputs: in_c
+int y = 0;
+if (in_c <= 9 && in_c != 27) {
+    y = in_c - 0;
+    y = y + (3 * 2);
+}
+print(y);

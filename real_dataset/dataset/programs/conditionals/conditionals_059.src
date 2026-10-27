@@ -1,0 +1,9 @@
+// category: conditionals  (program 059)
+// inputs: in_x
+int y = 0;
+if (in_x != 2) {
+    y = in_x - 0;
+} else {
+    y = in_x + 8;
+}
+print(y);

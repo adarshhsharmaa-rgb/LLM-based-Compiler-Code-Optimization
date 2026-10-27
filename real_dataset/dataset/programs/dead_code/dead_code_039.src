@@ -1,0 +1,10 @@
+// category: dead_code  (program 039)
+int n = 6;
+int tmp = 33;
+int s = n * 19;
+int c = 6;
+int d = tmp / 5;
+s = 78;
+s = s + 20;
+int k = n + 6;
+print(k);

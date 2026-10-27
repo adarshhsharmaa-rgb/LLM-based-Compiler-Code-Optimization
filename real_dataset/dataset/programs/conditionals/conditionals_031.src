@@ -1,0 +1,7 @@
+// category: conditionals  (program 031)
+int x = 1;
+int k = 0;
+if (x == -3) {
+    k = 1 * x;
+}
+print(k);

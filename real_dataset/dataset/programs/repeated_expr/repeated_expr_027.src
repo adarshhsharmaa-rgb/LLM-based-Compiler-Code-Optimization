@@ -1,0 +1,9 @@
+// category: repeated_expr  (program 027)
+int f = 14;
+int y = 2;
+int x = f + y;
+int h = f + y;
+f = f + 5;
+int c = (f + y) + x;
+int s = x * h + x * h;
+print(c + s);

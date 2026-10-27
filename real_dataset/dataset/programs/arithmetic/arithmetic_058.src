@@ -1,0 +1,4 @@
+// category: arithmetic  (program 058)
+int p = 20 - 14;
+int n = p + 8;
+print(n);

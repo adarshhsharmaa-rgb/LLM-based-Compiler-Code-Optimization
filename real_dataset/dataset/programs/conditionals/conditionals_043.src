@@ -1,0 +1,8 @@
+// category: conditionals  (program 043)
+// inputs: in_a
+int u = 0;
+if (in_a > -8 && in_a != 25) {
+    u = in_a + 0;
+    u = u + (3 * 2);
+}
+print(u);

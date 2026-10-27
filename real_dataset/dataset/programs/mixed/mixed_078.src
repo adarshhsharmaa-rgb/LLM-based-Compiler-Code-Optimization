@@ -1,0 +1,7 @@
+// category: mixed  (program 078)
+int num = 13 + 18;
+int a = num * 8;
+int m = a + (17 * 6);
+int u = a * num;
+int e = a * num + u;
+print(m + e);

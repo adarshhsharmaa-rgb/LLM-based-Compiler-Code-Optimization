@@ -1,0 +1,5 @@
+// category: nested  (program 056)
+int acc = (9 + 14) + 7;
+int z = acc + (15 * acc);
+int num = z + (z * (2 * 11));
+print(num);

@@ -1,0 +1,6 @@
+// category: nested  (program 001)
+int tmp = (20 / 7) % 5;
+int acc = ((2 * 19) % 4) + ((12 / 8) % 7);
+int d = ((acc + 8) + (15 % 2)) * ((5 * 9) / 5);
+int b = acc + (acc * (3 * 12));
+print(b);

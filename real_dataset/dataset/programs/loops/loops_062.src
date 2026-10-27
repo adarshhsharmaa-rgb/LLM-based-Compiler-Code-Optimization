@@ -1,0 +1,10 @@
+// category: loops  (program 062)
+int sum = 0;
+int i = 0;
+while (i < 4) {
+    int m = 7 - 2;
+    sum = sum + m + 0;
+    int s = m * 4;
+    i = i + 1;
+}
+print(sum);

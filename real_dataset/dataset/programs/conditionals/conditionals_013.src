@@ -1,0 +1,12 @@
+// category: conditionals  (program 013)
+int c = 3;
+int p = 0;
+if (c != 4 || c == 2) {
+    p = c * 1;
+    p = p + (3 * 3);
+}
+int tmp = 7;
+if (tmp > 6) {
+    p = p + tmp * 1;
+}
+print(p);

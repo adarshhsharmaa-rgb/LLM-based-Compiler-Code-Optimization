@@ -1,0 +1,6 @@
+// category: arithmetic  (program 046)
+int tmp = 12 * 11;
+int val = tmp + 1;
+int f = val * 18;
+int a = 9 * 7;
+print(a);

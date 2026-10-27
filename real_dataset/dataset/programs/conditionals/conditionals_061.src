@@ -1,0 +1,12 @@
+// category: conditionals  (program 061)
+int y = -16;
+int res = 0;
+if (y != -2) {
+    int x = 15 + 1;
+    res = 0 + y;
+}
+int m = 7;
+if (m > 8) {
+    res = res + m * 1;
+}
+print(res);

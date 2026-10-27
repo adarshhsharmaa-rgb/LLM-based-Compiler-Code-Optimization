@@ -1,0 +1,78 @@
+=== Program: loops_044.c ===
+--- Iteration 1 ---
+  [ANALYZE] Found 6 opportunities: DEAD_CODE (priority=80), COPY_PROPAGATIONx5 (priority=50)
+  [PROPOSE] Applying DEAD_CODE at instruction 0: bacterias = 0 → (removed)
+  [VERIFY]  PASS (differential: 287/287 inputs matched, symbolic: skipped (control flow))
+  [COST]    Before: 39.0, After: 36.5 (reduction: 6.4%); time 266.2 → 265.2 cycles
+  [ACCEPT]  ✓ Change accepted
+--- Iteration 2 ---
+  [ANALYZE] Found 5 opportunities: COPY_PROPAGATIONx5 (priority=50)
+  [PROPOSE] Applying COPY_PROPAGATION at instruction 0: t0 = 0 → uses of t0 -> 0 at instr 1
+  [VERIFY]  PASS (differential: 287/287 inputs matched, symbolic: skipped (control flow))
+  [COST]    Before: 36.5, After: 33.5 (reduction: 8.2%); time 265.2 → 264.2 cycles
+  [ACCEPT]  ✓ Change accepted
+--- Iteration 3 ---
+  [ANALYZE] Found 4 opportunities: COPY_PROPAGATIONx4 (priority=50)
+  [PROPOSE] Applying COPY_PROPAGATION at instruction 4: t1 = 2 → uses of t1 -> 2 at instr 5
+  [VERIFY]  PASS (differential: 287/287 inputs matched, symbolic: skipped (control flow))
+  [COST]    Before: 33.5, After: 30.5 (reduction: 9.0%); time 264.2 → 258.8 cycles
+  [ACCEPT]  ✓ Change accepted
+--- Iteration 4 ---
+  [ANALYZE] Found 3 opportunities: COPY_PROPAGATIONx3 (priority=50)
+  [PROPOSE] Applying COPY_PROPAGATION at instruction 6: t3 = days + t2; days = t3 → days = days + t2
+  [VERIFY]  PASS (differential: 287/287 inputs matched, symbolic: skipped (control flow))
+  [COST]    Before: 30.5, After: 27.5 (reduction: 9.8%); time 258.8 → 253.4 cycles
+  [ACCEPT]  ✓ Change accepted
+--- Iteration 5 ---
+  [ANALYZE] Found 2 opportunities: COPY_PROPAGATIONx2 (priority=50)
+  [PROPOSE] Applying COPY_PROPAGATION at instruction 6: t4 = 2 → uses of t4 -> 2 at instr 7
+  [VERIFY]  PASS (differential: 287/287 inputs matched, symbolic: skipped (control flow))
+  [COST]    Before: 27.5, After: 24.5 (reduction: 10.9%); time 253.4 → 248.0 cycles
+  [ACCEPT]  ✓ Change accepted
+--- Iteration 6 ---
+  [ANALYZE] Found 1 opportunity: COPY_PROPAGATION (priority=50)
+  [PROPOSE] Applying COPY_PROPAGATION at instruction 7: t5 = bacterias / 2; bacterias = t5 → bacterias = bacterias / 2
+  [VERIFY]  PASS (differential: 287/287 inputs matched, symbolic: skipped (control flow))
+  [COST]    Before: 24.5, After: 21.5 (reduction: 12.2%); time 248.0 → 242.6 cycles
+  [ACCEPT]  ✓ Change accepted
+--- Iteration 7 ---
+  [ANALYZE] No more opportunities found.
+=== RESULT ===
+  Original cost: 39.0
+  Final cost:    21.5
+  Reduction:     44.9%
+  Exec. time:    266.2 → 242.6 cycles (8.9% less)
+  Iterations:    7
+  Accepted:      6
+  Rejected:      0
+  Invalid:       0
+  Output match:  PASS ✓
+  Equivalence:   tested on the verifier's inputs
+=== Original TAC ===
+   0 |     bacterias = 0
+   1 |     t0 = 0
+   2 |     days = t0
+   3 |     bacterias = in_bacterias
+   4 | L0:
+   5 |     ifFalse bacterias goto L1
+   6 |     t1 = 2
+   7 |     t2 = bacterias % t1
+   8 |     t3 = days + t2
+   9 |     days = t3
+  10 |     t4 = 2
+  11 |     t5 = bacterias / t4
+  12 |     bacterias = t5
+  13 |     goto L0
+  14 | L1:
+  15 |     print days
+=== Optimized TAC ===
+  0 |     days = 0
+  1 |     bacterias = in_bacterias
+  2 | L0:
+  3 |     ifFalse bacterias goto L1
+  4 |     t2 = bacterias % 2
+  5 |     days = days + t2
+  6 |     bacterias = bacterias / 2
+  7 |     goto L0
+  8 | L1:
+  9 |     print days

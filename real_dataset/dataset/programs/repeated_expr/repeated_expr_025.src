@@ -1,0 +1,8 @@
+// category: repeated_expr  (program 025)
+int v = 3;
+int w = 16;
+int d = v - w;
+int c = v - w;
+int h = (v - w) * (v - w);
+int u = d * c + d * c;
+print(h + u);

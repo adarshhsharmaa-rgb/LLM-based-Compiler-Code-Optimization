@@ -1,0 +1,7 @@
+// category: arithmetic  (program 060)
+int y = 4 + 18;
+int c = 5 + 1;
+int b = c * 18 - 18;
+int s = 8 + 15;
+print(s);
+print(y * 7);

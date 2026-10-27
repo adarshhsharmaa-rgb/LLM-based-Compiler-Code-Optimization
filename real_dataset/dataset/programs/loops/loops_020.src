@@ -1,0 +1,10 @@
+// category: loops  (program 020)
+int total = 0;
+int i = 0;
+while (i < 7) {
+    int e = 3 + 5;
+    total = total + e;
+    int g = e * 19;
+    i = i + 1;
+}
+print(total);

@@ -1,0 +1,14 @@
+// category: conditionals  (program 068)
+// inputs: in_a
+int u = 0;
+if (in_a > -8) {
+    int res = 5 + 4;
+    u = 0 + in_a;
+} else {
+    u = in_a - 7;
+}
+int d = 3;
+if (d > 3) {
+    u = u + d * 1;
+}
+print(u);

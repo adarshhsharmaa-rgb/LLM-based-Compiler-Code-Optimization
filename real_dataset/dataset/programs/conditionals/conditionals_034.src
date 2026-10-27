@@ -1,0 +1,15 @@
+// category: conditionals  (program 034)
+int acc = 9;
+int f = 0;
+if (acc <= 7) {
+    int w = 16 + 7;
+    f = acc / 1;
+    f = f + (3 * 2);
+} else {
+    f = acc * 2;
+}
+int e = 1;
+if (e > 7) {
+    f = f + e * 1;
+}
+print(f);

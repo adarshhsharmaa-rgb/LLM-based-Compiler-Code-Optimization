@@ -1,0 +1,4 @@
+// category: arithmetic  (program 048)
+int x = 2 + 17;
+int e = 6 + 11;
+print(e);

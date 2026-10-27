@@ -1,0 +1,6 @@
+// category: dead_code  (program 060)
+int q = 13;
+int e = q * 20;
+int v = e + 4;
+int c = q + 5;
+print(c);

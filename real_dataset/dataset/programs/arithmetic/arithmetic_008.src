@@ -1,0 +1,6 @@
+// category: arithmetic  (program 008)
+int w = 8 - 13;
+int num = 10 * 11;
+int f = w + 15 + 3;
+int b = f - 5;
+print(b);

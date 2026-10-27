@@ -1,0 +1,7 @@
+// category: conditionals  (program 035)
+int val = 4;
+int res = 0;
+if (val <= -8 && val != -24) {
+    res = 0 + val;
+}
+print(res);

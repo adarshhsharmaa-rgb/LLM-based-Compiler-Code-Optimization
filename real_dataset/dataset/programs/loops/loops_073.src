@@ -1,0 +1,15 @@
+// category: loops  (program 073)
+int acc = 0;
+int m = 0;
+int i = 0;
+while (i < 10) {
+    int s = 7 + 8;
+    acc = acc + s * 1;
+    int num = s * 6;
+    for (int j = 0; j < 2; j = j + 1) {
+        m = m + 1;
+    }
+    i = i + 1;
+}
+print(acc);
+print(m);

@@ -1,0 +1,7 @@
+// category: dead_code  (program 022)
+int acc = 13;
+int z = acc + 20;
+int num = 20;
+int u = z * 14;
+int d = acc + 11;
+print(d);

@@ -1,0 +1,7 @@
+// category: dead_code  (program 011)
+int k = 13;
+int val = 5;
+int h = 90;
+int e = 17;
+int w = val + 13;
+print(w);

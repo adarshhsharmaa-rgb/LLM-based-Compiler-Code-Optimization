@@ -1,0 +1,16 @@
+// category: mixed  (program 039)
+int num = 17 + 14;
+int w = num * 4;
+int p = num;
+if (num > -3) {
+    p = p * 1 + 2;
+} else {
+    p = p - 0;
+}
+int y = 0 + p;
+int tmp = num + (2 * 3);
+int d = 0;
+for (int i = 0; i < 6; i = i + 1) {
+    d = d + (1 + 3);
+}
+print(tmp + d);

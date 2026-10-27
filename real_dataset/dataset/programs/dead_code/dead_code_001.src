@@ -1,0 +1,8 @@
+// category: dead_code  (program 001)
+int b = 15;
+int e = b + 15;
+int v = e * 5;
+b = 63;
+b = b + 10;
+int m = b + 6;
+print(m);

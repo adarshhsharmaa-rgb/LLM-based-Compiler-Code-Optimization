@@ -1,0 +1,13 @@
+// category: mixed  (program 080)
+// inputs: in_n
+int val = 44;
+int n = in_n * 1;
+int k = n * 2;
+int tmp = in_n;
+if (in_n > 15) {
+    tmp = tmp * 1 + 1;
+} else {
+    tmp = tmp - 0;
+}
+int num = in_n + (13 * 15);
+print(tmp + num);

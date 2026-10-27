@@ -1,0 +1,10 @@
+// category: loops  (program 030)
+int acc = 0;
+int i = 0;
+while (i < 11) {
+    int z = 8 - 3;
+    acc = acc + z / 1;
+    int v = z * 11;
+    i = i + 1;
+}
+print(acc);

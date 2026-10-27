@@ -1,0 +1,9 @@
+// category: repeated_expr  (program 037)
+int n = 16;
+int y = 3;
+int num = n - y;
+int v = n - y;
+n = n + 5;
+int x = (n - y) + num;
+int u = num * v + num * v;
+print(x + u);

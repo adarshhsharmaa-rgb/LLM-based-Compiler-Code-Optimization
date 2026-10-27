@@ -1,0 +1,95 @@
+=== Program: mixed_051.src ===
+--- Iteration 1 ---
+  [ANALYZE] Found 10 opportunities: DEAD_CODE (priority=80), CSE (priority=70), COPY_PROPAGATIONx8 (priority=50)
+  [PROPOSE] Applying DEAD_CODE at instruction 4: tmp = t2 → (removed)
+  [VERIFY]  PASS (differential: 31/31 inputs matched, symbolic: equivalent)
+  [COST]    Before: 34.5, After: 32.0 (reduction: 7.2%)
+  [ACCEPT]  ✓ Change accepted
+--- Iteration 2 ---
+  [ANALYZE] Found 9 opportunities: DEAD_CODE (priority=80), CSE (priority=70), COPY_PROPAGATIONx7 (priority=50)
+  [PROPOSE] Applying DEAD_CODE at instruction 3: t2 = 85 → (removed)
+  [VERIFY]  PASS (differential: 31/31 inputs matched, symbolic: equivalent)
+  [COST]    Before: 32.0, After: 29.0 (reduction: 9.4%)
+  [ACCEPT]  ✓ Change accepted
+--- Iteration 3 ---
+  [ANALYZE] Found 8 opportunities: CSE (priority=70), COPY_PROPAGATIONx7 (priority=50)
+  [PROPOSE] Applying CSE at instruction 5: t4 = in_a * in_a → t4 = t3
+  [VERIFY]  PASS (differential: 28/28 inputs matched, symbolic: equivalent)
+  [COST]    Before: 29.0, After: 28.5 (reduction: 1.7%)
+  [ACCEPT]  ✓ Change accepted
+--- Iteration 4 ---
+  [ANALYZE] Found 7 opportunities: COPY_PROPAGATIONx7 (priority=50)
+  [PROPOSE] Applying COPY_PROPAGATION at instruction 0: t0 = 1 → uses of t0 -> 1 at instr 1
+  [VERIFY]  PASS (differential: 28/28 inputs matched, symbolic: equivalent)
+  [COST]    Before: 28.5, After: 25.5 (reduction: 10.5%)
+  [ACCEPT]  ✓ Change accepted
+--- Iteration 5 ---
+  [ANALYZE] Found 7 opportunities: ALGEBRAIC_SIMPLIFY (priority=90), COPY_PROPAGATIONx6 (priority=50)
+  [PROPOSE] Applying ALGEBRAIC_SIMPLIFY at instruction 0: t1 = in_a / 1 → t1 = in_a
+  [VERIFY]  PASS (differential: 28/28 inputs matched, symbolic: equivalent)
+  [COST]    Before: 25.5, After: 25.0 (reduction: 2.0%)
+  [ACCEPT]  ✓ Change accepted
+--- Iteration 6 ---
+  [ANALYZE] Found 6 opportunities: COPY_PROPAGATIONx6 (priority=50)
+  [PROPOSE] Applying COPY_PROPAGATION at instruction 0: t1 = in_a → uses of t1 -> in_a at instr 1
+  [VERIFY]  PASS (differential: 25/25 inputs matched, symbolic: equivalent)
+  [COST]    Before: 25.0, After: 22.0 (reduction: 12.0%)
+  [ACCEPT]  ✓ Change accepted
+--- Iteration 7 ---
+  [ANALYZE] Found 5 opportunities: COPY_PROPAGATIONx5 (priority=50)
+  [PROPOSE] Applying COPY_PROPAGATION at instruction 0: p = in_a → uses of p -> in_a at instr 6
+  [VERIFY]  PASS (differential: 25/25 inputs matched, symbolic: equivalent)
+  [COST]    Before: 22.0, After: 19.5 (reduction: 11.4%)
+  [ACCEPT]  ✓ Change accepted
+--- Iteration 8 ---
+  [ANALYZE] Found 4 opportunities: COPY_PROPAGATIONx4 (priority=50)
+  [PROPOSE] Applying COPY_PROPAGATION at instruction 1: val = t3 → uses of val -> t3 at instr 3
+  [VERIFY]  PASS (differential: 25/25 inputs matched, symbolic: equivalent)
+  [COST]    Before: 19.5, After: 17.0 (reduction: 12.8%)
+  [ACCEPT]  ✓ Change accepted
+--- Iteration 9 ---
+  [ANALYZE] Found 3 opportunities: COPY_PROPAGATIONx3 (priority=50)
+  [PROPOSE] Applying COPY_PROPAGATION at instruction 1: t4 = t3 → uses of t4 -> t3 at instr 2
+  [VERIFY]  PASS (differential: 25/25 inputs matched, symbolic: equivalent)
+  [COST]    Before: 17.0, After: 14.0 (reduction: 17.6%)
+  [ACCEPT]  ✓ Change accepted
+--- Iteration 10 ---
+  [ANALYZE] Found 2 opportunities: COPY_PROPAGATIONx2 (priority=50)
+  [PROPOSE] Applying COPY_PROPAGATION at instruction 2: t5 = t3 + t3; m = t5 → m = t3 + t3
+  [VERIFY]  PASS (differential: 25/25 inputs matched, symbolic: equivalent)
+  [COST]    Before: 14.0, After: 11.0 (reduction: 21.4%)
+  [ACCEPT]  ✓ Change accepted
+--- Iteration 11 ---
+  [ANALYZE] No more opportunities found.
+  [LLM]     LLM proposal: Algebraic simplification is applied by replacing the multiplication (t3 = in_a * in_a) and addition (m = t3 + t3) with the equivalent expression m = 2 * (in_a * in_a).
+  [VERIFY]  PASS (differential: 28/28 inputs matched, symbolic: equivalent)
+  [COST]    Before: 11.0, After: 11.0 (reduction: 0.0%)
+  [REJECT]  ✗ Change rejected: No cost improvement
+=== RESULT ===
+  Original cost: 34.5
+  Final cost:    11.0
+  Reduction:     68.1%
+  Iterations:    11
+  Accepted:      10
+  Rejected:      1
+  Invalid:       0
+  LLM proposals: 1 (1 passed verification)
+  Output match:  PASS ✓
+=== Original TAC ===
+   0 |     t0 = 1
+   1 |     t1 = in_a / t0
+   2 |     p = t1
+   3 |     t2 = 85
+   4 |     tmp = t2
+   5 |     t3 = in_a * in_a
+   6 |     val = t3
+   7 |     t4 = in_a * in_a
+   8 |     t5 = t4 + val
+   9 |     m = t5
+  10 |     t6 = p + m
+  11 |     print t6
+=== Optimized TAC ===
+  0 |     t3 = in_a * in_a
+  1 |     m = t3 + t3
+  2 |     t6 = in_a + m
+  3 |     print t6

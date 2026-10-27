@@ -1,0 +1,66 @@
+=== Program: arithmetic_011.c ===
+--- Iteration 1 ---
+  [ANALYZE] Found 8 opportunities: DEAD_CODE (priority=80), COPY_PROPAGATIONx7 (priority=50)
+  [PROPOSE] Applying DEAD_CODE at instruction 0: n = 0 → (removed)
+  [VERIFY]  PASS (differential: 289/289 inputs matched, symbolic: equivalent)
+  [COST]    Before: 27.5, After: 25.0 (reduction: 9.1%); time 31.0 → 30.0 cycles
+  [ACCEPT]  ✓ Change accepted
+--- Iteration 2 ---
+  [ANALYZE] Found 7 opportunities: COPY_PROPAGATIONx7 (priority=50)
+  [PROPOSE] Applying COPY_PROPAGATION at instruction 0: n = in_n → uses of n -> in_n at instr 2
+  [VERIFY]  PASS (differential: 288/288 inputs matched, symbolic: equivalent)
+  [COST]    Before: 25.0, After: 22.5 (reduction: 10.0%); time 30.0 → 29.0 cycles
+  [ACCEPT]  ✓ Change accepted
+--- Iteration 3 ---
+  [ANALYZE] Found 6 opportunities: COPY_PROPAGATIONx6 (priority=50)
+  [PROPOSE] Applying COPY_PROPAGATION at instruction 0: t0 = 1 → uses of t0 -> 1 at instr 1
+  [VERIFY]  PASS (differential: 288/288 inputs matched, symbolic: equivalent)
+  [COST]    Before: 22.5, After: 19.5 (reduction: 13.3%); time 29.0 → 28.0 cycles
+  [ACCEPT]  ✓ Change accepted
+--- Iteration 4 ---
+  [ANALYZE] Found 5 opportunities: COPY_PROPAGATIONx5 (priority=50)
+  [PROPOSE] Applying COPY_PROPAGATION at instruction 1: t1 = in_n + 1; n = t1 → n = in_n + 1
+  [VERIFY]  PASS (differential: 288/288 inputs matched, symbolic: equivalent)
+  [COST]    Before: 19.5, After: 16.5 (reduction: 15.4%); time 28.0 → 27.0 cycles
+  [ACCEPT]  ✓ Change accepted
+--- Iteration 5 ---
+  [ANALYZE] Found 3 opportunities: COPY_PROPAGATIONx3 (priority=50)
+  [PROPOSE] Applying COPY_PROPAGATION at instruction 2: t3 = 4 → uses of t3 -> 4 at instr 3
+  [VERIFY]  PASS (differential: 288/288 inputs matched, symbolic: equivalent)
+  [COST]    Before: 16.5, After: 13.5 (reduction: 18.2%); time 27.0 → 26.0 cycles
+  [ACCEPT]  ✓ Change accepted
+--- Iteration 6 ---
+  [ANALYZE] Found 2 opportunities: COPY_PROPAGATIONx2 (priority=50)
+  [PROPOSE] Applying COPY_PROPAGATION at instruction 3: t4 = t2 / 4; ans = t4 → ans = t2 / 4
+  [VERIFY]  PASS (differential: 288/288 inputs matched, symbolic: equivalent)
+  [COST]    Before: 13.5, After: 10.5 (reduction: 22.2%); time 26.0 → 25.0 cycles
+  [ACCEPT]  ✓ Change accepted
+--- Iteration 7 ---
+  [ANALYZE] No more opportunities found.
+=== RESULT ===
+  Original cost: 27.5
+  Final cost:    10.5
+  Reduction:     61.8%
+  Exec. time:    31.0 → 25.0 cycles (19.4% less)
+  Iterations:    7
+  Accepted:      6
+  Rejected:      0
+  Invalid:       0
+  Output match:  PASS ✓
+  Equivalence:   proved for all inputs
+=== Original TAC ===
+  0 |     n = 0
+  1 |     n = in_n
+  2 |     t0 = 1
+  3 |     t1 = n + t0
+  4 |     n = t1
+  5 |     t2 = n * n
+  6 |     t3 = 4
+  7 |     t4 = t2 / t3
+  8 |     ans = t4
+  9 |     print ans
+=== Optimized TAC ===
+  0 |     n = in_n + 1
+  1 |     t2 = n * n
+  2 |     ans = t2 / 4
+  3 |     print ans

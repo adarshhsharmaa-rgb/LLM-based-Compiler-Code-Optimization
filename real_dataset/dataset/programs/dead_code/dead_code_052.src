@@ -1,0 +1,9 @@
+// category: dead_code  (program 052)
+int tmp = 16;
+int val = tmp + 19;
+int w = val + 15;
+int acc = 16;
+tmp = 89;
+tmp = tmp + 15;
+int z = w + 10;
+print(z);

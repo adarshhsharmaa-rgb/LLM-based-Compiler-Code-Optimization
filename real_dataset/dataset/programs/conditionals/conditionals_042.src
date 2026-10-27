@@ -1,0 +1,10 @@
+// category: conditionals  (program 042)
+// inputs: in_x
+int q = 0;
+if (in_x == -7) {
+    q = in_x - 0;
+    q = q + (3 * 5);
+} else {
+    q = in_x - 1;
+}
+print(q);

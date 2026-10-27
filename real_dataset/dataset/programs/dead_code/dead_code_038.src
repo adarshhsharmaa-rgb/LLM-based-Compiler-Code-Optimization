@@ -1,0 +1,7 @@
+// category: dead_code  (program 038)
+int acc = 13;
+int s = acc + 14;
+s = 66;
+s = s + 10;
+int m = s + 19;
+print(m);

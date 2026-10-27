@@ -1,0 +1,10 @@
+// category: conditionals  (program 040)
+int e = -6;
+int x = 0;
+if (e > 10 || e == 5) {
+    x = 1 * e;
+    x = x + (5 * 4);
+} else {
+    x = e * 7;
+}
+print(x);

@@ -1,0 +1,9 @@
+// category: conditionals  (program 071)
+int f = -1;
+int h = 0;
+if (f == 5) {
+    h = f / 1;
+} else {
+    h = f * 9;
+}
+print(h);

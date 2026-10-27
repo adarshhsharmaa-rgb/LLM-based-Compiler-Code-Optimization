@@ -1,0 +1,7 @@
+// category: dead_code  (program 015)
+int tmp = 13;
+int v = tmp * 15;
+int a = 3;
+int d = 83;
+int x = a + 18;
+print(x);

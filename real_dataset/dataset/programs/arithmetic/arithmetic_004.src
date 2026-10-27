@@ -1,0 +1,4 @@
+// category: arithmetic  (program 004)
+int val = 17 + 20;
+int tmp = 1 + 12;
+print(tmp);

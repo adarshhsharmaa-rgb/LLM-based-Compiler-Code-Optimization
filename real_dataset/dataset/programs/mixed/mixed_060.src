@@ -1,0 +1,9 @@
+// category: mixed  (program 060)
+int d = 7 + 19;
+int c = d * d;
+int n = d * d + c;
+int a = n * 5;
+int x = d + (14 * 12);
+int r = x * 8;
+int w = 1 * x;
+print(r + w);

@@ -1,0 +1,13 @@
+// category: conditionals  (program 023)
+int z = -17;
+int s = 0;
+if (z < 3 && z != 22) {
+    s = z * 1;
+} else {
+    s = z + 7;
+}
+int g = 6;
+if (g > 1) {
+    s = s + g * 1;
+}
+print(s);

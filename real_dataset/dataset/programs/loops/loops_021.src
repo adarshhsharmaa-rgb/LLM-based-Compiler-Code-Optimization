@@ -1,0 +1,14 @@
+// category: loops  (program 021)
+int prod = 1;
+int u = 0;
+for (int i = 0; i < 4; i = i + 1) {
+    int v = 2 + 1;
+    prod = prod * v / 1;
+    int s = v * 5;
+    for (int j = 0; j < 3; j = j + 1) {
+        u = u + 1 * 1;
+    }
+}
+print(prod);
+print(u);
+print(prod * 8);

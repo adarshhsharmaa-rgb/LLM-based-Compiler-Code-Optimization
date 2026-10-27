@@ -1,0 +1,10 @@
+// category: conditionals  (program 008)
+int b = -6;
+int u = 0;
+if (b == -3) {
+    u = b + 0;
+    u = u + (1 * 2);
+} else {
+    u = b * 1;
+}
+print(u);

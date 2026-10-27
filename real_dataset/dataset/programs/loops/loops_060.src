@@ -1,0 +1,14 @@
+// category: loops  (program 060)
+int prod = 1;
+int num = 0;
+int i = 0;
+while (i < 6) {
+    int c = 1 * 1;
+    prod = prod * c / 1;
+    for (int j = 0; j < 3; j = j + 1) {
+        num = num + 1 * 1;
+    }
+    i = i + 1;
+}
+print(prod);
+print(num);

@@ -1,0 +1,13 @@
+// category: mixed  (program 050)
+int acc = 11 + 18;
+int q = acc * 16;
+int f = 0 + q;
+int u = acc * acc;
+int r = acc * acc + u;
+int z = r;
+if (r > 5) {
+    z = z * 1 + 5;
+} else {
+    z = z - 0;
+}
+print(r + z);

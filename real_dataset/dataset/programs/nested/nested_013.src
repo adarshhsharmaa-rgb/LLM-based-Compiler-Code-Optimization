@@ -1,0 +1,6 @@
+// category: nested  (program 013)
+int h = (9 * 17) + 19;
+int c = (19 - 6) * (h + 17);
+int s = (16 + 5) + h;
+int d = s + (s * (14 + 11));
+print(d);

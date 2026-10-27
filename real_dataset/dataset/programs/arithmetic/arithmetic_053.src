@@ -1,0 +1,6 @@
+// category: arithmetic  (program 053)
+int tmp = 17 * 5;
+int n = tmp + 19 + 7;
+int y = 11 * 5;
+int p = tmp * 17;
+print(p);

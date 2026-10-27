@@ -1,0 +1,8 @@
+// category: repeated_expr  (program 049)
+int y = 12;
+int w = 14;
+int s = y + w;
+int m = y + w;
+y = y + 1;
+int a = (y + w) + s;
+print(a);

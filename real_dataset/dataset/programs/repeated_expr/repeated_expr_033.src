@@ -1,0 +1,6 @@
+// category: repeated_expr  (program 033)
+// inputs: in_y, in_c
+int f = in_y + in_c;
+int res = in_y + in_c;
+int acc = (in_y - in_c) * (in_y - in_c);
+print(acc);

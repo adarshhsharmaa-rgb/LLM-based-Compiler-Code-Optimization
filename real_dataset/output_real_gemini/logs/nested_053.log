@@ -1,0 +1,95 @@
+=== Program: nested_053.c ===
+--- Iteration 1 ---
+  [ANALYZE] Found 7 opportunities: DEAD_CODEx3 (priority=80), COPY_PROPAGATIONx4 (priority=50)
+  [ROUTE]   Rule-based optimizer: highest-priority opportunity is DEAD_CODE (priority 80)
+  [PROPOSE] Applying DEAD_CODE at instruction 0: n = 0 → (removed)
+  [VERIFY]  PASS (differential: 248/248 inputs matched, symbolic: equivalent)
+  [COST]    Before: 36.5, After: 34.0 (reduction: 6.8%); time 33.9 → 32.9 cycles
+  [ACCEPT]  ✓ Change accepted
+--- Iteration 2 ---
+  [ANALYZE] Found 6 opportunities: DEAD_CODEx2 (priority=80), COPY_PROPAGATIONx4 (priority=50)
+  [ROUTE]   Rule-based optimizer: highest-priority opportunity is DEAD_CODE (priority 80)
+  [PROPOSE] Applying DEAD_CODE at instruction 0: m = 0 → (removed)
+  [VERIFY]  PASS (differential: 248/248 inputs matched, symbolic: equivalent)
+  [COST]    Before: 34.0, After: 31.5 (reduction: 7.4%); time 32.9 → 31.9 cycles
+  [ACCEPT]  ✓ Change accepted
+--- Iteration 3 ---
+  [ANALYZE] Found 5 opportunities: DEAD_CODE (priority=80), COPY_PROPAGATIONx4 (priority=50)
+  [ROUTE]   Rule-based optimizer: highest-priority opportunity is DEAD_CODE (priority 80)
+  [PROPOSE] Applying DEAD_CODE at instruction 0: k = 0 → (removed)
+  [VERIFY]  PASS (differential: 248/248 inputs matched, symbolic: equivalent)
+  [COST]    Before: 31.5, After: 29.0 (reduction: 7.9%); time 31.9 → 30.9 cycles
+  [ACCEPT]  ✓ Change accepted
+--- Iteration 4 ---
+  [ANALYZE] Found 4 opportunities: COPY_PROPAGATIONx4 (priority=50)
+  [ROUTE]   Rule-based optimizer: highest-priority opportunity is COPY_PROPAGATION (priority 50)
+  [PROPOSE] Applying COPY_PROPAGATION at instruction 0: n = in_n → uses of n -> in_n at instr 3
+  [VERIFY]  PASS (differential: 235/235 inputs matched, symbolic: equivalent)
+  [COST]    Before: 29.0, After: 26.5 (reduction: 8.6%); time 30.9 → 29.9 cycles
+  [ACCEPT]  ✓ Change accepted
+--- Iteration 5 ---
+  [ANALYZE] Found 3 opportunities: COPY_PROPAGATIONx3 (priority=50)
+  [ROUTE]   Rule-based optimizer: highest-priority opportunity is COPY_PROPAGATION (priority 50)
+  [PROPOSE] Applying COPY_PROPAGATION at instruction 0: m = in_m → uses of m -> in_m at instr 3, 6
+  [VERIFY]  PASS (differential: 235/235 inputs matched, symbolic: equivalent)
+  [COST]    Before: 26.5, After: 24.0 (reduction: 9.4%); time 29.9 → 28.9 cycles
+  [ACCEPT]  ✓ Change accepted
+--- Iteration 6 ---
+  [ANALYZE] Found 2 opportunities: COPY_PROPAGATIONx2 (priority=50)
+  [ROUTE]   Rule-based optimizer: highest-priority opportunity is COPY_PROPAGATION (priority 50)
+  [PROPOSE] Applying COPY_PROPAGATION at instruction 0: k = in_k → uses of k -> in_k at instr 1, 6
+  [VERIFY]  PASS (differential: 235/235 inputs matched, symbolic: equivalent)
+  [COST]    Before: 24.0, After: 21.5 (reduction: 10.4%); time 28.9 → 27.9 cycles
+  [ACCEPT]  ✓ Change accepted
+--- Iteration 7 ---
+  [ANALYZE] Found 1 opportunity: COPY_PROPAGATION (priority=50)
+  [ROUTE]   Rule-based optimizer: highest-priority opportunity is COPY_PROPAGATION (priority 50)
+  [PROPOSE] Applying COPY_PROPAGATION at instruction 2: t2 = 1 → uses of t2 -> 1 at instr 3
+  [VERIFY]  PASS (differential: 235/235 inputs matched, symbolic: equivalent)
+  [COST]    Before: 21.5, After: 18.5 (reduction: 14.0%); time 27.9 → 26.9 cycles
+  [ACCEPT]  ✓ Change accepted
+--- Iteration 8 ---
+  [ANALYZE] No more opportunities found.
+  [ROUTE]   LLM optimizer (gemini gemini-3.1-flash-lite): the rules have nothing left to try
+  [LLM]     LLM proposal: Algebraic simplification: t4 = (in_n * in_k + in_m - 1) / in_m simplifies to (in_n * in_k - 1) / in_m + 1, and since (in_n * in_k - 1) / in_m - in_k simplifies to -((in_m - (in_n * in_k - 1) % in_m - 1) / in_m) - 1, the expression can be reduced to t0 = in_n * in_k; t1 = t0 - 1; t4 = t1 / in_m; t5 = t4 - in_k + 1.
+  [VERIFY]  FAIL (output mismatch on inputs {'in_k': -1, 'in_m': -16, 'in_n': -12}: original printed [1], candidate printed [2])
+  [REJECT]  ✗ Change rejected: Verification failed: output mismatch on inputs {'in_k': -1, 'in_m': -16, 'in_n': -12}: original printed [1], candidate printed [2]
+  [REPAIR]  Feedback sent to the LLM: It changes what the program does: output mismatch on inputs {'in_k': -1, 'in_m': -16, 'in_n': -12}: original printed [1], candidate printed [2].
+  [LLM]     LLM repair: Algebraic simplification: t1 - 1 / in_m is simplified to (t0 + in_m - 1) / in_m, which equals (t0 - 1) / in_m + 1, keeping the division and final result identical for all integer inputs.
+  [VERIFY]  FAIL (output mismatch on inputs {'in_k': -1, 'in_m': -16, 'in_n': -12}: original printed [1], candidate printed [2])
+  [REJECT]  ✗ Change rejected: Verification failed: output mismatch on inputs {'in_k': -1, 'in_m': -16, 'in_n': -12}: original printed [1], candidate printed [2]
+=== RESULT ===
+  Original cost: 36.5
+  Final cost:    18.5
+  Reduction:     49.3%
+  Exec. time:    33.9 → 26.9 cycles (20.6% less)
+  Iterations:    8
+  Accepted:      7
+  Rejected:      0
+  Invalid:       2
+  Routing:       hybrid (LLM: gemini gemini-3.1-flash-lite)
+  LLM proposals: 2 (0 passed verification)
+  LLM repairs:   1 (0 accepted)
+  Output match:  PASS ✓
+  Equivalence:   proved for all inputs
+=== Original TAC ===
+   0 |     n = 0
+   1 |     m = 0
+   2 |     k = 0
+   3 |     n = in_n
+   4 |     m = in_m
+   5 |     k = in_k
+   6 |     t0 = n * k
+   7 |     t1 = t0 + m
+   8 |     t2 = 1
+   9 |     t3 = t1 - t2
+  10 |     t4 = t3 / m
+  11 |     t5 = t4 - k
+  12 |     print t5
+=== Optimized TAC ===
+  0 |     t0 = in_n * in_k
+  1 |     t1 = t0 + in_m
+  2 |     t3 = t1 - 1
+  3 |     t4 = t3 / in_m
+  4 |     t5 = t4 - in_k
+  5 |     print t5

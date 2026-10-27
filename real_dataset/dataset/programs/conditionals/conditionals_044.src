@@ -1,0 +1,8 @@
+// category: conditionals  (program 044)
+// inputs: in_a
+int z = 0;
+if (in_a <= -6 && in_a != -28) {
+    z = in_a * 1;
+    z = z + (2 * 1);
+}
+print(z);

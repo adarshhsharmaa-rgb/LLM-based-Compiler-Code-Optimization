@@ -1,0 +1,8 @@
+// category: repeated_expr  (program 022)
+int num = 16;
+int g = 3;
+int b = num + g;
+int y = g + num;
+num = num + 5;
+int f = (num + g) + b;
+print(f);

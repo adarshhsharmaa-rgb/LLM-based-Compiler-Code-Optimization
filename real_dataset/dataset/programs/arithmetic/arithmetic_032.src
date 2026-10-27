@@ -1,0 +1,6 @@
+// category: arithmetic  (program 032)
+int b = 15 + 3;
+int e = 5 + 5;
+int tmp = 19 - 13;
+int s = tmp - 15 - 4;
+print(s);

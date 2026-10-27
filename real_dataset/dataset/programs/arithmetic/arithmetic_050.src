@@ -1,0 +1,5 @@
+// category: arithmetic  (program 050)
+int num = 15 + 5;
+int val = 10 * 20;
+int r = num - 19;
+print(r);

@@ -1,0 +1,14 @@
+// category: conditionals  (program 010)
+// inputs: in_a
+int w = 0;
+if (in_a == -1 && in_a != 13) {
+    w = in_a * 1;
+    w = w + (4 * 2);
+} else {
+    w = in_a - 3;
+}
+int v = 9;
+if (v > 7) {
+    w = w + v * 1;
+}
+print(w);

@@ -1,0 +1,10 @@
+// category: conditionals  (program 049)
+// inputs: in_y
+int x = 0;
+if (in_y != -10) {
+    x = 0 + in_y;
+    x = x + (4 * 3);
+} else {
+    x = in_y + 2;
+}
+print(x);

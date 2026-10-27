@@ -1,0 +1,11 @@
+// category: dead_code  (program 028)
+int h = 8;
+int d = 39;
+int acc = d + 11;
+int c = 11;
+int q = 99;
+int b = c * 18;
+h = 86;
+h = h + 5;
+int x = c + 1;
+print(x);

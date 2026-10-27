@@ -1,0 +1,7 @@
+// category: mixed  (program 068)
+int val = 17 + 1;
+int a = val + (18 * 5);
+int k = val * 2;
+int num = a * a;
+int tmp = a * a + num;
+print(k + tmp);

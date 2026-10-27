@@ -1,0 +1,6 @@
+// category: mixed  (program 035)
+int k = 18 + 17;
+int v = k * 8;
+int s = k + 0;
+int x = k * 12;
+print(v + s);

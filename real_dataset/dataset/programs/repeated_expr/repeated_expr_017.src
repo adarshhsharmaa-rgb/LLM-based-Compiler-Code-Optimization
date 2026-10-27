@@ -1,0 +1,7 @@
+// category: repeated_expr  (program 017)
+int m = 15;
+int acc = 9;
+int b = m + acc;
+int r = acc + m;
+int res = b + r;
+print(res);

@@ -1,0 +1,14 @@
+// category: mixed  (program 096)
+int d = 8 + 12;
+int a = d + (3 * 2);
+int m = d * a;
+int q = d * a + m;
+int e = 82;
+int b = q + 0;
+int g = b;
+if (b > 13) {
+    g = g * 1 + 4;
+} else {
+    g = g - 0;
+}
+print(b + g);

@@ -1,0 +1,5 @@
+// category: arithmetic  (program 042)
+int q = 8 - 4;
+int h = 14 * 3;
+print(h);
+print(q * 20);

@@ -1,0 +1,11 @@
+// category: conditionals  (program 026)
+int val = 5;
+int r = 0;
+if (val != 10) {
+    int b = 14 + 1;
+    r = val + 0;
+    r = r + (3 * 1);
+} else {
+    r = val + 3;
+}
+print(r);

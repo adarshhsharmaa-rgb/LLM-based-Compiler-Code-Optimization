@@ -1,0 +1,6 @@
+// category: arithmetic  (program 012)
+int a = 6 - 13;
+int w = a - 10;
+int x = 19 - 15;
+int val = x + 17;
+print(val);

@@ -1,0 +1,14 @@
+// category: mixed  (program 056)
+int y = 7 + 16;
+int p = y;
+if (y > -5) {
+    p = p * 1 + 1;
+} else {
+    p = p - 0;
+}
+int m = y * p;
+int tmp = y * p + m;
+int num = 16;
+int v = y + (2 * 2);
+int z = tmp - 0;
+print(v + z);

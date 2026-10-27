@@ -1,0 +1,9 @@
+// category: conditionals  (program 003)
+int z = -9;
+int y = 0;
+if (z != 5) {
+    int tmp = 20 + 15;
+    y = 0 + z;
+    y = y + (4 * 4);
+}
+print(y);

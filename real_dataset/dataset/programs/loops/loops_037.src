@@ -1,0 +1,10 @@
+// category: loops  (program 037)
+int acc = 0;
+int i = 0;
+while (i < 12) {
+    int b = 6 * 3;
+    acc = acc + b / 1;
+    int k = b * 13;
+    i = i + 1;
+}
+print(acc);

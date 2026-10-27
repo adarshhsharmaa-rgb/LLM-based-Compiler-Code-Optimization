@@ -1,0 +1,9 @@
+// category: conditionals  (program 063)
+int k = 16;
+int u = 0;
+if (k >= -10) {
+    u = k * 1;
+} else {
+    u = k * 4;
+}
+print(u);

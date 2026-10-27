@@ -1,0 +1,130 @@
+=== Program: arithmetic_052.c ===
+--- Iteration 1 ---
+  [ANALYZE] Found 18 opportunities: DEAD_CODEx3 (priority=80), COPY_PROPAGATIONx15 (priority=50)
+  [PROPOSE] Applying DEAD_CODE at instruction 0: h = 0 → (removed)
+  [VERIFY]  PASS (differential: 436/436 inputs matched, symbolic: equivalent)
+  [COST]    Before: 57.5, After: 55.0 (reduction: 4.3%); time 79.0 → 78.0 cycles
+  [ACCEPT]  ✓ Change accepted
+--- Iteration 2 ---
+  [ANALYZE] Found 17 opportunities: DEAD_CODEx2 (priority=80), COPY_PROPAGATIONx15 (priority=50)
+  [PROPOSE] Applying DEAD_CODE at instruction 0: m = 0 → (removed)
+  [VERIFY]  PASS (differential: 436/436 inputs matched, symbolic: equivalent)
+  [COST]    Before: 55.0, After: 52.5 (reduction: 4.5%); time 78.0 → 77.0 cycles
+  [ACCEPT]  ✓ Change accepted
+--- Iteration 3 ---
+  [ANALYZE] Found 16 opportunities: DEAD_CODE (priority=80), COPY_PROPAGATIONx15 (priority=50)
+  [PROPOSE] Applying DEAD_CODE at instruction 0: a = 0 → (removed)
+  [VERIFY]  PASS (differential: 436/436 inputs matched, symbolic: equivalent)
+  [COST]    Before: 52.5, After: 50.0 (reduction: 4.8%); time 77.0 → 76.0 cycles
+  [ACCEPT]  ✓ Change accepted
+--- Iteration 4 ---
+  [ANALYZE] Found 15 opportunities: COPY_PROPAGATIONx15 (priority=50)
+  [PROPOSE] Applying COPY_PROPAGATION at instruction 0: h = in_h → uses of h -> in_h at instr 7
+  [VERIFY]  PASS (differential: 349/349 inputs matched, symbolic: equivalent)
+  [COST]    Before: 50.0, After: 47.5 (reduction: 5.0%); time 76.0 → 75.0 cycles
+  [ACCEPT]  ✓ Change accepted
+--- Iteration 5 ---
+  [ANALYZE] Found 14 opportunities: COPY_PROPAGATIONx14 (priority=50)
+  [PROPOSE] Applying COPY_PROPAGATION at instruction 0: m = in_m → uses of m -> in_m at instr 2
+  [VERIFY]  PASS (differential: 349/349 inputs matched, symbolic: equivalent)
+  [COST]    Before: 47.5, After: 45.0 (reduction: 5.3%); time 75.0 → 74.0 cycles
+  [ACCEPT]  ✓ Change accepted
+--- Iteration 6 ---
+  [ANALYZE] Found 13 opportunities: COPY_PROPAGATIONx13 (priority=50)
+  [PROPOSE] Applying COPY_PROPAGATION at instruction 0: a = in_a → uses of a -> in_a at instr 1
+  [VERIFY]  PASS (differential: 349/349 inputs matched, symbolic: equivalent)
+  [COST]    Before: 45.0, After: 42.5 (reduction: 5.6%); time 74.0 → 73.0 cycles
+  [ACCEPT]  ✓ Change accepted
+--- Iteration 7 ---
+  [ANALYZE] Found 12 opportunities: COPY_PROPAGATIONx12 (priority=50)
+  [PROPOSE] Applying COPY_PROPAGATION at instruction 1: t0 = in_m + in_a; m = t0 → m = in_m + in_a
+  [VERIFY]  PASS (differential: 349/349 inputs matched, symbolic: equivalent)
+  [COST]    Before: 42.5, After: 39.5 (reduction: 7.1%); time 73.0 → 72.0 cycles
+  [ACCEPT]  ✓ Change accepted
+--- Iteration 8 ---
+  [ANALYZE] Found 10 opportunities: COPY_PROPAGATIONx10 (priority=50)
+  [PROPOSE] Applying COPY_PROPAGATION at instruction 1: t1 = 60 → uses of t1 -> 60 at instr 2
+  [VERIFY]  PASS (differential: 349/349 inputs matched, symbolic: equivalent)
+  [COST]    Before: 39.5, After: 36.5 (reduction: 7.6%); time 72.0 → 71.0 cycles
+  [ACCEPT]  ✓ Change accepted
+--- Iteration 9 ---
+  [ANALYZE] Found 9 opportunities: COPY_PROPAGATIONx9 (priority=50)
+  [PROPOSE] Applying COPY_PROPAGATION at instruction 3: t3 = in_h + t2; h = t3 → h = in_h + t2
+  [VERIFY]  PASS (differential: 349/349 inputs matched, symbolic: equivalent)
+  [COST]    Before: 36.5, After: 33.5 (reduction: 8.2%); time 71.0 → 70.0 cycles
+  [ACCEPT]  ✓ Change accepted
+--- Iteration 10 ---
+  [ANALYZE] Found 7 opportunities: COPY_PROPAGATIONx7 (priority=50)
+  [PROPOSE] Applying COPY_PROPAGATION at instruction 3: t4 = 60 → uses of t4 -> 60 at instr 4
+  [VERIFY]  PASS (differential: 349/349 inputs matched, symbolic: equivalent)
+  [COST]    Before: 33.5, After: 30.5 (reduction: 9.0%); time 70.0 → 69.0 cycles
+  [ACCEPT]  ✓ Change accepted
+--- Iteration 11 ---
+  [ANALYZE] Found 6 opportunities: COPY_PROPAGATIONx6 (priority=50)
+  [PROPOSE] Applying COPY_PROPAGATION at instruction 4: t5 = m % 60; m = t5 → m = m % 60
+  [VERIFY]  PASS (differential: 349/349 inputs matched, symbolic: equivalent)
+  [COST]    Before: 30.5, After: 27.5 (reduction: 9.8%); time 69.0 → 68.0 cycles
+  [ACCEPT]  ✓ Change accepted
+--- Iteration 12 ---
+  [ANALYZE] Found 4 opportunities: COPY_PROPAGATIONx4 (priority=50)
+  [PROPOSE] Applying COPY_PROPAGATION at instruction 4: t6 = 24 → uses of t6 -> 24 at instr 5
+  [VERIFY]  PASS (differential: 349/349 inputs matched, symbolic: equivalent)
+  [COST]    Before: 27.5, After: 24.5 (reduction: 10.9%); time 68.0 → 67.0 cycles
+  [ACCEPT]  ✓ Change accepted
+--- Iteration 13 ---
+  [ANALYZE] Found 3 opportunities: COPY_PROPAGATIONx3 (priority=50)
+  [PROPOSE] Applying COPY_PROPAGATION at instruction 5: t7 = h % 24; h = t7 → h = h % 24
+  [VERIFY]  PASS (differential: 349/349 inputs matched, symbolic: equivalent)
+  [COST]    Before: 24.5, After: 21.5 (reduction: 12.2%); time 67.0 → 66.0 cycles
+  [ACCEPT]  ✓ Change accepted
+--- Iteration 14 ---
+  [ANALYZE] Found 1 opportunity: COPY_PROPAGATION (priority=50)
+  [PROPOSE] Applying COPY_PROPAGATION at instruction 6: t8 = 1000000 → uses of t8 -> 1000000 at instr 7
+  [VERIFY]  PASS (differential: 349/349 inputs matched, symbolic: equivalent)
+  [COST]    Before: 21.5, After: 18.5 (reduction: 14.0%); time 66.0 → 65.0 cycles
+  [ACCEPT]  ✓ Change accepted
+--- Iteration 15 ---
+  [ANALYZE] No more opportunities found.
+=== RESULT ===
+  Original cost: 57.5
+  Final cost:    18.5
+  Reduction:     67.8%
+  Exec. time:    79.0 → 65.0 cycles (17.7% less)
+  Iterations:    15
+  Accepted:      14
+  Rejected:      0
+  Invalid:       0
+  Output match:  PASS ✓
+  Equivalence:   proved for all inputs
+=== Original TAC ===
+   0 |     h = 0
+   1 |     m = 0
+   2 |     a = 0
+   3 |     h = in_h
+   4 |     m = in_m
+   5 |     a = in_a
+   6 |     t0 = m + a
+   7 |     m = t0
+   8 |     t1 = 60
+   9 |     t2 = m / t1
+  10 |     t3 = h + t2
+  11 |     h = t3
+  12 |     t4 = 60
+  13 |     t5 = m % t4
+  14 |     m = t5
+  15 |     t6 = 24
+  16 |     t7 = h % t6
+  17 |     h = t7
+  18 |     print h
+  19 |     t8 = 1000000
+  20 |     print t8
+  21 |     print m
+=== Optimized TAC ===
+  0 |     m = in_m + in_a
+  1 |     t2 = m / 60
+  2 |     h = in_h + t2
+  3 |     m = m % 60
+  4 |     h = h % 24
+  5 |     print h
+  6 |     print 1000000
+  7 |     print m

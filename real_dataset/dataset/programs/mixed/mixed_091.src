@@ -1,0 +1,14 @@
+// category: mixed  (program 091)
+int res = 18 + 3;
+int n = res;
+if (res > 3) {
+    n = n * 1 + 3;
+} else {
+    n = n - 0;
+}
+int h = 0;
+for (int i = 0; i < 3; i = i + 1) {
+    h = h + (3 + 4);
+}
+int k = res / 1;
+print(h + k);

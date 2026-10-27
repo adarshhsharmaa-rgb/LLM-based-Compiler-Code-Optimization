@@ -1,0 +1,9 @@
+// category: loops  (program 064)
+int sum = 0;
+int i = 0;
+while (i < 8) {
+    int e = 9 + 6;
+    sum = sum + e;
+    i = i + 1;
+}
+print(sum);

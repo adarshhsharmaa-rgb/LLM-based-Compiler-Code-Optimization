@@ -1,0 +1,15 @@
+// category: loops  (program 051)
+int prod = 1;
+int k = 0;
+int i = 0;
+while (i < 5) {
+    int q = 1 + 1;
+    prod = prod * q;
+    for (int j = 0; j < 2; j = j + 1) {
+        k = k + 2 - 1;
+    }
+    i = i + 1;
+}
+print(prod);
+print(k);
+print(prod * 4);

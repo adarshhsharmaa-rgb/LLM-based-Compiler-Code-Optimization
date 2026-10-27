@@ -1,0 +1,7 @@
+// category: repeated_expr  (program 034)
+int p = 3;
+int e = 11;
+int a = p + e;
+int x = p + e;
+int w = a + x;
+print(w);

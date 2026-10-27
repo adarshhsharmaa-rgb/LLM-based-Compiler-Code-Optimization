@@ -1,0 +1,16 @@
+// category: mixed  (program 048)
+// inputs: in_c
+int p = in_c;
+if (in_c > -5) {
+    p = p * 1 + 2;
+} else {
+    p = p - 0;
+}
+int r = 0;
+for (int i = 0; i < 6; i = i + 1) {
+    r = r + (1 + 1);
+}
+int f = in_c * p;
+int y = in_c * p + f;
+int tmp = y + (6 * 2);
+print(y + tmp);

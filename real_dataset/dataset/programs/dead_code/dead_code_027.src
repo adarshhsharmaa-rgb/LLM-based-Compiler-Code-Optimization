@@ -1,0 +1,9 @@
+// category: dead_code  (program 027)
+int m = 15;
+int y = m + 14;
+int r = y - 9;
+int k = m + 3;
+m = 68;
+m = m + 17;
+int acc = m + 9;
+print(acc);

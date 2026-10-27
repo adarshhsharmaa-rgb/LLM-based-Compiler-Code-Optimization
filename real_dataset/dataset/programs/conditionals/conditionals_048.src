@@ -1,0 +1,9 @@
+// category: conditionals  (program 048)
+// inputs: in_n
+int val = 0;
+if (in_n == 5) {
+    val = in_n / 1;
+} else {
+    val = in_n * 1;
+}
+print(val);

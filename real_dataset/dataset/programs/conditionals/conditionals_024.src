@@ -1,0 +1,8 @@
+// category: conditionals  (program 024)
+// inputs: in_b
+int m = 0;
+if (in_b != -8) {
+    m = in_b + 0;
+    m = m + (4 * 4);
+}
+print(m);

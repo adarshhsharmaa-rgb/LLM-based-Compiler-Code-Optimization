@@ -1,0 +1,10 @@
+// category: mixed  (program 049)
+int g = 7 + 14;
+int w = 0;
+for (int i = 0; i < 5; i = i + 1) {
+    w = w + (3 + 1);
+}
+int res = g + (20 * 9);
+int p = g / 1;
+int y = 46;
+print(res + p);

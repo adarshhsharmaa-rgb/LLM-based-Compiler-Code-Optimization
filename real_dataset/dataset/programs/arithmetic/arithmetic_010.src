@@ -1,0 +1,6 @@
+// category: arithmetic  (program 010)
+int f = 18 * 20;
+int tmp = f + 6;
+int u = f + 11 - 8;
+int x = 4 * 2;
+print(x);

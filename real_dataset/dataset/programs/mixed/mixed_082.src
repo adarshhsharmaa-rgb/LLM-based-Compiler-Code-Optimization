@@ -1,0 +1,10 @@
+// category: mixed  (program 082)
+int x = 5 + 9;
+int tmp = 32;
+int r = x - 0;
+int z = 0;
+for (int i = 0; i < 6; i = i + 1) {
+    z = z + (4 + 2);
+}
+int y = z * 4;
+print(z + y);

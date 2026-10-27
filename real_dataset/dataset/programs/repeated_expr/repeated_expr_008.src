@@ -1,0 +1,8 @@
+// category: repeated_expr  (program 008)
+int u = 12;
+int x = 18;
+int n = u + x;
+int r = x + u;
+int z = (u - x) * (u - x);
+int y = n * r + n * r;
+print(z + y);

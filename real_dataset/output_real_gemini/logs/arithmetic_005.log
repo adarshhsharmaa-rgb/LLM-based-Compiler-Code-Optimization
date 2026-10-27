@@ -1,0 +1,77 @@
+=== Program: arithmetic_005.c ===
+--- Iteration 1 ---
+  [ANALYZE] Found 7 opportunities: DEAD_CODEx3 (priority=80), COPY_PROPAGATIONx4 (priority=50)
+  [ROUTE]   Rule-based optimizer: highest-priority opportunity is DEAD_CODE (priority 80)
+  [PROPOSE] Applying DEAD_CODE at instruction 0: i = 0 → (removed)
+  [VERIFY]  PASS (differential: 347/347 inputs matched, symbolic: equivalent)
+  [COST]    Before: 20.0, After: 17.5 (reduction: 12.5%); time 27.0 → 26.0 cycles
+  [ACCEPT]  ✓ Change accepted
+--- Iteration 2 ---
+  [ANALYZE] Found 6 opportunities: DEAD_CODEx2 (priority=80), COPY_PROPAGATIONx4 (priority=50)
+  [ROUTE]   Rule-based optimizer: highest-priority opportunity is DEAD_CODE (priority 80)
+  [PROPOSE] Applying DEAD_CODE at instruction 0: j = 0 → (removed)
+  [VERIFY]  PASS (differential: 347/347 inputs matched, symbolic: equivalent)
+  [COST]    Before: 17.5, After: 15.0 (reduction: 14.3%); time 26.0 → 25.0 cycles
+  [ACCEPT]  ✓ Change accepted
+--- Iteration 3 ---
+  [ANALYZE] Found 5 opportunities: DEAD_CODE (priority=80), COPY_PROPAGATIONx4 (priority=50)
+  [ROUTE]   Rule-based optimizer: highest-priority opportunity is DEAD_CODE (priority 80)
+  [PROPOSE] Applying DEAD_CODE at instruction 0: k = 0 → (removed)
+  [VERIFY]  PASS (differential: 347/347 inputs matched, symbolic: equivalent)
+  [COST]    Before: 15.0, After: 12.5 (reduction: 16.7%); time 25.0 → 24.0 cycles
+  [ACCEPT]  ✓ Change accepted
+--- Iteration 4 ---
+  [ANALYZE] Found 4 opportunities: COPY_PROPAGATIONx4 (priority=50)
+  [ROUTE]   Rule-based optimizer: highest-priority opportunity is COPY_PROPAGATION (priority 50)
+  [PROPOSE] Applying COPY_PROPAGATION at instruction 0: i = in_i → uses of i -> in_i at instr 2
+  [VERIFY]  PASS (differential: 345/345 inputs matched, symbolic: equivalent)
+  [COST]    Before: 12.5, After: 10.0 (reduction: 20.0%); time 24.0 → 23.0 cycles
+  [ACCEPT]  ✓ Change accepted
+--- Iteration 5 ---
+  [ANALYZE] Found 3 opportunities: COPY_PROPAGATIONx3 (priority=50)
+  [ROUTE]   Rule-based optimizer: highest-priority opportunity is COPY_PROPAGATION (priority 50)
+  [PROPOSE] Applying COPY_PROPAGATION at instruction 0: t0 = 2 → uses of t0 -> 2 at instr 1
+  [VERIFY]  PASS (differential: 345/345 inputs matched, symbolic: equivalent)
+  [COST]    Before: 10.0, After: 7.0 (reduction: 30.0%); time 23.0 → 22.0 cycles
+  [ACCEPT]  ✓ Change accepted
+--- Iteration 6 ---
+  [ANALYZE] Found 2 opportunities: COPY_PROPAGATIONx2 (priority=50)
+  [ROUTE]   Rule-based optimizer: highest-priority opportunity is COPY_PROPAGATION (priority 50)
+  [PROPOSE] Applying COPY_PROPAGATION at instruction 1: t1 = in_i % 2; j = t1 → j = in_i % 2
+  [VERIFY]  PASS (differential: 345/345 inputs matched, symbolic: equivalent)
+  [COST]    Before: 7.0, After: 4.0 (reduction: 42.9%); time 22.0 → 21.0 cycles
+  [ACCEPT]  ✓ Change accepted
+--- Iteration 7 ---
+  [ANALYZE] No more opportunities found.
+  [ROUTE]   LLM optimizer (gemini gemini-3.1-flash-lite): the rules have nothing left to try
+  [LLM]     LLM produced no usable TAC: could not parse LLM TAC; reasoning: Strength reduction: The modulo operation by a power of two is replaced by a bitwise AND operation, which is typically faster at the machine level.
+  [REPAIR]  Feedback sent to the LLM: It is not valid TAC: TAC line 1: unrecognised instruction: 'j = in_i & 1'. Use only the instruction forms listed below; one instruction has at most one operator.
+  [LLM]     LLM repair: The bitwise AND operator is not supported by the specified TAC syntax, so I am replacing the expression with a conditional logic structure that computes the parity using only supported operators.
+  [VERIFY]  FAIL (print #1 is not symbolically equivalent)
+  [REJECT]  ✗ Change rejected: Verification failed: print #1 is not symbolically equivalent
+=== RESULT ===
+  Original cost: 20.0
+  Final cost:    4.0
+  Reduction:     80.0%
+  Exec. time:    27.0 → 21.0 cycles (22.2% less)
+  Iterations:    7
+  Accepted:      6
+  Rejected:      0
+  Invalid:       1
+  Routing:       hybrid (LLM: gemini gemini-3.1-flash-lite)
+  LLM proposals: 1 (0 passed verification)
+  LLM repairs:   1 (0 accepted)
+  Output match:  PASS ✓
+  Equivalence:   proved for all inputs
+=== Original TAC ===
+  0 |     i = 0
+  1 |     j = 0
+  2 |     k = 0
+  3 |     i = in_i
+  4 |     t0 = 2
+  5 |     t1 = i % t0
+  6 |     j = t1
+  7 |     print j
+=== Optimized TAC ===
+  0 |     j = in_i % 2
+  1 |     print j

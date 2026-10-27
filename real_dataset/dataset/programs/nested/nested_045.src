@@ -1,0 +1,5 @@
+// category: nested  (program 045)
+int u = (1 / 9) - (10 * 1);
+int e = (12 / 5) - ((6 * u) * (14 + 17));
+int res = e + (e * (10 - 14));
+print(res);

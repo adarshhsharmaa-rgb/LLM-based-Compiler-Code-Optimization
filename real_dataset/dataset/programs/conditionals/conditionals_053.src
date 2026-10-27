@@ -1,0 +1,13 @@
+// category: conditionals  (program 053)
+int v = -15;
+int m = 0;
+if (v <= 6) {
+    m = v / 1;
+} else {
+    m = v - 2;
+}
+int x = 3;
+if (x > 5) {
+    m = m + x * 1;
+}
+print(m);

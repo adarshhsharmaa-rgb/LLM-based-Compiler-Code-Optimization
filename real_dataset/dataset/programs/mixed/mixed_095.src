@@ -1,0 +1,7 @@
+// category: mixed  (program 095)
+int num = 8 + 3;
+int k = 0 + num;
+int val = num * 4;
+int tmp = val * val;
+int y = val * val + tmp;
+print(val + y);

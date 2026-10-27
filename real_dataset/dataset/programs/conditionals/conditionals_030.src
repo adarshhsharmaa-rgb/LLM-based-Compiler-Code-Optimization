@@ -1,0 +1,13 @@
+// category: conditionals  (program 030)
+int r = 2;
+int tmp = 0;
+if (r == 10) {
+    tmp = 0 + r;
+} else {
+    tmp = r * 1;
+}
+int m = 3;
+if (m > 0) {
+    tmp = tmp + m * 1;
+}
+print(tmp);

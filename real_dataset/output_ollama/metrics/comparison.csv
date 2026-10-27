@@ -1,0 +1,9 @@
+category,programs,baseline_avg_reduction_pct,current_avg_reduction_pct,baseline_avg_final_cost,current_avg_final_cost,programs_improved,programs_worse
+arithmetic,60,96.03,96.03,1.47,1.47,0,0
+nested,60,98.1,98.19,1.84,1.75,1,0
+repeated_expr,60,80.71,80.71,6.92,6.92,0,0
+dead_code,60,97.44,97.44,1.0,1.0,0,0
+loops,80,65.05,66.09,23.76,23.07,7,0
+conditionals,80,73.91,75.21,13.98,13.22,7,0
+mixed,100,77.91,79.96,21.5,19.56,17,0
+ALL,500,82.49,83.28,11.69,11.06,32,0

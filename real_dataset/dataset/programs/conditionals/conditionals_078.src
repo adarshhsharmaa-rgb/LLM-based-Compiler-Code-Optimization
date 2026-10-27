@@ -1,0 +1,7 @@
+// category: conditionals  (program 078)
+int z = -9;
+int w = 0;
+if (z <= -3) {
+    w = z * 1;
+}
+print(w);

@@ -1,0 +1,12 @@
+// category: mixed  (program 045)
+int w = 2 + 20;
+int k = 0;
+for (int i = 0; i < 6; i = i + 1) {
+    k = k + (3 + 2);
+}
+int f = 87;
+int c = w + (10 * 12);
+int y = k * 16;
+int e = w * y;
+int p = w * y + e;
+print(y + p);

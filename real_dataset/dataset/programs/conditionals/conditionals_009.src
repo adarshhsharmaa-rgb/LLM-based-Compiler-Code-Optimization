@@ -1,0 +1,14 @@
+// category: conditionals  (program 009)
+// inputs: in_c
+int y = 0;
+if (in_c <= 6) {
+    y = 0 + in_c;
+    y = y + (3 * 5);
+} else {
+    y = in_c - 9;
+}
+int g = 3;
+if (g > 7) {
+    y = y + g * 1;
+}
+print(y);

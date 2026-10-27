@@ -1,0 +1,9 @@
+// category: dead_code  (program 057)
+int n = 18;
+int d = 70;
+int acc = 7;
+int val = 34;
+acc = 85;
+acc = acc + 12;
+int a = acc + 15;
+print(a);

@@ -1,0 +1,136 @@
+=== Program: conditionals_039.c ===
+--- Iteration 1 ---
+  [ANALYZE] Found 13 opportunities: DEAD_CODEx4 (priority=80), COPY_PROPAGATIONx9 (priority=50)
+  [PROPOSE] Applying DEAD_CODE at instruction 0: n = 0 → (removed)
+  [VERIFY]  PASS (differential: 382/382 inputs matched, symbolic: skipped (control flow))
+  [COST]    Before: 67.0, After: 64.5 (reduction: 3.7%); time 30.5 → 29.5 cycles
+  [ACCEPT]  ✓ Change accepted
+--- Iteration 2 ---
+  [ANALYZE] Found 12 opportunities: DEAD_CODEx3 (priority=80), COPY_PROPAGATIONx9 (priority=50)
+  [PROPOSE] Applying DEAD_CODE at instruction 0: m = 0 → (removed)
+  [VERIFY]  PASS (differential: 382/382 inputs matched, symbolic: skipped (control flow))
+  [COST]    Before: 64.5, After: 62.0 (reduction: 3.9%); time 29.5 → 28.5 cycles
+  [ACCEPT]  ✓ Change accepted
+--- Iteration 3 ---
+  [ANALYZE] Found 11 opportunities: DEAD_CODEx2 (priority=80), COPY_PROPAGATIONx9 (priority=50)
+  [PROPOSE] Applying DEAD_CODE at instruction 0: k = 0 → (removed)
+  [VERIFY]  PASS (differential: 382/382 inputs matched, symbolic: skipped (control flow))
+  [COST]    Before: 62.0, After: 59.5 (reduction: 4.0%); time 28.5 → 27.5 cycles
+  [ACCEPT]  ✓ Change accepted
+--- Iteration 4 ---
+  [ANALYZE] Found 10 opportunities: DEAD_CODE (priority=80), COPY_PROPAGATIONx9 (priority=50)
+  [PROPOSE] Applying DEAD_CODE at instruction 0: l = 0 → (removed)
+  [VERIFY]  PASS (differential: 382/382 inputs matched, symbolic: skipped (control flow))
+  [COST]    Before: 59.5, After: 57.0 (reduction: 4.2%); time 27.5 → 26.5 cycles
+  [ACCEPT]  ✓ Change accepted
+--- Iteration 5 ---
+  [ANALYZE] Found 9 opportunities: COPY_PROPAGATIONx9 (priority=50)
+  [PROPOSE] Applying COPY_PROPAGATION at instruction 0: n = in_n → uses of n -> in_n at instr 4, 17
+  [VERIFY]  PASS (differential: 357/357 inputs matched, symbolic: skipped (control flow))
+  [COST]    Before: 57.0, After: 54.5 (reduction: 4.4%); time 26.5 → 25.5 cycles
+  [ACCEPT]  ✓ Change accepted
+--- Iteration 6 ---
+  [ANALYZE] Found 8 opportunities: COPY_PROPAGATIONx8 (priority=50)
+  [PROPOSE] Applying COPY_PROPAGATION at instruction 0: m = in_m → uses of m -> in_m at instr 3, 10, 13, 15
+  [VERIFY]  PASS (differential: 357/357 inputs matched, symbolic: skipped (control flow))
+  [COST]    Before: 54.5, After: 52.0 (reduction: 4.6%); time 25.5 → 24.5 cycles
+  [ACCEPT]  ✓ Change accepted
+--- Iteration 7 ---
+  [ANALYZE] Found 7 opportunities: COPY_PROPAGATIONx7 (priority=50)
+  [PROPOSE] Applying COPY_PROPAGATION at instruction 0: k = in_k → uses of k -> in_k at instr 8
+  [VERIFY]  PASS (differential: 357/357 inputs matched, symbolic: skipped (control flow))
+  [COST]    Before: 52.0, After: 49.5 (reduction: 4.8%); time 24.5 → 23.5 cycles
+  [ACCEPT]  ✓ Change accepted
+--- Iteration 8 ---
+  [ANALYZE] Found 6 opportunities: COPY_PROPAGATIONx6 (priority=50)
+  [PROPOSE] Applying COPY_PROPAGATION at instruction 0: l = in_l → uses of l -> in_l at instr 7
+  [VERIFY]  PASS (differential: 357/357 inputs matched, symbolic: skipped (control flow))
+  [COST]    Before: 49.5, After: 47.0 (reduction: 5.1%); time 23.5 → 22.5 cycles
+  [ACCEPT]  ✓ Change accepted
+--- Iteration 9 ---
+  [ANALYZE] Found 5 opportunities: COPY_PROPAGATIONx5 (priority=50)
+  [PROPOSE] Applying COPY_PROPAGATION at instruction 2: t1 = 1000000 → uses of t1 -> 1000000 at instr 3
+  [VERIFY]  PASS (differential: 357/357 inputs matched, symbolic: skipped (control flow))
+  [COST]    Before: 47.0, After: 44.0 (reduction: 6.4%); time 22.5 → 22.0 cycles
+  [ACCEPT]  ✓ Change accepted
+--- Iteration 10 ---
+  [ANALYZE] Found 4 opportunities: COPY_PROPAGATIONx4 (priority=50)
+  [PROPOSE] Applying COPY_PROPAGATION at instruction 7: t4 = 1 → uses of t4 -> 1 at instr 8
+  [VERIFY]  PASS (differential: 357/357 inputs matched, symbolic: skipped (control flow))
+  [COST]    Before: 44.0, After: 41.0 (reduction: 6.8%); time 22.0 → 21.5 cycles
+  [ACCEPT]  ✓ Change accepted
+--- Iteration 11 ---
+  [ANALYZE] Found 3 opportunities: COPY_PROPAGATIONx3 (priority=50)
+  [PROPOSE] Applying COPY_PROPAGATION at instruction 9: t6 = t5 / in_m; x = t6 → x = t5 / in_m
+  [VERIFY]  PASS (differential: 357/357 inputs matched, symbolic: skipped (control flow))
+  [COST]    Before: 41.0, After: 38.0 (reduction: 7.3%); time 21.5 → 21.0 cycles
+  [ACCEPT]  ✓ Change accepted
+--- Iteration 12 ---
+  [ANALYZE] Found 1 opportunity: COPY_PROPAGATION (priority=50)
+  [PROPOSE] Applying COPY_PROPAGATION at instruction 12: t9 = 1000000 → uses of t9 -> 1000000 at instr 13
+  [VERIFY]  PASS (differential: 357/357 inputs matched, symbolic: skipped (control flow))
+  [COST]    Before: 38.0, After: 35.0 (reduction: 7.9%); time 21.0 → 20.7 cycles
+  [ACCEPT]  ✓ Change accepted
+--- Iteration 13 ---
+  [ANALYZE] No more opportunities found.
+=== RESULT ===
+  Original cost: 67.0
+  Final cost:    35.0
+  Reduction:     47.8%
+  Exec. time:    30.5 → 20.7 cycles (32.2% less)
+  Iterations:    13
+  Accepted:      12
+  Rejected:      0
+  Invalid:       0
+  Output match:  PASS ✓
+  Equivalence:   proved for all inputs
+=== Original TAC ===
+   0 |     n = 0
+   1 |     m = 0
+   2 |     k = 0
+   3 |     l = 0
+   4 |     n = in_n
+   5 |     m = in_m
+   6 |     k = in_k
+   7 |     l = in_l
+   8 |     t0 = m > n
+   9 |     ifFalse t0 goto L0
+  10 |     t1 = 1000000
+  11 |     print t1
+  12 |     goto L1
+  13 | L0:
+  14 |     t2 = l + k
+  15 |     t3 = t2 + m
+  16 |     t4 = 1
+  17 |     t5 = t3 - t4
+  18 |     t6 = t5 / m
+  19 |     x = t6
+  20 |     t7 = x * m
+  21 |     t8 = t7 > n
+  22 |     ifFalse t8 goto L2
+  23 |     t9 = 1000000
+  24 |     print t9
+  25 |     goto L3
+  26 | L2:
+  27 |     print x
+  28 | L3:
+  29 | L1:
+=== Optimized TAC ===
+   0 |     t0 = in_m > in_n
+   1 |     ifFalse t0 goto L0
+   2 |     print 1000000
+   3 |     goto L1
+   4 | L0:
+   5 |     t2 = in_l + in_k
+   6 |     t3 = t2 + in_m
+   7 |     t5 = t3 - 1
+   8 |     x = t5 / in_m
+   9 |     t7 = x * in_m
+  10 |     t8 = t7 > in_n
+  11 |     ifFalse t8 goto L2
+  12 |     print 1000000
+  13 |     goto L3
+  14 | L2:
+  15 |     print x
+  16 | L3:
+  17 | L1:

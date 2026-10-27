@@ -1,0 +1,9 @@
+// category: dead_code  (program 007)
+int v = 14;
+int num = v - 14;
+int a = 89;
+int u = 12;
+u = 51;
+u = u + 6;
+int y = u + 7;
+print(y);

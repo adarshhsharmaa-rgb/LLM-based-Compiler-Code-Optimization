@@ -1,0 +1,6 @@
+// category: mixed  (program 006)
+int v = 3 + 5;
+int num = v * 1;
+int r = num * 8;
+int y = 97;
+print(num + r);

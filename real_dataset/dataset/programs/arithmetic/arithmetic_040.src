@@ -1,0 +1,5 @@
+// category: arithmetic  (program 040)
+int p = 8 * 20;
+int acc = 15 + 18;
+print(acc);
+print(p * 7);

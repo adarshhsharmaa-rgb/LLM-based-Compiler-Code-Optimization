@@ -1,0 +1,6 @@
+// category: arithmetic  (program 015)
+int x = 13 + 15;
+int u = x * 19 + 3;
+int s = x * 6;
+print(s);
+print(x * 11);

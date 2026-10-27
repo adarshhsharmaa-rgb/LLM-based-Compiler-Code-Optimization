@@ -1,0 +1,8 @@
+// category: dead_code  (program 058)
+int k = 7;
+int res = k + 19;
+int d = 17;
+int s = d + 10;
+int c = 44;
+int v = k + 8;
+print(v);

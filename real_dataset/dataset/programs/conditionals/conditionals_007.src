@@ -1,0 +1,9 @@
+// category: conditionals  (program 007)
+// inputs: in_c
+int r = 0;
+if (in_c <= -9) {
+    r = in_c - 0;
+} else {
+    r = in_c + 5;
+}
+print(r);

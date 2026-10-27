@@ -1,0 +1,7 @@
+// category: arithmetic  (program 018)
+int tmp = 7 + 8;
+int y = tmp + 16;
+int m = y * 1;
+int p = 8 * 8;
+print(p);
+print(tmp - 12);

@@ -1,0 +1,6 @@
+// category: repeated_expr  (program 009)
+// inputs: in_b, in_a
+int a = in_b + in_a;
+int h = in_b + in_a;
+int s = a + h;
+print(s);

@@ -1,0 +1,15 @@
+// category: conditionals  (program 060)
+int c = -16;
+int z = 0;
+if (c <= -2) {
+    int d = 1 + 16;
+    z = c + 0;
+    z = z + (4 * 2);
+} else {
+    z = c + 5;
+}
+int a = 4;
+if (a > 7) {
+    z = z + a * 1;
+}
+print(z);

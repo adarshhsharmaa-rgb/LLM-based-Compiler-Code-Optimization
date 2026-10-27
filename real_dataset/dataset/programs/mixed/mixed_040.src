@@ -1,0 +1,12 @@
+// category: mixed  (program 040)
+int c = 20 + 10;
+int n = 62;
+int k = c + 0;
+int z = c * 16;
+int num = z;
+if (z > 15) {
+    num = num * 1 + 4;
+} else {
+    num = num - 0;
+}
+print(z + num);

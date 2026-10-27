@@ -1,0 +1,516 @@
+=== Program: dead_code_047.c ===
+--- Iteration 1 ---
+  [ANALYZE] Found 30 opportunities: DEAD_CODEx6 (priority=80), COPY_PROPAGATIONx24 (priority=50)
+  [PROPOSE] Applying DEAD_CODE at instruction 0: n = 0 → (removed)
+  [VERIFY]  PASS (differential: 373/373 inputs matched, symbolic: skipped (control flow))
+  [COST]    Before: 159.5, After: 157.0 (reduction: 1.6%); time 332.6 → 331.6 cycles
+  [ACCEPT]  ✓ Change accepted
+--- Iteration 2 ---
+  [ANALYZE] Found 29 opportunities: DEAD_CODEx5 (priority=80), COPY_PROPAGATIONx24 (priority=50)
+  [PROPOSE] Applying DEAD_CODE at instruction 0: m = 0 → (removed)
+  [VERIFY]  PASS (differential: 373/373 inputs matched, symbolic: skipped (control flow))
+  [COST]    Before: 157.0, After: 154.5 (reduction: 1.6%); time 331.6 → 330.6 cycles
+  [ACCEPT]  ✓ Change accepted
+--- Iteration 3 ---
+  [ANALYZE] Found 28 opportunities: DEAD_CODEx4 (priority=80), COPY_PROPAGATIONx24 (priority=50)
+  [PROPOSE] Applying DEAD_CODE at instruction 0: numseat = 0 → (removed)
+  [VERIFY]  PASS (differential: 373/373 inputs matched, symbolic: skipped (control flow))
+  [COST]    Before: 154.5, After: 152.0 (reduction: 1.6%); time 330.6 → 329.6 cycles
+  [ACCEPT]  ✓ Change accepted
+--- Iteration 4 ---
+  [ANALYZE] Found 27 opportunities: DEAD_CODEx3 (priority=80), COPY_PROPAGATIONx24 (priority=50)
+  [PROPOSE] Applying DEAD_CODE at instruction 0: a = 0 → (removed)
+  [VERIFY]  PASS (differential: 373/373 inputs matched, symbolic: skipped (control flow))
+  [COST]    Before: 152.0, After: 149.5 (reduction: 1.6%); time 329.6 → 328.6 cycles
+  [ACCEPT]  ✓ Change accepted
+--- Iteration 5 ---
+  [ANALYZE] Found 26 opportunities: DEAD_CODEx2 (priority=80), COPY_PROPAGATIONx24 (priority=50)
+  [PROPOSE] Applying DEAD_CODE at instruction 0: b = 0 → (removed)
+  [VERIFY]  PASS (differential: 373/373 inputs matched, symbolic: skipped (control flow))
+  [COST]    Before: 149.5, After: 147.0 (reduction: 1.7%); time 328.6 → 327.6 cycles
+  [ACCEPT]  ✓ Change accepted
+--- Iteration 6 ---
+  [ANALYZE] Found 25 opportunities: DEAD_CODE (priority=80), COPY_PROPAGATIONx24 (priority=50)
+  [PROPOSE] Applying DEAD_CODE at instruction 4: numseat = t1 → (removed)
+  [VERIFY]  PASS (differential: 373/373 inputs matched, symbolic: skipped (control flow))
+  [COST]    Before: 147.0, After: 144.5 (reduction: 1.7%); time 327.6 → 326.6 cycles
+  [ACCEPT]  ✓ Change accepted
+--- Iteration 7 ---
+  [ANALYZE] Found 24 opportunities: DEAD_CODE (priority=80), COPY_PROPAGATIONx23 (priority=50)
+  [PROPOSE] Applying DEAD_CODE at instruction 3: t1 = n * t0 → (removed)
+  [VERIFY]  PASS (differential: 373/373 inputs matched, symbolic: skipped (control flow))
+  [COST]    Before: 144.5, After: 141.0 (reduction: 2.4%); time 326.6 → 323.6 cycles
+  [ACCEPT]  ✓ Change accepted
+--- Iteration 8 ---
+  [ANALYZE] Found 23 opportunities: DEAD_CODE (priority=80), COPY_PROPAGATIONx22 (priority=50)
+  [PROPOSE] Applying DEAD_CODE at instruction 2: t0 = 4 → (removed)
+  [VERIFY]  PASS (differential: 373/373 inputs matched, symbolic: skipped (control flow))
+  [COST]    Before: 141.0, After: 138.0 (reduction: 2.1%); time 323.6 → 322.6 cycles
+  [ACCEPT]  ✓ Change accepted
+--- Iteration 9 ---
+  [ANALYZE] Found 22 opportunities: COPY_PROPAGATIONx22 (priority=50)
+  [PROPOSE] Applying COPY_PROPAGATION at instruction 0: n = in_n → uses of n -> in_n at instr 3, 22
+  [VERIFY]  PASS (differential: 349/349 inputs matched, symbolic: skipped (control flow))
+  [COST]    Before: 138.0, After: 135.5 (reduction: 1.8%); time 322.6 → 321.6 cycles
+  [ACCEPT]  ✓ Change accepted
+--- Iteration 10 ---
+  [ANALYZE] Found 21 opportunities: COPY_PROPAGATIONx21 (priority=50)
+  [PROPOSE] Applying COPY_PROPAGATION at instruction 0: m = in_m → uses of m -> in_m at instr 3, 8, 30, 32
+  [VERIFY]  PASS (differential: 349/349 inputs matched, symbolic: skipped (control flow))
+  [COST]    Before: 135.5, After: 133.0 (reduction: 1.8%); time 321.6 → 320.6 cycles
+  [ACCEPT]  ✓ Change accepted
+--- Iteration 11 ---
+  [ANALYZE] Found 20 opportunities: COPY_PROPAGATIONx20 (priority=50)
+  [PROPOSE] Applying COPY_PROPAGATION at instruction 0: t2 = 2 → uses of t2 -> 2 at instr 1
+  [VERIFY]  PASS (differential: 349/349 inputs matched, symbolic: skipped (control flow))
+  [COST]    Before: 133.0, After: 130.0 (reduction: 2.3%); time 320.6 → 319.6 cycles
+  [ACCEPT]  ✓ Change accepted
+--- Iteration 12 ---
+  [ANALYZE] Found 20 opportunities: STRENGTH_REDUCTION (priority=60), COPY_PROPAGATIONx19 (priority=50)
+  [PROPOSE] Applying STRENGTH_REDUCTION at instruction 0: t3 = in_n * 2 → t3 = in_n + in_n
+  [VERIFY]  PASS (differential: 349/349 inputs matched, symbolic: skipped (control flow))
+  [COST]    Before: 130.0, After: 130.0 (reduction: 0.0%); time 319.6 → 317.6 cycles
+  [REJECT]  ✗ Change rejected: No cost improvement
+--- Iteration 13 ---
+  [ANALYZE] Found 19 opportunities: COPY_PROPAGATIONx19 (priority=50)
+  [PROPOSE] Applying COPY_PROPAGATION at instruction 3: t5 = 0 → uses of t5 -> 0 at instr 4
+  [VERIFY]  PASS (differential: 349/349 inputs matched, symbolic: skipped (control flow))
+  [COST]    Before: 130.0, After: 127.0 (reduction: 2.3%); time 319.6 → 318.8 cycles
+  [ACCEPT]  ✓ Change accepted
+--- Iteration 14 ---
+  [ANALYZE] Found 19 opportunities: STRENGTH_REDUCTION (priority=60), COPY_PROPAGATIONx18 (priority=50)
+  [PROPOSE] Applying STRENGTH_REDUCTION at instruction 0: t3 = in_n * 2 → t3 = in_n + in_n
+  [VERIFY]  PASS (differential: 349/349 inputs matched, symbolic: skipped (control flow))
+  [COST]    Before: 127.0, After: 127.0 (reduction: 0.0%); time 318.8 → 316.8 cycles
+  [REJECT]  ✗ Change rejected: No cost improvement
+--- Iteration 15 ---
+  [ANALYZE] Found 18 opportunities: COPY_PROPAGATIONx18 (priority=50)
+  [PROPOSE] Applying COPY_PROPAGATION at instruction 7: t7 = 1 → uses of t7 -> 1 at instr 8
+  [VERIFY]  PASS (differential: 349/349 inputs matched, symbolic: skipped (control flow))
+  [COST]    Before: 127.0, After: 124.0 (reduction: 2.4%); time 318.8 → 293.4 cycles
+  [ACCEPT]  ✓ Change accepted
+--- Iteration 16 ---
+  [ANALYZE] Found 18 opportunities: STRENGTH_REDUCTION (priority=60), COPY_PROPAGATIONx17 (priority=50)
+  [PROPOSE] Applying STRENGTH_REDUCTION at instruction 0: t3 = in_n * 2 → t3 = in_n + in_n
+  [VERIFY]  PASS (differential: 349/349 inputs matched, symbolic: skipped (control flow))
+  [COST]    Before: 124.0, After: 124.0 (reduction: 0.0%); time 293.4 → 291.4 cycles
+  [REJECT]  ✗ Change rejected: No cost improvement
+--- Iteration 17 ---
+  [ANALYZE] Found 17 opportunities: COPY_PROPAGATIONx17 (priority=50)
+  [PROPOSE] Applying COPY_PROPAGATION at instruction 9: t9 = 1 → uses of t9 -> 1 at instr 10
+  [VERIFY]  PASS (differential: 349/349 inputs matched, symbolic: skipped (control flow))
+  [COST]    Before: 124.0, After: 121.0 (reduction: 2.4%); time 293.4 → 267.9 cycles
+  [ACCEPT]  ✓ Change accepted
+--- Iteration 18 ---
+  [ANALYZE] Found 18 opportunities: CSE (priority=70), STRENGTH_REDUCTION (priority=60), COPY_PROPAGATIONx16 (priority=50)
+  [PROPOSE] Applying CSE at instruction 9: t10 = i + 1 → t10 = t8
+  [VERIFY]  PASS (differential: 349/349 inputs matched, symbolic: skipped (control flow))
+  [COST]    Before: 121.0, After: 120.5 (reduction: 0.4%); time 267.9 → 267.9 cycles
+  [ACCEPT]  ✓ Change accepted
+--- Iteration 19 ---
+  [ANALYZE] Found 17 opportunities: STRENGTH_REDUCTION (priority=60), COPY_PROPAGATIONx16 (priority=50)
+  [PROPOSE] Applying STRENGTH_REDUCTION at instruction 0: t3 = in_n * 2 → t3 = in_n + in_n
+  [VERIFY]  PASS (differential: 349/349 inputs matched, symbolic: skipped (control flow))
+  [COST]    Before: 120.5, After: 120.5 (reduction: 0.0%); time 267.9 → 265.9 cycles
+  [REJECT]  ✗ Change rejected: No cost improvement
+--- Iteration 20 ---
+  [ANALYZE] Found 16 opportunities: COPY_PROPAGATIONx16 (priority=50)
+  [PROPOSE] Applying COPY_PROPAGATION at instruction 9: t10 = t8 → uses of t10 -> t8 at instr 10
+  [VERIFY]  PASS (differential: 349/349 inputs matched, symbolic: skipped (control flow))
+  [COST]    Before: 120.5, After: 117.5 (reduction: 2.5%); time 267.9 → 242.5 cycles
+  [ACCEPT]  ✓ Change accepted
+--- Iteration 21 ---
+  [ANALYZE] Found 16 opportunities: STRENGTH_REDUCTION (priority=60), COPY_PROPAGATIONx15 (priority=50)
+  [PROPOSE] Applying STRENGTH_REDUCTION at instruction 0: t3 = in_n * 2 → t3 = in_n + in_n
+  [VERIFY]  PASS (differential: 349/349 inputs matched, symbolic: skipped (control flow))
+  [COST]    Before: 117.5, After: 117.5 (reduction: 0.0%); time 242.5 → 240.5 cycles
+  [REJECT]  ✗ Change rejected: No cost improvement
+--- Iteration 22 ---
+  [ANALYZE] Found 15 opportunities: COPY_PROPAGATIONx15 (priority=50)
+  [PROPOSE] Applying COPY_PROPAGATION at instruction 14: t11 = 2 → uses of t11 -> 2 at instr 15
+  [VERIFY]  PASS (differential: 349/349 inputs matched, symbolic: skipped (control flow))
+  [COST]    Before: 117.5, After: 114.5 (reduction: 2.6%); time 242.5 → 242.2 cycles
+  [ACCEPT]  ✓ Change accepted
+--- Iteration 23 ---
+  [ANALYZE] Found 16 opportunities: STRENGTH_REDUCTIONx2 (priority=60), COPY_PROPAGATIONx14 (priority=50)
+  [PROPOSE] Applying STRENGTH_REDUCTION at instruction 0: t3 = in_n * 2 → t3 = in_n + in_n
+  [VERIFY]  PASS (differential: 349/349 inputs matched, symbolic: skipped (control flow))
+  [COST]    Before: 114.5, After: 114.5 (reduction: 0.0%); time 242.2 → 240.2 cycles
+  [REJECT]  ✗ Change rejected: No cost improvement
+--- Iteration 24 ---
+  [ANALYZE] Found 15 opportunities: STRENGTH_REDUCTION (priority=60), COPY_PROPAGATIONx14 (priority=50)
+  [PROPOSE] Applying STRENGTH_REDUCTION at instruction 14: t12 = in_n * 2 → t12 = in_n + in_n
+  [VERIFY]  PASS (differential: 349/349 inputs matched, symbolic: skipped (control flow))
+  [COST]    Before: 114.5, After: 114.5 (reduction: 0.0%); time 242.2 → 241.8 cycles
+  [REJECT]  ✗ Change rejected: No cost improvement
+--- Iteration 25 ---
+  [ANALYZE] Found 14 opportunities: COPY_PROPAGATIONx14 (priority=50)
+  [PROPOSE] Applying COPY_PROPAGATION at instruction 15: t13 = 1 → uses of t13 -> 1 at instr 16
+  [VERIFY]  PASS (differential: 349/349 inputs matched, symbolic: skipped (control flow))
+  [COST]    Before: 114.5, After: 111.5 (reduction: 2.6%); time 242.2 → 242.0 cycles
+  [ACCEPT]  ✓ Change accepted
+--- Iteration 26 ---
+  [ANALYZE] Found 15 opportunities: STRENGTH_REDUCTIONx2 (priority=60), COPY_PROPAGATIONx13 (priority=50)
+  [PROPOSE] Applying STRENGTH_REDUCTION at instruction 0: t3 = in_n * 2 → t3 = in_n + in_n
+  [VERIFY]  PASS (differential: 349/349 inputs matched, symbolic: skipped (control flow))
+  [COST]    Before: 111.5, After: 111.5 (reduction: 0.0%); time 242.0 → 240.0 cycles
+  [REJECT]  ✗ Change rejected: No cost improvement
+--- Iteration 27 ---
+  [ANALYZE] Found 14 opportunities: STRENGTH_REDUCTION (priority=60), COPY_PROPAGATIONx13 (priority=50)
+  [PROPOSE] Applying STRENGTH_REDUCTION at instruction 14: t12 = in_n * 2 → t12 = in_n + in_n
+  [VERIFY]  PASS (differential: 349/349 inputs matched, symbolic: skipped (control flow))
+  [COST]    Before: 111.5, After: 111.5 (reduction: 0.0%); time 242.0 → 241.5 cycles
+  [REJECT]  ✗ Change rejected: No cost improvement
+--- Iteration 28 ---
+  [ANALYZE] Found 13 opportunities: COPY_PROPAGATIONx13 (priority=50)
+  [PROPOSE] Applying COPY_PROPAGATION at instruction 16: t14 = t12 + 1; a = t14 → a = t12 + 1
+  [VERIFY]  PASS (differential: 349/349 inputs matched, symbolic: skipped (control flow))
+  [COST]    Before: 111.5, After: 108.5 (reduction: 2.7%); time 242.0 → 241.8 cycles
+  [ACCEPT]  ✓ Change accepted
+--- Iteration 29 ---
+  [ANALYZE] Found 14 opportunities: STRENGTH_REDUCTIONx2 (priority=60), COPY_PROPAGATIONx12 (priority=50)
+  [PROPOSE] Applying STRENGTH_REDUCTION at instruction 0: t3 = in_n * 2 → t3 = in_n + in_n
+  [VERIFY]  PASS (differential: 349/349 inputs matched, symbolic: skipped (control flow))
+  [COST]    Before: 108.5, After: 108.5 (reduction: 0.0%); time 241.8 → 239.8 cycles
+  [REJECT]  ✗ Change rejected: No cost improvement
+--- Iteration 30 ---
+  [ANALYZE] Found 13 opportunities: STRENGTH_REDUCTION (priority=60), COPY_PROPAGATIONx12 (priority=50)
+  [PROPOSE] Applying STRENGTH_REDUCTION at instruction 14: t12 = in_n * 2 → t12 = in_n + in_n
+  [VERIFY]  PASS (differential: 349/349 inputs matched, symbolic: skipped (control flow))
+  [COST]    Before: 108.5, After: 108.5 (reduction: 0.0%); time 241.8 → 241.3 cycles
+  [REJECT]  ✗ Change rejected: No cost improvement
+--- Iteration 31 ---
+  [ANALYZE] Found 12 opportunities: COPY_PROPAGATIONx12 (priority=50)
+  [PROPOSE] Applying COPY_PROPAGATION at instruction 16: t15 = 1 → uses of t15 -> 1 at instr 17
+  [VERIFY]  PASS (differential: 349/349 inputs matched, symbolic: skipped (control flow))
+  [COST]    Before: 108.5, After: 105.5 (reduction: 2.8%); time 241.8 → 241.5 cycles
+  [ACCEPT]  ✓ Change accepted
+--- Iteration 32 ---
+  [ANALYZE] Found 13 opportunities: STRENGTH_REDUCTIONx2 (priority=60), COPY_PROPAGATIONx11 (priority=50)
+  [PROPOSE] Applying STRENGTH_REDUCTION at instruction 0: t3 = in_n * 2 → t3 = in_n + in_n
+  [VERIFY]  PASS (differential: 349/349 inputs matched, symbolic: skipped (control flow))
+  [COST]    Before: 105.5, After: 105.5 (reduction: 0.0%); time 241.5 → 239.5 cycles
+  [REJECT]  ✗ Change rejected: No cost improvement
+--- Iteration 33 ---
+  [ANALYZE] Found 12 opportunities: STRENGTH_REDUCTION (priority=60), COPY_PROPAGATIONx11 (priority=50)
+  [PROPOSE] Applying STRENGTH_REDUCTION at instruction 14: t12 = in_n * 2 → t12 = in_n + in_n
+  [VERIFY]  PASS (differential: 349/349 inputs matched, symbolic: skipped (control flow))
+  [COST]    Before: 105.5, After: 105.5 (reduction: 0.0%); time 241.5 → 241.0 cycles
+  [REJECT]  ✗ Change rejected: No cost improvement
+--- Iteration 34 ---
+  [ANALYZE] Found 11 opportunities: COPY_PROPAGATIONx11 (priority=50)
+  [PROPOSE] Applying COPY_PROPAGATION at instruction 17: t16 = 0 → uses of t16 -> 0 at instr 18
+  [VERIFY]  PASS (differential: 349/349 inputs matched, symbolic: skipped (control flow))
+  [COST]    Before: 105.5, After: 102.5 (reduction: 2.8%); time 241.5 → 241.3 cycles
+  [ACCEPT]  ✓ Change accepted
+--- Iteration 35 ---
+  [ANALYZE] Found 12 opportunities: STRENGTH_REDUCTIONx2 (priority=60), COPY_PROPAGATIONx10 (priority=50)
+  [PROPOSE] Applying STRENGTH_REDUCTION at instruction 0: t3 = in_n * 2 → t3 = in_n + in_n
+  [VERIFY]  PASS (differential: 349/349 inputs matched, symbolic: skipped (control flow))
+  [COST]    Before: 102.5, After: 102.5 (reduction: 0.0%); time 241.3 → 239.3 cycles
+  [REJECT]  ✗ Change rejected: No cost improvement
+--- Iteration 36 ---
+  [ANALYZE] Found 11 opportunities: STRENGTH_REDUCTION (priority=60), COPY_PROPAGATIONx10 (priority=50)
+  [PROPOSE] Applying STRENGTH_REDUCTION at instruction 14: t12 = in_n * 2 → t12 = in_n + in_n
+  [VERIFY]  PASS (differential: 349/349 inputs matched, symbolic: skipped (control flow))
+  [COST]    Before: 102.5, After: 102.5 (reduction: 0.0%); time 241.3 → 240.8 cycles
+  [REJECT]  ✗ Change rejected: No cost improvement
+--- Iteration 37 ---
+  [ANALYZE] Found 10 opportunities: COPY_PROPAGATIONx10 (priority=50)
+  [PROPOSE] Applying COPY_PROPAGATION at instruction 24: t19 = 1 → uses of t19 -> 1 at instr 25
+  [VERIFY]  PASS (differential: 349/349 inputs matched, symbolic: skipped (control flow))
+  [COST]    Before: 102.5, After: 99.5 (reduction: 2.9%); time 241.3 → 241.3 cycles
+  [ACCEPT]  ✓ Change accepted
+--- Iteration 38 ---
+  [ANALYZE] Found 11 opportunities: STRENGTH_REDUCTIONx2 (priority=60), COPY_PROPAGATIONx9 (priority=50)
+  [PROPOSE] Applying STRENGTH_REDUCTION at instruction 0: t3 = in_n * 2 → t3 = in_n + in_n
+  [VERIFY]  PASS (differential: 349/349 inputs matched, symbolic: skipped (control flow))
+  [COST]    Before: 99.5, After: 99.5 (reduction: 0.0%); time 241.3 → 239.3 cycles
+  [REJECT]  ✗ Change rejected: No cost improvement
+--- Iteration 39 ---
+  [ANALYZE] Found 10 opportunities: STRENGTH_REDUCTION (priority=60), COPY_PROPAGATIONx9 (priority=50)
+  [PROPOSE] Applying STRENGTH_REDUCTION at instruction 14: t12 = in_n * 2 → t12 = in_n + in_n
+  [VERIFY]  PASS (differential: 349/349 inputs matched, symbolic: skipped (control flow))
+  [COST]    Before: 99.5, After: 99.5 (reduction: 0.0%); time 241.3 → 240.8 cycles
+  [REJECT]  ✗ Change rejected: No cost improvement
+--- Iteration 40 ---
+  [ANALYZE] Found 9 opportunities: COPY_PROPAGATIONx9 (priority=50)
+  [PROPOSE] Applying COPY_PROPAGATION at instruction 25: t20 = b + 1; b = t20 → b = b + 1
+  [VERIFY]  PASS (differential: 349/349 inputs matched, symbolic: skipped (control flow))
+  [COST]    Before: 99.5, After: 96.5 (reduction: 3.0%); time 241.3 → 241.3 cycles
+  [ACCEPT]  ✓ Change accepted
+--- Iteration 41 ---
+  [ANALYZE] Found 10 opportunities: STRENGTH_REDUCTIONx2 (priority=60), COPY_PROPAGATIONx8 (priority=50)
+  [PROPOSE] Applying STRENGTH_REDUCTION at instruction 0: t3 = in_n * 2 → t3 = in_n + in_n
+  [VERIFY]  PASS (differential: 349/349 inputs matched, symbolic: skipped (control flow))
+  [COST]    Before: 96.5, After: 96.5 (reduction: 0.0%); time 241.3 → 239.3 cycles
+  [REJECT]  ✗ Change rejected: No cost improvement
+--- Iteration 42 ---
+  [ANALYZE] Found 9 opportunities: STRENGTH_REDUCTION (priority=60), COPY_PROPAGATIONx8 (priority=50)
+  [PROPOSE] Applying STRENGTH_REDUCTION at instruction 14: t12 = in_n * 2 → t12 = in_n + in_n
+  [VERIFY]  PASS (differential: 349/349 inputs matched, symbolic: skipped (control flow))
+  [COST]    Before: 96.5, After: 96.5 (reduction: 0.0%); time 241.3 → 240.8 cycles
+  [REJECT]  ✗ Change rejected: No cost improvement
+--- Iteration 43 ---
+  [ANALYZE] Found 8 opportunities: COPY_PROPAGATIONx8 (priority=50)
+  [PROPOSE] Applying COPY_PROPAGATION at instruction 29: t21 = 1 → uses of t21 -> 1 at instr 30
+  [VERIFY]  PASS (differential: 349/349 inputs matched, symbolic: skipped (control flow))
+  [COST]    Before: 96.5, After: 93.5 (reduction: 3.1%); time 241.3 → 238.8 cycles
+  [ACCEPT]  ✓ Change accepted
+--- Iteration 44 ---
+  [ANALYZE] Found 9 opportunities: STRENGTH_REDUCTIONx2 (priority=60), COPY_PROPAGATIONx7 (priority=50)
+  [PROPOSE] Applying STRENGTH_REDUCTION at instruction 0: t3 = in_n * 2 → t3 = in_n + in_n
+  [VERIFY]  PASS (differential: 349/349 inputs matched, symbolic: skipped (control flow))
+  [COST]    Before: 93.5, After: 93.5 (reduction: 0.0%); time 238.8 → 236.8 cycles
+  [REJECT]  ✗ Change rejected: No cost improvement
+--- Iteration 45 ---
+  [ANALYZE] Found 8 opportunities: STRENGTH_REDUCTION (priority=60), COPY_PROPAGATIONx7 (priority=50)
+  [PROPOSE] Applying STRENGTH_REDUCTION at instruction 14: t12 = in_n * 2 → t12 = in_n + in_n
+  [VERIFY]  PASS (differential: 349/349 inputs matched, symbolic: skipped (control flow))
+  [COST]    Before: 93.5, After: 93.5 (reduction: 0.0%); time 238.8 → 238.4 cycles
+  [REJECT]  ✗ Change rejected: No cost improvement
+--- Iteration 46 ---
+  [ANALYZE] Found 7 opportunities: COPY_PROPAGATIONx7 (priority=50)
+  [PROPOSE] Applying COPY_PROPAGATION at instruction 30: t22 = a + 1; a = t22 → a = a + 1
+  [VERIFY]  PASS (differential: 349/349 inputs matched, symbolic: skipped (control flow))
+  [COST]    Before: 93.5, After: 90.5 (reduction: 3.2%); time 238.8 → 236.4 cycles
+  [ACCEPT]  ✓ Change accepted
+--- Iteration 47 ---
+  [ANALYZE] Found 8 opportunities: STRENGTH_REDUCTIONx2 (priority=60), COPY_PROPAGATIONx6 (priority=50)
+  [PROPOSE] Applying STRENGTH_REDUCTION at instruction 0: t3 = in_n * 2 → t3 = in_n + in_n
+  [VERIFY]  PASS (differential: 349/349 inputs matched, symbolic: skipped (control flow))
+  [COST]    Before: 90.5, After: 90.5 (reduction: 0.0%); time 236.4 → 234.4 cycles
+  [REJECT]  ✗ Change rejected: No cost improvement
+--- Iteration 48 ---
+  [ANALYZE] Found 7 opportunities: STRENGTH_REDUCTION (priority=60), COPY_PROPAGATIONx6 (priority=50)
+  [PROPOSE] Applying STRENGTH_REDUCTION at instruction 14: t12 = in_n * 2 → t12 = in_n + in_n
+  [VERIFY]  PASS (differential: 349/349 inputs matched, symbolic: skipped (control flow))
+  [COST]    Before: 90.5, After: 90.5 (reduction: 0.0%); time 236.4 → 235.9 cycles
+  [REJECT]  ✗ Change rejected: No cost improvement
+--- Iteration 49 ---
+  [ANALYZE] Found 6 opportunities: COPY_PROPAGATIONx6 (priority=50)
+  [PROPOSE] Applying COPY_PROPAGATION at instruction 30: t23 = 1 → uses of t23 -> 1 at instr 31
+  [VERIFY]  PASS (differential: 349/349 inputs matched, symbolic: skipped (control flow))
+  [COST]    Before: 90.5, After: 87.5 (reduction: 3.3%); time 236.4 → 234.0 cycles
+  [ACCEPT]  ✓ Change accepted
+--- Iteration 50 ---
+  [ANALYZE] Found 7 opportunities: STRENGTH_REDUCTIONx2 (priority=60), COPY_PROPAGATIONx5 (priority=50)
+  [PROPOSE] Applying STRENGTH_REDUCTION at instruction 0: t3 = in_n * 2 → t3 = in_n + in_n
+  [VERIFY]  PASS (differential: 349/349 inputs matched, symbolic: skipped (control flow))
+  [COST]    Before: 87.5, After: 87.5 (reduction: 0.0%); time 234.0 → 232.0 cycles
+  [REJECT]  ✗ Change rejected: No cost improvement
+--- Iteration 51 ---
+  [ANALYZE] Found 6 opportunities: STRENGTH_REDUCTION (priority=60), COPY_PROPAGATIONx5 (priority=50)
+  [PROPOSE] Applying STRENGTH_REDUCTION at instruction 14: t12 = in_n * 2 → t12 = in_n + in_n
+  [VERIFY]  PASS (differential: 349/349 inputs matched, symbolic: skipped (control flow))
+  [COST]    Before: 87.5, After: 87.5 (reduction: 0.0%); time 234.0 → 233.5 cycles
+  [REJECT]  ✗ Change rejected: No cost improvement
+--- Iteration 52 ---
+  [ANALYZE] Found 5 opportunities: COPY_PROPAGATIONx5 (priority=50)
+  [PROPOSE] Applying COPY_PROPAGATION at instruction 31: t24 = b + 1; b = t24 → b = b + 1
+  [VERIFY]  PASS (differential: 349/349 inputs matched, symbolic: skipped (control flow))
+  [COST]    Before: 87.5, After: 84.5 (reduction: 3.4%); time 234.0 → 231.5 cycles
+  [ACCEPT]  ✓ Change accepted
+--- Iteration 53 ---
+  [ANALYZE] Found 6 opportunities: STRENGTH_REDUCTIONx2 (priority=60), COPY_PROPAGATIONx4 (priority=50)
+  [PROPOSE] Applying STRENGTH_REDUCTION at instruction 0: t3 = in_n * 2 → t3 = in_n + in_n
+  [VERIFY]  PASS (differential: 349/349 inputs matched, symbolic: skipped (control flow))
+  [COST]    Before: 84.5, After: 84.5 (reduction: 0.0%); time 231.5 → 229.5 cycles
+  [REJECT]  ✗ Change rejected: No cost improvement
+--- Iteration 54 ---
+  [ANALYZE] Found 5 opportunities: STRENGTH_REDUCTION (priority=60), COPY_PROPAGATIONx4 (priority=50)
+  [PROPOSE] Applying STRENGTH_REDUCTION at instruction 14: t12 = in_n * 2 → t12 = in_n + in_n
+  [VERIFY]  PASS (differential: 349/349 inputs matched, symbolic: skipped (control flow))
+  [COST]    Before: 84.5, After: 84.5 (reduction: 0.0%); time 231.5 → 231.0 cycles
+  [REJECT]  ✗ Change rejected: No cost improvement
+--- Iteration 55 ---
+  [ANALYZE] Found 4 opportunities: COPY_PROPAGATIONx4 (priority=50)
+  [PROPOSE] Applying COPY_PROPAGATION at instruction 31: t25 = 1 → uses of t25 -> 1 at instr 32
+  [VERIFY]  PASS (differential: 349/349 inputs matched, symbolic: skipped (control flow))
+  [COST]    Before: 84.5, After: 81.5 (reduction: 3.6%); time 231.5 → 229.1 cycles
+  [ACCEPT]  ✓ Change accepted
+--- Iteration 56 ---
+  [ANALYZE] Found 5 opportunities: STRENGTH_REDUCTIONx2 (priority=60), COPY_PROPAGATIONx3 (priority=50)
+  [PROPOSE] Applying STRENGTH_REDUCTION at instruction 0: t3 = in_n * 2 → t3 = in_n + in_n
+  [VERIFY]  PASS (differential: 349/349 inputs matched, symbolic: skipped (control flow))
+  [COST]    Before: 81.5, After: 81.5 (reduction: 0.0%); time 229.1 → 227.1 cycles
+  [REJECT]  ✗ Change rejected: No cost improvement
+--- Iteration 57 ---
+  [ANALYZE] Found 4 opportunities: STRENGTH_REDUCTION (priority=60), COPY_PROPAGATIONx3 (priority=50)
+  [PROPOSE] Applying STRENGTH_REDUCTION at instruction 14: t12 = in_n * 2 → t12 = in_n + in_n
+  [VERIFY]  PASS (differential: 349/349 inputs matched, symbolic: skipped (control flow))
+  [COST]    Before: 81.5, After: 81.5 (reduction: 0.0%); time 229.1 → 228.6 cycles
+  [REJECT]  ✗ Change rejected: No cost improvement
+--- Iteration 58 ---
+  [ANALYZE] Found 3 opportunities: COPY_PROPAGATIONx3 (priority=50)
+  [PROPOSE] Applying COPY_PROPAGATION at instruction 32: t26 = i + 1; i = t26 → i = i + 1
+  [VERIFY]  PASS (differential: 349/349 inputs matched, symbolic: skipped (control flow))
+  [COST]    Before: 81.5, After: 78.5 (reduction: 3.7%); time 229.1 → 226.6 cycles
+  [ACCEPT]  ✓ Change accepted
+--- Iteration 59 ---
+  [ANALYZE] Found 4 opportunities: STRENGTH_REDUCTIONx2 (priority=60), COPY_PROPAGATIONx2 (priority=50)
+  [PROPOSE] Applying STRENGTH_REDUCTION at instruction 0: t3 = in_n * 2 → t3 = in_n + in_n
+  [VERIFY]  PASS (differential: 349/349 inputs matched, symbolic: skipped (control flow))
+  [COST]    Before: 78.5, After: 78.5 (reduction: 0.0%); time 226.6 → 224.6 cycles
+  [REJECT]  ✗ Change rejected: No cost improvement
+--- Iteration 60 ---
+  [ANALYZE] Found 3 opportunities: STRENGTH_REDUCTION (priority=60), COPY_PROPAGATIONx2 (priority=50)
+  [PROPOSE] Applying STRENGTH_REDUCTION at instruction 14: t12 = in_n * 2 → t12 = in_n + in_n
+  [VERIFY]  PASS (differential: 349/349 inputs matched, symbolic: skipped (control flow))
+  [COST]    Before: 78.5, After: 78.5 (reduction: 0.0%); time 226.6 → 226.2 cycles
+  [REJECT]  ✗ Change rejected: No cost improvement
+--- Iteration 61 ---
+  [ANALYZE] Found 2 opportunities: COPY_PROPAGATIONx2 (priority=50)
+  [PROPOSE] Applying COPY_PROPAGATION at instruction 33: t27 = 1 → uses of t27 -> 1 at instr 34
+  [VERIFY]  PASS (differential: 349/349 inputs matched, symbolic: skipped (control flow))
+  [COST]    Before: 78.5, After: 75.5 (reduction: 3.8%); time 226.6 → 224.2 cycles
+  [ACCEPT]  ✓ Change accepted
+--- Iteration 62 ---
+  [ANALYZE] Found 3 opportunities: STRENGTH_REDUCTIONx2 (priority=60), COPY_PROPAGATION (priority=50)
+  [PROPOSE] Applying STRENGTH_REDUCTION at instruction 0: t3 = in_n * 2 → t3 = in_n + in_n
+  [VERIFY]  PASS (differential: 349/349 inputs matched, symbolic: skipped (control flow))
+  [COST]    Before: 75.5, After: 75.5 (reduction: 0.0%); time 224.2 → 222.2 cycles
+  [REJECT]  ✗ Change rejected: No cost improvement
+--- Iteration 63 ---
+  [ANALYZE] Found 2 opportunities: STRENGTH_REDUCTION (priority=60), COPY_PROPAGATION (priority=50)
+  [PROPOSE] Applying STRENGTH_REDUCTION at instruction 14: t12 = in_n * 2 → t12 = in_n + in_n
+  [VERIFY]  PASS (differential: 349/349 inputs matched, symbolic: skipped (control flow))
+  [COST]    Before: 75.5, After: 75.5 (reduction: 0.0%); time 224.2 → 223.7 cycles
+  [REJECT]  ✗ Change rejected: No cost improvement
+--- Iteration 64 ---
+  [ANALYZE] Found 1 opportunity: COPY_PROPAGATION (priority=50)
+  [PROPOSE] Applying COPY_PROPAGATION at instruction 34: t28 = i + 1; i = t28 → i = i + 1
+  [VERIFY]  PASS (differential: 349/349 inputs matched, symbolic: skipped (control flow))
+  [COST]    Before: 75.5, After: 72.5 (reduction: 4.0%); time 224.2 → 221.8 cycles
+  [ACCEPT]  ✓ Change accepted
+--- Iteration 65 ---
+  [ANALYZE] Found 2 opportunities: STRENGTH_REDUCTIONx2 (priority=60)
+  [PROPOSE] Applying STRENGTH_REDUCTION at instruction 0: t3 = in_n * 2 → t3 = in_n + in_n
+  [VERIFY]  PASS (differential: 349/349 inputs matched, symbolic: skipped (control flow))
+  [COST]    Before: 72.5, After: 72.5 (reduction: 0.0%); time 221.8 → 219.8 cycles
+  [REJECT]  ✗ Change rejected: No cost improvement
+--- Iteration 66 ---
+  [ANALYZE] Found 1 opportunity: STRENGTH_REDUCTION (priority=60)
+  [PROPOSE] Applying STRENGTH_REDUCTION at instruction 14: t12 = in_n * 2 → t12 = in_n + in_n
+  [VERIFY]  PASS (differential: 349/349 inputs matched, symbolic: skipped (control flow))
+  [COST]    Before: 72.5, After: 72.5 (reduction: 0.0%); time 221.8 → 221.3 cycles
+  [REJECT]  ✗ Change rejected: No cost improvement
+--- Iteration 67 ---
+  [ANALYZE] No more opportunities found.
+=== RESULT ===
+  Original cost: 159.5
+  Final cost:    72.5
+  Reduction:     54.5%
+  Exec. time:    332.6 → 221.8 cycles (33.3% less)
+  Iterations:    67
+  Accepted:      31
+  Rejected:      35
+  Invalid:       0
+  Output match:  PASS ✓
+  Equivalence:   tested on the verifier's inputs
+=== Original TAC ===
+   0 |     n = 0
+   1 |     m = 0
+   2 |     numseat = 0
+   3 |     a = 0
+   4 |     b = 0
+   5 |     n = in_n
+   6 |     m = in_m
+   7 |     t0 = 4
+   8 |     t1 = n * t0
+   9 |     numseat = t1
+  10 |     t2 = 2
+  11 |     t3 = n * t2
+  12 |     t4 = m <= t3
+  13 |     ifFalse t4 goto L0
+  14 |     t5 = 0
+  15 |     i = t5
+  16 | L2:
+  17 |     t6 = i < m
+  18 |     ifFalse t6 goto L3
+  19 |     t7 = 1
+  20 |     t8 = i + t7
+  21 |     print t8
+  22 |     t9 = 1
+  23 |     t10 = i + t9
+  24 |     i = t10
+  25 |     goto L2
+  26 | L3:
+  27 |     goto L1
+  28 | L0:
+  29 |     t11 = 2
+  30 |     t12 = n * t11
+  31 |     t13 = 1
+  32 |     t14 = t12 + t13
+  33 |     a = t14
+  34 |     t15 = 1
+  35 |     b = t15
+  36 |     t16 = 0
+  37 |     i = t16
+  38 | L4:
+  39 |     t17 = i < m
+  40 |     ifFalse t17 goto L5
+  41 |     t18 = a > m
+  42 |     ifFalse t18 goto L6
+  43 |     print b
+  44 |     t19 = 1
+  45 |     t20 = b + t19
+  46 |     b = t20
+  47 |     goto L7
+  48 | L6:
+  49 |     print a
+  50 |     print b
+  51 |     t21 = 1
+  52 |     t22 = a + t21
+  53 |     a = t22
+  54 |     t23 = 1
+  55 |     t24 = b + t23
+  56 |     b = t24
+  57 |     t25 = 1
+  58 |     t26 = i + t25
+  59 |     i = t26
+  60 | L7:
+  61 |     t27 = 1
+  62 |     t28 = i + t27
+  63 |     i = t28
+  64 |     goto L4
+  65 | L5:
+  66 | L1:
+=== Optimized TAC ===
+   0 |     t3 = in_n * 2
+   1 |     t4 = in_m <= t3
+   2 |     ifFalse t4 goto L0
+   3 |     i = 0
+   4 | L2:
+   5 |     t6 = i < in_m
+   6 |     ifFalse t6 goto L3
+   7 |     t8 = i + 1
+   8 |     print t8
+   9 |     i = t8
+  10 |     goto L2
+  11 | L3:
+  12 |     goto L1
+  13 | L0:
+  14 |     t12 = in_n * 2
+  15 |     a = t12 + 1
+  16 |     b = 1
+  17 |     i = 0
+  18 | L4:
+  19 |     t17 = i < in_m
+  20 |     ifFalse t17 goto L5
+  21 |     t18 = a > in_m
+  22 |     ifFalse t18 goto L6
+  23 |     print b
+  24 |     b = b + 1
+  25 |     goto L7
+  26 | L6:
+  27 |     print a
+  28 |     print b
+  29 |     a = a + 1
+  30 |     b = b + 1
+  31 |     i = i + 1
+  32 | L7:
+  33 |     i = i + 1
+  34 |     goto L4
+  35 | L5:
+  36 | L1:

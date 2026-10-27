@@ -1,0 +1,15 @@
+// category: conditionals  (program 074)
+int m = 15;
+int w = 0;
+if (m >= 7 && m != -24) {
+    int y = 11 + 20;
+    w = m / 1;
+    w = w + (5 * 1);
+} else {
+    w = m * 7;
+}
+int s = 4;
+if (s > 3) {
+    w = w + s * 1;
+}
+print(w);

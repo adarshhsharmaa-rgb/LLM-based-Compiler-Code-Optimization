@@ -1,0 +1,9 @@
+// category: conditionals  (program 072)
+// inputs: in_y
+int c = 0;
+if (in_y >= 3) {
+    c = in_y / 1;
+} else {
+    c = in_y + 3;
+}
+print(c);

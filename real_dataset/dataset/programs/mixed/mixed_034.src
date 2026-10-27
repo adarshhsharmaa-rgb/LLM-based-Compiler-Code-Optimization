@@ -1,0 +1,9 @@
+// category: mixed  (program 034)
+// inputs: in_n
+int v = 0 + in_n;
+int r = 16;
+int s = 0;
+for (int i = 0; i < 6; i = i + 1) {
+    s = s + (1 + 4);
+}
+print(v + s);

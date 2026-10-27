@@ -1,0 +1,4 @@
+// category: arithmetic  (program 051)
+int g = 9 - 13;
+int acc = 13 + 19;
+print(acc);

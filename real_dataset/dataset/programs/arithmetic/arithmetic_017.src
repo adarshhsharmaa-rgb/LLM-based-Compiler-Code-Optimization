@@ -1,0 +1,4 @@
+// category: arithmetic  (program 017)
+int y = 12 * 5;
+int val = y * 15;
+print(val);

@@ -1,0 +1,10 @@
+// category: conditionals  (program 027)
+// inputs: in_y
+int val = 0;
+if (in_y != 7) {
+    int q = 13 + 11;
+    val = 0 + in_y;
+} else {
+    val = in_y - 2;
+}
+print(val);

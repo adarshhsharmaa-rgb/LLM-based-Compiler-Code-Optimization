@@ -1,0 +1,7 @@
+// category: mixed  (program 032)
+int y = 12 + 5;
+int d = y + 0;
+int p = d * y;
+int s = d * y + p;
+int acc = s + (10 * 8);
+print(s + acc);

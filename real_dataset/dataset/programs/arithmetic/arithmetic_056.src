@@ -1,0 +1,5 @@
+// category: arithmetic  (program 056)
+int f = 10 + 1;
+int s = 20 + 11;
+print(s);
+print(f - 18);

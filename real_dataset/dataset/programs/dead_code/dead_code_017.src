@@ -1,0 +1,9 @@
+// category: dead_code  (program 017)
+int a = 1;
+int res = a + 9;
+int b = a + 18;
+int n = 82;
+a = 90;
+a = a + 17;
+int r = a + 5;
+print(r);

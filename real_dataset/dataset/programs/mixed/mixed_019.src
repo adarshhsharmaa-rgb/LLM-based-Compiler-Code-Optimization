@@ -1,0 +1,9 @@
+// category: mixed  (program 019)
+int acc = 18 + 17;
+int a = acc * 4;
+int v = acc / 1;
+int w = v * acc;
+int c = v * acc + w;
+int y = acc + (19 * 4);
+int u = v * 8;
+print(y + u);

@@ -1,0 +1,9 @@
+// category: conditionals  (program 006)
+int v = 2;
+int res = 0;
+if (v < 10) {
+    res = v - 0;
+} else {
+    res = v - 7;
+}
+print(res);

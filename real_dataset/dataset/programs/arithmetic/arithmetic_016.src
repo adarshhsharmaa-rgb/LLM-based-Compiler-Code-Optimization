@@ -1,0 +1,6 @@
+// category: arithmetic  (program 016)
+int g = 19 + 15;
+int u = g + 20;
+int p = g + 10;
+print(p);
+print(g + 10);

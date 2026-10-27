@@ -1,0 +1,7 @@
+// category: dead_code  (program 053)
+int q = 18;
+int d = 4;
+int a = 15;
+int num = d * 12;
+int f = a + 7;
+print(f);

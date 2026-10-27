@@ -1,0 +1,13 @@
+// category: conditionals  (program 062)
+int v = 3;
+int h = 0;
+if (v >= 4 || v == 5) {
+    h = 1 * v;
+} else {
+    h = v * 9;
+}
+int res = 3;
+if (res > 5) {
+    h = h + res * 1;
+}
+print(h);

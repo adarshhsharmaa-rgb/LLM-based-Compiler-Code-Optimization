@@ -1,0 +1,8 @@
+// category: conditionals  (program 052)
+int e = 3;
+int h = 0;
+if (e <= 8 && e != -2) {
+    h = 0 + e;
+    h = h + (3 * 2);
+}
+print(h);

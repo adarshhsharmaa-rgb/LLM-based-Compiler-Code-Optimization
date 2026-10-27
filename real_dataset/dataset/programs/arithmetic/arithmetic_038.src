@@ -1,0 +1,5 @@
+// category: arithmetic  (program 038)
+int num = 17 + 2;
+int m = num + 17;
+int y = num + 15;
+print(y);

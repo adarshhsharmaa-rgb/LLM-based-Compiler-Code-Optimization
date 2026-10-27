@@ -1,0 +1,86 @@
+=== Program: arithmetic_060.c ===
+--- Iteration 1 ---
+  [ANALYZE] Found 11 opportunities: DEAD_CODE (priority=80), COPY_PROPAGATIONx10 (priority=50)
+  [PROPOSE] Applying DEAD_CODE at instruction 0: n = 0 → (removed)
+  [VERIFY]  PASS (differential: 289/289 inputs matched, symbolic: equivalent)
+  [COST]    Before: 33.0, After: 30.5 (reduction: 7.6%); time 35.0 → 34.0 cycles
+  [ACCEPT]  ✓ Change accepted
+--- Iteration 2 ---
+  [ANALYZE] Found 10 opportunities: COPY_PROPAGATIONx10 (priority=50)
+  [PROPOSE] Applying COPY_PROPAGATION at instruction 0: n = in_n → uses of n -> in_n at instr 2
+  [VERIFY]  PASS (differential: 287/287 inputs matched, symbolic: equivalent)
+  [COST]    Before: 30.5, After: 28.0 (reduction: 8.2%); time 34.0 → 33.0 cycles
+  [ACCEPT]  ✓ Change accepted
+--- Iteration 3 ---
+  [ANALYZE] Found 9 opportunities: COPY_PROPAGATIONx9 (priority=50)
+  [PROPOSE] Applying COPY_PROPAGATION at instruction 0: t0 = 2 → uses of t0 -> 2 at instr 1
+  [VERIFY]  PASS (differential: 287/287 inputs matched, symbolic: equivalent)
+  [COST]    Before: 28.0, After: 25.0 (reduction: 10.7%); time 33.0 → 32.0 cycles
+  [ACCEPT]  ✓ Change accepted
+--- Iteration 4 ---
+  [ANALYZE] Found 9 opportunities: STRENGTH_REDUCTION (priority=60), COPY_PROPAGATIONx8 (priority=50)
+  [PROPOSE] Applying STRENGTH_REDUCTION at instruction 0: t1 = in_n * 2 → t1 = in_n + in_n
+  [VERIFY]  PASS (differential: 287/287 inputs matched, symbolic: equivalent)
+  [COST]    Before: 25.0, After: 25.0 (reduction: 0.0%); time 32.0 → 30.0 cycles
+  [ACCEPT]  ✓ Change accepted
+--- Iteration 5 ---
+  [ANALYZE] Found 8 opportunities: COPY_PROPAGATIONx8 (priority=50)
+  [PROPOSE] Applying COPY_PROPAGATION at instruction 1: t1 = in_n + in_n; n = t1 → n = in_n + in_n
+  [VERIFY]  PASS (differential: 286/286 inputs matched, symbolic: equivalent)
+  [COST]    Before: 25.0, After: 22.0 (reduction: 12.0%); time 30.0 → 29.0 cycles
+  [ACCEPT]  ✓ Change accepted
+--- Iteration 6 ---
+  [ANALYZE] Found 6 opportunities: COPY_PROPAGATIONx6 (priority=50)
+  [PROPOSE] Applying COPY_PROPAGATION at instruction 1: t2 = 4 → uses of t2 -> 4 at instr 2
+  [VERIFY]  PASS (differential: 286/286 inputs matched, symbolic: equivalent)
+  [COST]    Before: 22.0, After: 19.0 (reduction: 13.6%); time 29.0 → 28.0 cycles
+  [ACCEPT]  ✓ Change accepted
+--- Iteration 7 ---
+  [ANALYZE] Found 5 opportunities: COPY_PROPAGATIONx5 (priority=50)
+  [PROPOSE] Applying COPY_PROPAGATION at instruction 2: t3 = n / 4; n = t3 → n = n / 4
+  [VERIFY]  PASS (differential: 286/286 inputs matched, symbolic: equivalent)
+  [COST]    Before: 19.0, After: 16.0 (reduction: 15.8%); time 28.0 → 27.0 cycles
+  [ACCEPT]  ✓ Change accepted
+--- Iteration 8 ---
+  [ANALYZE] Found 3 opportunities: COPY_PROPAGATIONx3 (priority=50)
+  [PROPOSE] Applying COPY_PROPAGATION at instruction 2: t4 = 3 → uses of t4 -> 3 at instr 3
+  [VERIFY]  PASS (differential: 286/286 inputs matched, symbolic: equivalent)
+  [COST]    Before: 16.0, After: 13.0 (reduction: 18.8%); time 27.0 → 26.0 cycles
+  [ACCEPT]  ✓ Change accepted
+--- Iteration 9 ---
+  [ANALYZE] Found 2 opportunities: COPY_PROPAGATIONx2 (priority=50)
+  [PROPOSE] Applying COPY_PROPAGATION at instruction 3: t5 = n * 3; n = t5 → n = n * 3
+  [VERIFY]  PASS (differential: 286/286 inputs matched, symbolic: equivalent)
+  [COST]    Before: 13.0, After: 10.0 (reduction: 23.1%); time 26.0 → 25.0 cycles
+  [ACCEPT]  ✓ Change accepted
+--- Iteration 10 ---
+  [ANALYZE] No more opportunities found.
+=== RESULT ===
+  Original cost: 33.0
+  Final cost:    10.0
+  Reduction:     69.7%
+  Exec. time:    35.0 → 25.0 cycles (28.6% less)
+  Iterations:    10
+  Accepted:      9
+  Rejected:      0
+  Invalid:       0
+  Output match:  PASS ✓
+  Equivalence:   proved for all inputs
+=== Original TAC ===
+   0 |     n = 0
+   1 |     n = in_n
+   2 |     t0 = 2
+   3 |     t1 = n * t0
+   4 |     n = t1
+   5 |     t2 = 4
+   6 |     t3 = n / t2
+   7 |     n = t3
+   8 |     t4 = 3
+   9 |     t5 = n * t4
+  10 |     n = t5
+  11 |     print n
+=== Optimized TAC ===
+  0 |     n = in_n + in_n
+  1 |     n = n / 4
+  2 |     n = n * 3
+  3 |     print n

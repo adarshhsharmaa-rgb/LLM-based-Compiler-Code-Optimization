@@ -1,0 +1,8 @@
+// category: loops  (program 011)
+int prod = 1;
+for (int i = 0; i < 6; i = i + 1) {
+    int w = 1 + 1;
+    prod = prod * 0 + w;
+    int u = w * 11;
+}
+print(prod);

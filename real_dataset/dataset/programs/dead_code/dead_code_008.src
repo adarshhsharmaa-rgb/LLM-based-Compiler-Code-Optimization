@@ -1,0 +1,5 @@
+// category: dead_code  (program 008)
+int v = 6;
+int q = 4;
+int u = q + 10;
+print(u);
